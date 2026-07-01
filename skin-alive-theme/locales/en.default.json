@@ -43,7 +43,10 @@
       "view_all": "View all",
       "products": "products",
       "sort_by": "Sort by",
-      "empty": "No products found in this collection yet."
+      "empty": "No products found in this collection yet.",
+      "filter": "Filter",
+      "clear_all": "Clear all",
+      "apply_filters": "Apply filters"
     },
     "collections": {
       "title": "Shop by category"

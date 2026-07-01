@@ -28,6 +28,34 @@ document.documentElement.classList.remove('no-js');
   });
 })();
 
+// Collection filter drawer (mobile)
+(function () {
+  var toggle = document.querySelector('[data-filter-toggle]');
+  var drawer = document.querySelector('[data-filter-drawer]');
+  if (!toggle || !drawer) return;
+
+  function openDrawer() {
+    drawer.setAttribute('data-open', '');
+    drawer.setAttribute('aria-hidden', 'false');
+    toggle.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDrawer() {
+    drawer.removeAttribute('data-open');
+    drawer.setAttribute('aria-hidden', 'true');
+    toggle.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+
+  toggle.addEventListener('click', openDrawer);
+  drawer.querySelectorAll('[data-filter-close]').forEach(function (el) {
+    el.addEventListener('click', closeDrawer);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeDrawer();
+  });
+})();
+
 // Product gallery: tap thumbnail to scroll main slide into view
 (function () {
   document.querySelectorAll('[data-product-gallery]').forEach(function (gallery) {

@@ -1,3 +1,20 @@
+{%- comment -%}
+  Collection page with native Shopify filtering (collection.filters). To
+  filter by skin type, enable "Product metafield: custom.skin_type" as a
+  storefront filter in Admin > Search & discovery > Filters. Filters,
+  sorting, and pagination all live in one plain GET form so state (which
+  filters are active, current sort) is preserved across every interaction
+  without any custom JS for the state itself — JS is only used to toggle
+  the mobile filter drawer open/closed.
+{%- endcomment -%}
+
+{%- assign active_count = 0 -%}
+{%- for filter in collection.filters -%}
+  {%- for value in filter.values -%}
+    {%- if value.active %}{% assign active_count = active_count | plus: 1 %}{% endif -%}
+  {%- endfor -%}
+{%- endfor -%}
+
 <section class="collection">
   <div class="collection__header">
     <h1 class="collection__title">{{ collection.title }}</h1>
@@ -6,41 +23,104 @@
     {%- endif -%}
   </div>
 
-  <div class="collection__toolbar">
-    <p class="collection__count">{{ collection.products_count }} {{ 'general.collection.products' | t: default: 'products' }}</p>
-    {%- form 'sort-by', class: 'collection__sort' -%}
-      <label for="SortBy">{{ 'general.collection.sort_by' | t: default: 'Sort by' }}</label>
-      <select name="sort_by" id="SortBy" onchange="this.form.submit()">
+  <form method="get" action="{{ collection.url }}" class="collection__filters-form">
+    <div class="collection__toolbar">
+      <p class="collection__count">{{ collection.products_count }} {{ 'general.collection.products' | t: default: 'products' }}</p>
+
+      {%- if collection.filters.size > 0 -%}
+        <button type="button" class="collection__filter-toggle" data-filter-toggle aria-expanded="false" aria-controls="CollectionFilters">
+          {{ 'general.collection.filter' | t: default: 'Filter' }}
+          {%- if active_count > 0 %} ({{ active_count }}){% endif -%}
+        </button>
+      {%- endif -%}
+
+      <label for="SortBy" class="collection__sort-label">{{ 'general.collection.sort_by' | t: default: 'Sort by' }}</label>
+      <select name="sort_by" id="SortBy" class="collection__sort" onchange="this.form.submit()">
         {%- for option in collection.sort_options -%}
           <option value="{{ option.value }}" {% if option.value == collection.sort_by %}selected{% endif %}>{{ option.name }}</option>
         {%- endfor -%}
       </select>
-    {%- endform -%}
-  </div>
+    </div>
 
-  {%- paginate collection.products by 24 -%}
-    <ul class="collection__grid">
-      {%- for product in collection.products -%}
-        <li>{%- render 'product-card', product: product -%}</li>
-      {%- else -%}
-        <li class="collection__empty">{{ 'general.collection.empty' | t: default: 'No products found in this collection yet.' }}</li>
-      {%- endfor -%}
-    </ul>
+    <div class="collection__layout">
+      {%- if collection.filters.size > 0 -%}
+        <aside class="collection__filters" id="CollectionFilters" data-filter-drawer aria-hidden="true">
+          <div class="collection__filters-panel">
+            <div class="collection__filters-header">
+              <h2>{{ 'general.collection.filter' | t: default: 'Filter' }}</h2>
+              <button type="button" class="collection__filters-close" data-filter-close aria-label="{{ 'general.accessibility.close' | t: default: 'Close' }}">&times;</button>
+            </div>
 
-    {%- if paginate.pages > 1 -%}
-      <nav class="collection__pagination" aria-label="{{ 'general.pagination.label' | t: default: 'Pagination' }}">
-        {%- if paginate.previous -%}<a href="{{ paginate.previous.url }}">←</a>{%- endif -%}
-        {%- for part in paginate.parts -%}
-          {%- if part.is_link -%}
-            <a href="{{ part.url }}">{{ part.title }}</a>
-          {%- else -%}
-            <span class="is-current">{{ part.title }}</span>
+            {%- if active_count > 0 -%}
+              <div class="collection__active-filters">
+                {%- for filter in collection.filters -%}
+                  {%- for value in filter.values -%}
+                    {%- if value.active -%}
+                      <a href="{{ value.url_to_remove }}" class="tag tag--removable">{{ value.label }} &times;</a>
+                    {%- endif -%}
+                  {%- endfor -%}
+                {%- endfor -%}
+                <a href="{{ collection.url }}" class="collection__clear-filters">{{ 'general.collection.clear_all' | t: default: 'Clear all' }}</a>
+              </div>
+            {%- endif -%}
+
+            {%- for filter in collection.filters -%}
+              <fieldset class="collection__filter-group">
+                <legend>{{ filter.label }}</legend>
+                {%- for value in filter.values -%}
+                  <label class="collection__filter-option{% if value.count == 0 and value.active == false %} is-disabled{% endif %}">
+                    <input
+                      type="checkbox"
+                      name="{{ value.param_name }}"
+                      value="{{ value.value }}"
+                      {% if value.active %}checked{% endif %}
+                      {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                      onchange="this.form.submit()"
+                    >
+                    <span>{{ value.label }} ({{ value.count }})</span>
+                  </label>
+                {%- endfor -%}
+              </fieldset>
+            {%- endfor -%}
+
+            <button type="submit" class="button button--primary collection__filters-apply">{{ 'general.collection.apply_filters' | t: default: 'Apply filters' }}</button>
+          </div>
+          <div class="collection__filters-backdrop" data-filter-close></div>
+        </aside>
+      {%- endif -%}
+
+      <div class="collection__main">
+        {%- paginate collection.products by 24 -%}
+          <ul class="collection__grid">
+            {%- for product in collection.products -%}
+              <li>{%- render 'product-card', product: product -%}</li>
+            {%- else -%}
+              <li class="collection__empty">
+                {{ 'general.collection.empty' | t: default: 'No products found.' }}
+                {%- if active_count > 0 -%}
+                  <a href="{{ collection.url }}">{{ 'general.collection.clear_all' | t: default: 'Clear all filters' }}</a>
+                {%- endif -%}
+              </li>
+            {%- endfor -%}
+          </ul>
+
+          {%- if paginate.pages > 1 -%}
+            <nav class="collection__pagination" aria-label="{{ 'general.pagination.label' | t: default: 'Pagination' }}">
+              {%- if paginate.previous -%}<a href="{{ paginate.previous.url }}">←</a>{%- endif -%}
+              {%- for part in paginate.parts -%}
+                {%- if part.is_link -%}
+                  <a href="{{ part.url }}">{{ part.title }}</a>
+                {%- else -%}
+                  <span class="is-current">{{ part.title }}</span>
+                {%- endif -%}
+              {%- endfor -%}
+              {%- if paginate.next -%}<a href="{{ paginate.next.url }}">→</a>{%- endif -%}
+            </nav>
           {%- endif -%}
-        {%- endfor -%}
-        {%- if paginate.next -%}<a href="{{ paginate.next.url }}">→</a>{%- endif -%}
-      </nav>
-    {%- endif -%}
-  {%- endpaginate -%}
+        {%- endpaginate -%}
+      </div>
+    </div>
+  </form>
 </section>
 
 {% schema %}
