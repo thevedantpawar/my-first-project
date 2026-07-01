@@ -4,7 +4,7 @@
 
   {%- form 'contact', class: 'contact-form' -%}
     {%- if form.posted_successfully? -%}
-      <p class="contact-form__success">{{ 'general.contact.success' | t: default: 'Thanks — we\'ll get back to you shortly.' }}</p>
+      <p class="contact-form__success">{{ 'general.contact.success' | t: default: "Thanks — we'll get back to you shortly." }}</p>
     {%- endif -%}
     {%- if form.errors -%}
       <p class="contact-form__error">{{ form.errors | default_errors }}</p>
