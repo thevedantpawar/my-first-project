@@ -1,0 +1,20 @@
+{
+  "current": {
+    "clinic_url": "",
+    "main_menu_handle": "main-menu",
+    "footer_menu_handle": "footer",
+    "color_background": "#faf8f6",
+    "color_accent": "#2f5d50",
+    "color_text": "#201f1d"
+  },
+  "presets": {
+    "Default": {
+      "clinic_url": "",
+      "main_menu_handle": "main-menu",
+      "footer_menu_handle": "footer",
+      "color_background": "#faf8f6",
+      "color_accent": "#2f5d50",
+      "color_text": "#201f1d"
+    }
+  }
+}

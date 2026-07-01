@@ -1,0 +1,27 @@
+{%- comment -%} Usage: {% render 'product-card', product: product %} {%- endcomment -%}
+
+<div class="product-card">
+  <a href="{{ product.url }}" class="product-card__media">
+    {%- if product.featured_media -%}
+      <img
+        src="{{ product.featured_media | image_url: width: 600 }}"
+        srcset="{{ product.featured_media | image_url: width: 300 }} 300w, {{ product.featured_media | image_url: width: 600 }} 600w"
+        sizes="(min-width: 990px) 25vw, 50vw"
+        alt="{{ product.featured_media.alt | escape }}"
+        width="{{ product.featured_media.width }}"
+        height="{{ product.featured_media.height }}"
+        loading="lazy"
+      >
+    {%- else -%}
+      {{ 'product-1' | placeholder_svg_tag: 'product-card__placeholder' }}
+    {%- endif -%}
+    {%- if product.metafields.custom.dermatologist_formulated.value -%}
+      <span class="product-card__badge">{{ 'products.product.derm_formulated_short' | t: default: 'Derm formulated' }}</span>
+    {%- endif -%}
+  </a>
+  <div class="product-card__info">
+    <p class="product-card__vendor">{{ product.vendor }}</p>
+    <a href="{{ product.url }}"><h3 class="product-card__title">{{ product.title }}</h3></a>
+    {%- render 'price', product: product -%}
+  </div>
+</div>

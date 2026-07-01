@@ -1,0 +1,58 @@
+<section class="category-grid">
+  {%- if section.settings.heading != blank -%}
+    <h2 class="category-grid__heading">{{ section.settings.heading }}</h2>
+  {%- endif -%}
+
+  <ul class="category-grid__list">
+    {%- for block in section.blocks -%}
+      {%- assign collection = collections[block.settings.collection] -%}
+      <li class="category-grid__item" {{ block.shopify_attributes }}>
+        <a href="{{ collection.url | default: '#' }}">
+          <div class="category-grid__image">
+            {%- if block.settings.image -%}
+              <img src="{{ block.settings.image | image_url: width: 500 }}" alt="{{ block.settings.image.alt | escape }}" width="250" height="250" loading="lazy">
+            {%- elsif collection.image -%}
+              <img src="{{ collection.image | image_url: width: 500 }}" alt="{{ collection.title | escape }}" width="250" height="250" loading="lazy">
+            {%- else -%}
+              {{ 'collection-1' | placeholder_svg_tag: 'category-grid__placeholder' }}
+            {%- endif -%}
+          </div>
+          <p class="category-grid__label">{{ block.settings.label | default: collection.title }}</p>
+        </a>
+      </li>
+    {%- endfor -%}
+  </ul>
+</section>
+
+{% schema %}
+{
+  "name": "Category grid",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Shop by concern" }
+  ],
+  "blocks": [
+    {
+      "type": "category",
+      "name": "Category",
+      "settings": [
+        { "type": "collection", "id": "collection", "label": "Collection" },
+        { "type": "text", "id": "label", "label": "Display label (optional override)" },
+        { "type": "image_picker", "id": "image", "label": "Image (optional override)" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Category grid",
+      "blocks": [
+        { "type": "category", "settings": { "label": "Sunscreens" } },
+        { "type": "category", "settings": { "label": "Brightening / Pigmentation" } },
+        { "type": "category", "settings": { "label": "Acne Care" } },
+        { "type": "category", "settings": { "label": "Barrier Repair" } },
+        { "type": "category", "settings": { "label": "Anti-aging Serums" } },
+        { "type": "category", "settings": { "label": "Hair & Scalp" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

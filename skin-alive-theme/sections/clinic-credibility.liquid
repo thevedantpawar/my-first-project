@@ -1,0 +1,60 @@
+<section class="clinic-credibility{% if section.settings.compact %} clinic-credibility--compact{% endif %}">
+  <div class="clinic-credibility__inner">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="clinic-credibility__heading">{{ section.settings.heading }}</h2>
+    {%- endif -%}
+    {%- if section.settings.body != blank -%}
+      <div class="clinic-credibility__body rte">{{ section.settings.body }}</div>
+    {%- endif -%}
+
+    {%- unless section.settings.compact -%}
+      <div class="clinic-credibility__points">
+        {%- for block in section.blocks -%}
+          <div class="clinic-credibility__point" {{ block.shopify_attributes }}>
+            {%- if block.settings.icon -%}
+              <img src="{{ block.settings.icon | image_url: width: 60 }}" alt="" width="30" height="30" loading="lazy">
+            {%- endif -%}
+            <h3>{{ block.settings.title }}</h3>
+            <p>{{ block.settings.text }}</p>
+          </div>
+        {%- endfor -%}
+      </div>
+    {%- endunless -%}
+
+    <a href="{{ settings.clinic_url | default: '#' }}" class="clinic-credibility__link">
+      {{ 'general.clinic.visit' | t: default: 'Learn more about Bliss By Skin Alive Clinic' }} →
+    </a>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Clinic credibility",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Backed by a real dermatology practice" },
+    { "type": "richtext", "id": "body", "label": "Body", "default": "<p>Skin Alive Essentials is the retail arm of Bliss By Skin Alive Clinic's in-house pharmacy. Formulations are reviewed by our dermatology team and are the same products we dispense to patients after in-clinic procedures.</p>" },
+    { "type": "checkbox", "id": "compact", "label": "Compact layout (for product page)", "default": false }
+  ],
+  "blocks": [
+    {
+      "type": "point",
+      "name": "Credibility point",
+      "settings": [
+        { "type": "image_picker", "id": "icon", "label": "Icon" },
+        { "type": "text", "id": "title", "label": "Title" },
+        { "type": "textarea", "id": "text", "label": "Text" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Clinic credibility",
+      "blocks": [
+        { "type": "point", "settings": { "title": "Dermatologist reviewed", "text": "Every formulation is reviewed by our in-house dermatology team before it reaches the shelf." } },
+        { "type": "point", "settings": { "title": "Clinic-dispensed", "text": "The same products our pharmacy dispenses to in-clinic patients." } },
+        { "type": "point", "settings": { "title": "Procedure-aware", "text": "Products are labelled for suitability after specific in-clinic procedures." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

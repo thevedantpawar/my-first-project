@@ -1,0 +1,31 @@
+<section class="page page--contact">
+  <h1 class="page__title">{{ page.title }}</h1>
+  <div class="page__content rte">{{ page.content }}</div>
+
+  {%- form 'contact', class: 'contact-form' -%}
+    {%- if form.posted_successfully? -%}
+      <p class="contact-form__success">{{ 'general.contact.success' | t: default: 'Thanks — we\'ll get back to you shortly.' }}</p>
+    {%- endif -%}
+    {%- if form.errors -%}
+      <p class="contact-form__error">{{ form.errors | default_errors }}</p>
+    {%- endif -%}
+
+    <label for="ContactFormName">{{ 'general.contact.name' | t: default: 'Name' }}</label>
+    <input type="text" id="ContactFormName" name="contact[name]" required>
+
+    <label for="ContactFormEmail">{{ 'general.contact.email' | t: default: 'Email' }}</label>
+    <input type="email" id="ContactFormEmail" name="contact[email]" value="{{ form.email }}" required>
+
+    <label for="ContactFormPhone">{{ 'general.contact.phone' | t: default: 'Phone' }}</label>
+    <input type="tel" id="ContactFormPhone" name="contact[phone]">
+
+    <label for="ContactFormBody">{{ 'general.contact.message' | t: default: 'Message' }}</label>
+    <textarea id="ContactFormBody" name="contact[body]" rows="5" required></textarea>
+
+    <button type="submit" class="button button--primary">{{ 'general.contact.submit' | t: default: 'Send' }}</button>
+  {%- endform -%}
+</section>
+
+{% schema %}
+{ "name": "Contact page", "settings": [] }
+{% endschema %}

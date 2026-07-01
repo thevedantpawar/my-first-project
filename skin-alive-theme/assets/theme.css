@@ -1,0 +1,321 @@
+/* ==========================================================================
+   Skin Alive Essentials — mobile-first base theme
+   Breakpoints: base = mobile (<700px), 700px = tablet, 990px = desktop
+   ========================================================================== */
+
+:root {
+  --color-background: #faf8f6;
+  --color-text: #201f1d;
+  --color-accent: #2f5d50;      /* clinical, muted green — not "beauty pink" */
+  --color-accent-light: #e7efec;
+  --color-border: #e3ddd6;
+  --color-sale: #b3451f;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: Georgia, "Times New Roman", serif;
+  --container-padding: 16px;
+  --radius: 8px;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-background);
+  line-height: 1.5;
+  font-size: 16px;
+}
+
+img { max-width: 100%; display: block; }
+
+a { color: inherit; }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+.skip-to-content {
+  position: absolute; top: -40px; left: 0; background: var(--color-accent);
+  color: #fff; padding: 8px 16px; z-index: 1000;
+}
+.skip-to-content:focus { top: 0; }
+
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; margin: 0 0 .5em; }
+
+.button {
+  display: inline-block;
+  padding: 14px 24px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  min-height: 48px; /* touch target */
+}
+.button--primary { background: var(--color-accent); color: #fff; }
+.button--secondary { background: var(--color-accent-light); color: var(--color-accent); }
+.button--outline { background: transparent; border-color: var(--color-accent); color: var(--color-accent); }
+
+.pill, .tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  margin: 0 6px 6px 0;
+}
+.pill { background: var(--color-accent-light); color: var(--color-accent); list-style: none; }
+.pill--outline { background: transparent; border: 1px solid var(--color-border); }
+.tag--clinical { background: #fff3e6; color: #7a4a12; border: 1px solid #f0c98a; }
+
+/* ---------------------------------------------------------------------- */
+/* Announcement bar + header                                              */
+/* ---------------------------------------------------------------------- */
+.announcement-bar {
+  background: var(--color-accent);
+  color: #fff;
+  text-align: center;
+  font-size: 13px;
+  padding: 8px var(--container-padding);
+}
+.announcement-bar a { color: #fff; text-decoration: underline; }
+
+.site-header { position: sticky; top: 0; z-index: 40; background: var(--color-background); border-bottom: 1px solid var(--color-border); }
+.site-header__row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px var(--container-padding);
+}
+.site-header__logo-text { font-family: var(--font-heading); font-size: 20px; font-weight: 700; }
+.site-header__actions { display: flex; gap: 12px; align-items: center; }
+.site-header__icon-link { position: relative; background: none; border: none; padding: 8px; cursor: pointer; min-width: 44px; min-height: 44px; }
+.site-header__cart-count {
+  position: absolute; top: 2px; right: 2px; background: var(--color-sale); color: #fff;
+  font-size: 10px; border-radius: 999px; padding: 1px 5px; line-height: 1.3;
+}
+.site-header__menu-toggle { background: none; border: none; padding: 8px; min-width: 44px; min-height: 44px; }
+.site-header__nav { display: none; } /* shown on desktop below */
+
+.mobile-nav {
+  position: fixed; inset: 0; z-index: 100; visibility: hidden;
+}
+.mobile-nav[data-open] { visibility: visible; }
+.mobile-nav__backdrop {
+  position: absolute; inset: 0; background: rgba(0,0,0,.4);
+  opacity: 0; transition: opacity .2s ease;
+}
+.mobile-nav[data-open] .mobile-nav__backdrop { opacity: 1; }
+.mobile-nav__panel {
+  position: absolute; top: 0; left: 0; bottom: 0; width: 85%; max-width: 360px;
+  background: #fff; padding: 20px; transform: translateX(-100%);
+  transition: transform .25s ease; overflow-y: auto;
+}
+.mobile-nav[data-open] .mobile-nav__panel { transform: translateX(0); }
+.mobile-nav__close { position: absolute; top: 12px; right: 12px; font-size: 28px; background: none; border: none; min-width: 44px; min-height: 44px; }
+.mobile-nav__list { list-style: none; padding: 0; margin: 40px 0 0; }
+.mobile-nav__list > li { margin-bottom: 16px; font-size: 17px; }
+.mobile-nav__sublist { list-style: none; padding-left: 12px; margin-top: 8px; font-size: 15px; opacity: .8; }
+.mobile-nav__clinic-link { display: block; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--color-border); font-weight: 600; color: var(--color-accent); text-decoration: none; }
+
+/* ---------------------------------------------------------------------- */
+/* Hero - clinical                                                        */
+/* ---------------------------------------------------------------------- */
+.hero-clinical { display: flex; flex-direction: column; }
+.hero-clinical__media img { width: 100%; height: 60vh; object-fit: cover; }
+.hero-clinical__content { padding: 24px var(--container-padding) 32px; }
+.hero-clinical__eyebrow { color: var(--color-accent); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+.hero-clinical__heading { font-size: 28px; margin-top: 8px; }
+.hero-clinical__subheading { color: #55504a; }
+.hero-clinical__credential { margin: 16px 0; padding: 12px; background: var(--color-accent-light); border-radius: var(--radius); }
+.hero-clinical__derm-name { font-weight: 700; margin: 0; }
+.hero-clinical__derm-title { margin: 0; font-size: 14px; color: #55504a; }
+.hero-clinical__ctas { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.hero-clinical__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 24px; text-align: center; }
+.hero-clinical__stats dt { font-weight: 700; font-size: 16px; }
+.hero-clinical__stats dd { margin: 0; font-size: 12px; color: #55504a; }
+
+/* ---------------------------------------------------------------------- */
+/* Category grid                                                          */
+/* ---------------------------------------------------------------------- */
+.category-grid { padding: 32px var(--container-padding); }
+.category-grid__heading { text-align: center; margin-bottom: 20px; }
+.category-grid__list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.category-grid__item a { text-decoration: none; text-align: center; display: block; }
+.category-grid__image { border-radius: var(--radius); overflow: hidden; aspect-ratio: 1/1; background: var(--color-accent-light); }
+.category-grid__image img { width: 100%; height: 100%; object-fit: cover; }
+.category-grid__label { margin-top: 8px; font-weight: 600; font-size: 14px; }
+
+/* ---------------------------------------------------------------------- */
+/* Product card + featured collection                                     */
+/* ---------------------------------------------------------------------- */
+.featured-collection, .collection { padding: 32px var(--container-padding); }
+.featured-collection__heading, .collection__title { text-align: center; }
+.featured-collection__grid, .collection__grid {
+  list-style: none; margin: 20px 0; padding: 0;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+}
+.featured-collection__view-all { display: block; text-align: center; margin-top: 16px; font-weight: 600; color: var(--color-accent); text-decoration: none; }
+
+.product-card__media { position: relative; display: block; aspect-ratio: 1/1; background: var(--color-accent-light); border-radius: var(--radius); overflow: hidden; }
+.product-card__media img { width: 100%; height: 100%; object-fit: cover; }
+.product-card__badge {
+  position: absolute; bottom: 8px; left: 8px; background: #fff; color: var(--color-accent);
+  font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px;
+}
+.product-card__info { padding-top: 8px; }
+.product-card__vendor { font-size: 11px; text-transform: uppercase; color: #8a8378; margin: 0; }
+.product-card__title { font-size: 15px; margin: 2px 0 4px; font-family: var(--font-body); font-weight: 600; }
+
+.price { font-size: 14px; }
+.price__compare-at { color: #8a8378; margin-right: 6px; }
+.price__sale { color: var(--color-sale); font-weight: 700; }
+.price__regular { font-weight: 700; }
+.price__discount-badge { margin-left: 6px; font-size: 12px; color: var(--color-sale); }
+.price__tax-note { display: block; font-size: 11px; color: #8a8378; }
+
+/* ---------------------------------------------------------------------- */
+/* Clinic credibility + testimonials                                      */
+/* ---------------------------------------------------------------------- */
+.clinic-credibility { background: var(--color-accent-light); padding: 32px var(--container-padding); }
+.clinic-credibility__inner { max-width: 720px; margin: 0 auto; text-align: center; }
+.clinic-credibility__points { display: grid; gap: 20px; margin-top: 24px; text-align: left; }
+.clinic-credibility__point h3 { font-size: 16px; }
+.clinic-credibility__point p { font-size: 14px; color: #55504a; }
+.clinic-credibility__link { display: inline-block; margin-top: 16px; font-weight: 600; color: var(--color-accent); text-decoration: none; }
+.clinic-credibility--compact { background: transparent; padding: 24px var(--container-padding); border-top: 1px solid var(--color-border); }
+
+.testimonials { padding: 32px var(--container-padding); }
+.testimonials__heading { text-align: center; }
+.testimonials__list { list-style: none; padding: 0; margin: 20px 0; display: grid; gap: 16px; }
+.testimonials__item { background: #fff; border: 1px solid var(--color-border); border-radius: var(--radius); padding: 16px; }
+.testimonials__attribution { font-size: 13px; color: #8a8378; margin-top: 8px; }
+.testimonials__disclaimer { font-size: 12px; color: #8a8378; text-align: center; }
+
+/* ---------------------------------------------------------------------- */
+/* Product page                                                           */
+/* ---------------------------------------------------------------------- */
+.product-section { padding: 16px var(--container-padding) 40px; }
+.product-layout { display: flex; flex-direction: column; gap: 20px; }
+.product-gallery__main { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; border-radius: var(--radius); }
+.product-gallery__slide { flex: 0 0 100%; scroll-snap-align: start; }
+.product-gallery__slide img { width: 100%; aspect-ratio: 1/1; object-fit: cover; }
+.product-gallery__thumbs { display: flex; gap: 8px; margin-top: 8px; overflow-x: auto; }
+.product-gallery__thumb { border: 2px solid transparent; border-radius: 6px; padding: 0; background: none; overflow: hidden; flex: 0 0 auto; }
+.product-gallery__thumb.is-active { border-color: var(--color-accent); }
+.product-gallery__thumb img { width: 60px; height: 60px; object-fit: cover; }
+
+.product-info__vendor { font-size: 12px; text-transform: uppercase; color: #8a8378; margin: 0; }
+.product-info__title { font-size: 24px; margin: 4px 0 12px; }
+.product-badges { margin-bottom: 12px; }
+.badge { display: inline-flex; align-items: center; gap: 6px; background: var(--color-accent-light); color: var(--color-accent); padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+.product-info__section-heading { font-size: 15px; font-family: var(--font-body); font-weight: 700; margin: 20px 0 8px; }
+.product-info__actives-list, .product-info__skin-type-list { list-style: none; padding: 0; margin: 0; }
+.product-info__recommended-after { margin: 12px 0; }
+
+.product-form__option { border: none; padding: 0; margin: 0 0 16px; }
+.product-form__option legend { font-weight: 600; margin-bottom: 6px; }
+.product-form__option-value { display: inline-block; margin: 0 8px 8px 0; padding: 8px 14px; border: 1px solid var(--color-border); border-radius: 999px; cursor: pointer; }
+.product-form__option-value input { margin-right: 6px; }
+
+.product-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.product-form__quantity { width: 64px; padding: 12px; border: 1px solid var(--color-border); border-radius: var(--radius); min-height: 48px; }
+.product-form__submit { flex: 1; min-width: 200px; }
+.product-form__note { flex-basis: 100%; font-size: 12px; color: #8a8378; margin: 4px 0 0; }
+
+.product-info__collapsible { border-top: 1px solid var(--color-border); padding: 14px 0; }
+.product-info__collapsible summary { font-weight: 600; cursor: pointer; }
+.product-info__collapsible-content { margin-top: 8px; font-size: 14px; color: #55504a; }
+
+/* ---------------------------------------------------------------------- */
+/* Cart drawer + cart page                                                */
+/* ---------------------------------------------------------------------- */
+.cart-drawer { position: fixed; inset: 0; z-index: 110; visibility: hidden; }
+.cart-drawer[data-open] { visibility: visible; }
+.cart-drawer__backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.4); opacity: 0; transition: opacity .2s ease; }
+.cart-drawer[data-open] .cart-drawer__backdrop { opacity: 1; }
+.cart-drawer__panel {
+  position: absolute; top: 0; right: 0; bottom: 0; width: 90%; max-width: 400px;
+  background: #fff; transform: translateX(100%); transition: transform .25s ease;
+  display: flex; flex-direction: column; padding: 20px;
+}
+.cart-drawer[data-open] .cart-drawer__panel { transform: translateX(0); }
+.cart-drawer__header { display: flex; justify-content: space-between; align-items: center; }
+.cart-drawer__close { background: none; border: none; font-size: 26px; min-width: 44px; min-height: 44px; }
+.cart-drawer__items { flex: 1; overflow-y: auto; }
+.cart-drawer__list { list-style: none; padding: 0; }
+.cart-drawer__item { display: flex; gap: 12px; margin-bottom: 16px; }
+.cart-drawer__item img { border-radius: 6px; }
+.cart-drawer__item-title { font-weight: 600; margin: 0; font-size: 14px; }
+.cart-drawer__item-variant { font-size: 12px; color: #8a8378; margin: 2px 0; }
+.cart-drawer__item-qty input { width: 56px; padding: 6px; border: 1px solid var(--color-border); border-radius: 6px; }
+.cart-drawer__footer { border-top: 1px solid var(--color-border); padding-top: 16px; }
+.cart-drawer__subtotal { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 8px; }
+.cart-drawer__footer .button { display: block; width: 100%; margin-top: 8px; }
+
+.cart-page { padding: 24px var(--container-padding); }
+.cart-page__table { width: 100%; border-collapse: collapse; }
+.cart-page__table td, .cart-page__table th { padding: 12px 8px; border-bottom: 1px solid var(--color-border); text-align: left; font-size: 14px; }
+.cart-page__item { display: flex; gap: 10px; text-decoration: none; align-items: center; }
+.cart-page__item img { border-radius: 6px; }
+.cart-page__summary { margin-top: 20px; }
+.cart-page__summary .button { display: block; width: 100%; margin-top: 8px; }
+
+.payment-trust { margin: 12px 0; }
+.payment-trust__label { font-size: 12px; color: #8a8378; margin: 0 0 6px; }
+.payment-trust__list { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 0; }
+.payment-trust__item { border: 1px solid var(--color-border); border-radius: 6px; padding: 4px 8px; font-size: 12px; font-weight: 600; }
+
+/* ---------------------------------------------------------------------- */
+/* Footer                                                                  */
+/* ---------------------------------------------------------------------- */
+.site-footer { background: #1f2b27; color: #f2efe9; padding: 32px var(--container-padding); margin-top: 40px; }
+.site-footer__grid { display: grid; gap: 24px; }
+.site-footer__heading { font-size: 15px; margin-bottom: 10px; }
+.site-footer__list { list-style: none; padding: 0; margin: 0; }
+.site-footer__list li { margin-bottom: 8px; font-size: 14px; }
+.site-footer__list a { text-decoration: none; opacity: .85; }
+.site-footer__clinic-link a { color: #b7d6c9; text-decoration: none; font-weight: 600; }
+.site-footer__bottom { margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.15); font-size: 12px; opacity: .75; }
+.site-footer__disclaimer { max-width: 640px; }
+.site-footer .payment-trust__label, .site-footer .payment-trust__item { color: #f2efe9; border-color: rgba(255,255,255,.25); }
+
+/* ---------------------------------------------------------------------- */
+/* Misc pages                                                              */
+/* ---------------------------------------------------------------------- */
+.page, .search-page, .error-404, .list-collections { padding: 32px var(--container-padding); }
+.contact-form { display: flex; flex-direction: column; gap: 10px; max-width: 480px; margin-top: 20px; }
+.contact-form input, .contact-form textarea { padding: 12px; border: 1px solid var(--color-border); border-radius: var(--radius); font: inherit; }
+.list-collections__grid, .search-page__grid { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+/* ==========================================================================
+   Tablet / desktop
+   ========================================================================== */
+@media (min-width: 700px) {
+  .hero-clinical { flex-direction: row; align-items: stretch; }
+  .hero-clinical__media, .hero-clinical__content { flex: 1; }
+  .hero-clinical__media img { height: 100%; min-height: 480px; }
+  .hero-clinical__content { display: flex; flex-direction: column; justify-content: center; padding: 40px; }
+  .hero-clinical__ctas { flex-direction: row; }
+
+  .category-grid__list, .featured-collection__grid, .collection__grid,
+  .list-collections__grid, .search-page__grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (min-width: 990px) {
+  .site-header__nav { display: block; }
+  .site-header__nav-list { list-style: none; display: flex; gap: 24px; padding: 12px var(--container-padding); margin: 0; font-size: 14px; font-weight: 600; }
+  .site-header__nav-list a { text-decoration: none; }
+  .site-header__menu-toggle { display: none; }
+
+  .product-layout { flex-direction: row; gap: 48px; }
+  .product-gallery, .product-info { flex: 1; }
+  .product-gallery { position: sticky; top: 90px; align-self: flex-start; }
+
+  .category-grid__list, .featured-collection__grid, .collection__grid { grid-template-columns: repeat(4, 1fr); }
+  .clinic-credibility__points { grid-template-columns: repeat(3, 1fr); }
+  .site-footer__grid { grid-template-columns: repeat(4, 1fr); }
+}

@@ -1,0 +1,49 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero-clinical",
+      "settings": {}
+    },
+    "categories": {
+      "type": "category-grid",
+      "blocks": {
+        "sunscreens": { "type": "category", "settings": { "label": "Sunscreens" } },
+        "brightening": { "type": "category", "settings": { "label": "Brightening / Pigmentation" } },
+        "acne": { "type": "category", "settings": { "label": "Acne Care" } },
+        "barrier": { "type": "category", "settings": { "label": "Barrier Repair" } },
+        "antiaging": { "type": "category", "settings": { "label": "Anti-aging Serums" } },
+        "hair": { "type": "category", "settings": { "label": "Hair & Scalp" } }
+      },
+      "block_order": ["sunscreens", "brightening", "acne", "barrier", "antiaging", "hair"],
+      "settings": {
+        "heading": "Shop by concern"
+      }
+    },
+    "bestsellers": {
+      "type": "featured-collection",
+      "settings": {
+        "heading": "Best sellers",
+        "products_to_show": 8
+      }
+    },
+    "credibility": {
+      "type": "clinic-credibility",
+      "blocks": {
+        "point-1": { "type": "point", "settings": { "title": "Dermatologist reviewed", "text": "Every formulation is reviewed by our in-house dermatology team before it reaches the shelf." } },
+        "point-2": { "type": "point", "settings": { "title": "Clinic-dispensed", "text": "The same products our pharmacy dispenses to in-clinic patients." } },
+        "point-3": { "type": "point", "settings": { "title": "Procedure-aware", "text": "Products are labelled for suitability after specific in-clinic procedures." } }
+      },
+      "block_order": ["point-1", "point-2", "point-3"],
+      "settings": {
+        "heading": "Backed by a real dermatology practice"
+      }
+    },
+    "testimonials": {
+      "type": "testimonials-clinic",
+      "settings": {
+        "heading": "From our patients"
+      }
+    }
+  },
+  "order": ["hero", "categories", "bestsellers", "credibility", "testimonials"]
+}

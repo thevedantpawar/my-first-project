@@ -1,0 +1,96 @@
+{
+  "general": {
+    "accessibility": {
+      "skip_to_content": "Skip to content",
+      "menu": "Menu",
+      "close": "Close"
+    },
+    "search": {
+      "title": "Search",
+      "placeholder": "Search products",
+      "submit": "Search",
+      "results_for": "results for"
+    },
+    "account": {
+      "title": "Account"
+    },
+    "cart": {
+      "title": "Your cart",
+      "empty": "Your cart is empty.",
+      "subtotal": "Subtotal",
+      "view_cart": "View cart",
+      "checkout": "Checkout",
+      "product": "Product",
+      "price": "Price",
+      "quantity": "Quantity",
+      "total": "Total",
+      "update": "Update cart",
+      "continue_shopping": "Continue shopping",
+      "tax_note": "Taxes included. Shipping calculated at checkout."
+    },
+    "navigation": {
+      "main": "Main menu",
+      "visit_clinic": "Visit Bliss By Skin Alive Clinic"
+    },
+    "footer": {
+      "shop": "Shop",
+      "contact": "Contact",
+      "whatsapp": "Chat on WhatsApp",
+      "rights": "All rights reserved.",
+      "clinic_credit": "A product line by Bliss By Skin Alive Clinic, Nashik"
+    },
+    "collection": {
+      "view_all": "View all",
+      "products": "products",
+      "sort_by": "Sort by",
+      "empty": "No products found in this collection yet."
+    },
+    "collections": {
+      "title": "Shop by category"
+    },
+    "pagination": {
+      "label": "Pagination"
+    },
+    "contact": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "message": "Message",
+      "submit": "Send",
+      "success": "Thanks — we'll get back to you shortly."
+    },
+    "404": {
+      "title": "Page not found",
+      "text": "The page you're looking for doesn't exist.",
+      "home_link": "Back to homepage"
+    },
+    "payment": {
+      "secure_checkout": "Secure checkout",
+      "cards": "Cards"
+    },
+    "clinic": {
+      "visit": "Learn more about Bliss By Skin Alive Clinic"
+    },
+    "meta": {
+      "tags": "tagged",
+      "page": "Page"
+    }
+  },
+  "products": {
+    "product": {
+      "gallery": "Product images",
+      "view_image": "View image",
+      "add_to_cart": "Add to cart",
+      "sold_out": "Sold out",
+      "secure_checkout_note": "Secure checkout via Razorpay / PhonePe / UPI · Prices in INR",
+      "key_actives": "Key actives",
+      "skin_type": "Suitable for",
+      "recommended_after": "Recommended after",
+      "off": "off",
+      "mrp_note": "MRP incl. of all taxes",
+      "derm_formulated": "Dermatologist formulated",
+      "derm_formulated_title": "Formulated under dermatologist supervision at Bliss By Skin Alive Clinic",
+      "derm_formulated_short": "Derm formulated"
+    }
+  }
+}

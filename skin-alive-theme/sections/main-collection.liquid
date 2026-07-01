@@ -1,0 +1,51 @@
+<section class="collection">
+  <div class="collection__header">
+    <h1 class="collection__title">{{ collection.title }}</h1>
+    {%- if collection.description != blank -%}
+      <div class="collection__description rte">{{ collection.description }}</div>
+    {%- endif -%}
+  </div>
+
+  <div class="collection__toolbar">
+    <p class="collection__count">{{ collection.products_count }} {{ 'general.collection.products' | t: default: 'products' }}</p>
+    {%- form 'sort-by', class: 'collection__sort' -%}
+      <label for="SortBy">{{ 'general.collection.sort_by' | t: default: 'Sort by' }}</label>
+      <select name="sort_by" id="SortBy" onchange="this.form.submit()">
+        {%- for option in collection.sort_options -%}
+          <option value="{{ option.value }}" {% if option.value == collection.sort_by %}selected{% endif %}>{{ option.name }}</option>
+        {%- endfor -%}
+      </select>
+    {%- endform -%}
+  </div>
+
+  {%- paginate collection.products by 24 -%}
+    <ul class="collection__grid">
+      {%- for product in collection.products -%}
+        <li>{%- render 'product-card', product: product -%}</li>
+      {%- else -%}
+        <li class="collection__empty">{{ 'general.collection.empty' | t: default: 'No products found in this collection yet.' }}</li>
+      {%- endfor -%}
+    </ul>
+
+    {%- if paginate.pages > 1 -%}
+      <nav class="collection__pagination" aria-label="{{ 'general.pagination.label' | t: default: 'Pagination' }}">
+        {%- if paginate.previous -%}<a href="{{ paginate.previous.url }}">←</a>{%- endif -%}
+        {%- for part in paginate.parts -%}
+          {%- if part.is_link -%}
+            <a href="{{ part.url }}">{{ part.title }}</a>
+          {%- else -%}
+            <span class="is-current">{{ part.title }}</span>
+          {%- endif -%}
+        {%- endfor -%}
+        {%- if paginate.next -%}<a href="{{ paginate.next.url }}">→</a>{%- endif -%}
+      </nav>
+    {%- endif -%}
+  {%- endpaginate -%}
+</section>
+
+{% schema %}
+{
+  "name": "Collection page",
+  "settings": []
+}
+{% endschema %}

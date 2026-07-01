@@ -1,0 +1,27 @@
+<section class="search-page">
+  <h1 class="search-page__title">{{ 'general.search.title' | t: default: 'Search' }}</h1>
+
+  {%- form 'search', class: 'search-page__form' -%}
+    <input type="search" name="q" value="{{ search.terms | escape }}" placeholder="{{ 'general.search.placeholder' | t: default: 'Search products' }}" aria-label="{{ 'general.search.title' | t: default: 'Search' }}">
+    <button type="submit">{{ 'general.search.submit' | t: default: 'Search' }}</button>
+  {%- endform -%}
+
+  {%- if search.performed -%}
+    <p class="search-page__count">{{ search.results_count }} {{ 'general.search.results_for' | t: default: 'results for' }} "{{ search.terms }}"</p>
+    <ul class="search-page__grid">
+      {%- for item in search.results -%}
+        <li>
+          {%- if item.object_type == 'product' -%}
+            {%- render 'product-card', product: item -%}
+          {%- else -%}
+            <a href="{{ item.url }}">{{ item.title }}</a>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{ "name": "Search page", "settings": [] }
+{% endschema %}

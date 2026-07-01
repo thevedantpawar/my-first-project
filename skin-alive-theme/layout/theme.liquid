@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="{{ settings.color_background }}">
+  {%- render 'meta-tags' -%}
+
+  <title>
+    {{ page_title }}
+    {%- if current_tags %} &ndash; {{ 'general.meta.tags' | t: default: 'tagged' }} "{{ current_tags | join: ', ' }}"{% endif -%}
+    {%- if current_page != 1 %} &ndash; {{ 'general.meta.page' | t: default: 'Page' }} {{ current_page }}{% endif -%}
+    {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+  </title>
+
+  {%- if page_description -%}
+    <meta name="description" content="{{ page_description | escape }}">
+  {%- endif -%}
+
+  <link rel="canonical" href="{{ canonical_url }}">
+  <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+
+  {{ content_for_header }}
+
+  {{ 'theme.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'theme.js' | asset_url }}" defer="defer"></script>
+</head>
+<body class="template-{{ request.page_type }}">
+  <a class="skip-to-content" href="#MainContent">{{ 'general.accessibility.skip_to_content' | t: default: 'Skip to content' }}</a>
+
+  {% section 'announcement-bar' %}
+  {% section 'header' %}
+
+  <main id="MainContent" class="content-for-layout" role="main" tabindex="-1">
+    {{ content_for_layout }}
+  </main>
+
+  {% section 'footer' %}
+
+  {%- render 'cart-drawer' -%}
+
+  <script src="{{ 'cart.js' | asset_url }}" defer="defer"></script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "blocks": {
+        "title": { "type": "title" },
+        "price": { "type": "price" },
+        "badges": { "type": "badges" },
+        "variant_picker": { "type": "variant_picker" },
+        "buy_buttons": { "type": "buy_buttons" },
+        "key_actives": { "type": "key_actives" },
+        "skin_type": { "type": "skin_type" },
+        "recommended_after": { "type": "recommended_after" },
+        "description": { "type": "description" },
+        "how_to_use": { "type": "collapsible", "settings": { "heading": "How to use" } },
+        "ingredients": { "type": "collapsible", "settings": { "heading": "Full ingredient list" } },
+        "shipping": { "type": "collapsible", "settings": { "heading": "Shipping & returns" } }
+      },
+      "block_order": [
+        "title",
+        "price",
+        "badges",
+        "variant_picker",
+        "buy_buttons",
+        "key_actives",
+        "skin_type",
+        "recommended_after",
+        "description",
+        "how_to_use",
+        "ingredients",
+        "shipping"
+      ],
+      "settings": {
+        "gallery_layout": "stacked",
+        "enable_zoom": true
+      }
+    },
+    "clinic-note": {
+      "type": "clinic-credibility",
+      "settings": {
+        "heading": "Formulated with Bliss By Skin Alive Clinic",
+        "compact": true
+      }
+    }
+  },
+  "order": ["main", "clinic-note"]
+}

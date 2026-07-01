@@ -1,0 +1,67 @@
+<footer class="site-footer">
+  <div class="site-footer__grid">
+    <div class="site-footer__block">
+      <h2 class="site-footer__heading">{{ shop.name }}</h2>
+      <p class="site-footer__text">{{ section.settings.about_text }}</p>
+      <p class="site-footer__clinic-link">
+        <a href="{{ settings.clinic_url | default: '#' }}">{{ 'general.footer.clinic_credit' | t: default: 'A product line by Bliss By Skin Alive Clinic, Nashik' }}</a>
+      </p>
+    </div>
+
+    <div class="site-footer__block">
+      <h2 class="site-footer__heading">{{ 'general.footer.shop' | t: default: 'Shop' }}</h2>
+      <ul class="site-footer__list">
+        {%- for link in linklists[settings.footer_menu_handle].links -%}
+          <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+        {%- endfor -%}
+      </ul>
+    </div>
+
+    <div class="site-footer__block">
+      <h2 class="site-footer__heading">{{ 'general.footer.contact' | t: default: 'Contact' }}</h2>
+      <ul class="site-footer__list">
+        {%- if section.settings.phone != blank -%}
+          <li><a href="tel:{{ section.settings.phone }}">{{ section.settings.phone }}</a></li>
+        {%- endif -%}
+        {%- if section.settings.whatsapp != blank -%}
+          <li><a href="https://wa.me/{{ section.settings.whatsapp }}" target="_blank" rel="noopener">{{ 'general.footer.whatsapp' | t: default: 'Chat on WhatsApp' }}</a></li>
+        {%- endif -%}
+        {%- if section.settings.address != blank -%}
+          <li>{{ section.settings.address }}</li>
+        {%- endif -%}
+      </ul>
+    </div>
+
+    <div class="site-footer__block">
+      {%- render 'payment-trust-badges' -%}
+    </div>
+  </div>
+
+  <div class="site-footer__bottom">
+    <p>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. {{ 'general.footer.rights' | t: default: 'All rights reserved.' }}</p>
+    <p class="site-footer__disclaimer">{{ section.settings.disclaimer_text }}</p>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "settings": [
+    {
+      "type": "textarea",
+      "id": "about_text",
+      "label": "About text",
+      "default": "Dermatologist-formulated skincare, dispensed by the pharmacy at Bliss By Skin Alive Clinic."
+    },
+    { "type": "text", "id": "phone", "label": "Phone number" },
+    { "type": "text", "id": "whatsapp", "label": "WhatsApp number (with country code, digits only)" },
+    { "type": "text", "id": "address", "label": "Clinic / pharmacy address", "default": "Nashik, Maharashtra, India" },
+    {
+      "type": "textarea",
+      "id": "disclaimer_text",
+      "label": "Medical disclaimer",
+      "default": "Product recommendations do not replace an in-person dermatology consultation. For procedure-specific aftercare, follow your dermatologist's advice."
+    }
+  ]
+}
+{% endschema %}

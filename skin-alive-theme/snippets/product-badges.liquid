@@ -1,0 +1,17 @@
+{%- comment -%}
+  Renders trust badges for a product: "Dermatologist formulated" + skin-type chips.
+  Usage: {% render 'product-badges', product: product %}
+{%- endcomment -%}
+
+{%- assign is_derm_formulated = product.metafields.custom.dermatologist_formulated.value -%}
+
+<div class="product-badges">
+  {%- if is_derm_formulated -%}
+    <span class="badge badge--derm" title="{{ 'products.product.derm_formulated_title' | t: default: 'Formulated under dermatologist supervision at Bliss By Skin Alive Clinic' }}">
+      <svg class="badge__icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+        <path fill="currentColor" d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6l-9-4Zm-1.2 13.8-3.6-3.6 1.4-1.4 2.2 2.2 5-5 1.4 1.4-6.4 6.4Z"/>
+      </svg>
+      {{ 'products.product.derm_formulated' | t: default: 'Dermatologist formulated' }}
+    </span>
+  {%- endif -%}
+</div>

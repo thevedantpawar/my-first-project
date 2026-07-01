@@ -1,0 +1,53 @@
+{%- comment -%}
+  Real, clinic-sourced testimonials only. Do not populate blocks with
+  synthetic/AI-generated reviews or stock quotes — each block should map to
+  an actual patient/customer who gave consent to be quoted.
+{%- endcomment -%}
+
+{%- if section.blocks.size > 0 -%}
+  <section class="testimonials">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="testimonials__heading">{{ section.settings.heading }}</h2>
+    {%- endif -%}
+    <ul class="testimonials__list">
+      {%- for block in section.blocks -%}
+        <li class="testimonials__item" {{ block.shopify_attributes }}>
+          <blockquote>
+            <p>&ldquo;{{ block.settings.quote }}&rdquo;</p>
+          </blockquote>
+          <p class="testimonials__attribution">
+            {{ block.settings.name }}
+            {%- if block.settings.context != blank %}, {{ block.settings.context }}{% endif -%}
+          </p>
+        </li>
+      {%- endfor -%}
+    </ul>
+    <p class="testimonials__disclaimer">{{ section.settings.disclaimer }}</p>
+  </section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Testimonials (clinic-sourced)",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "From our patients" },
+    {
+      "type": "paragraph",
+      "content": "Add only real testimonials from patients/customers who consented to be quoted. Do not use AI-generated or stock reviews."
+    },
+    { "type": "text", "id": "disclaimer", "label": "Disclaimer text", "default": "Testimonials reflect individual experiences shared with consent and are not a guarantee of results." }
+  ],
+  "blocks": [
+    {
+      "type": "testimonial",
+      "name": "Testimonial",
+      "settings": [
+        { "type": "textarea", "id": "quote", "label": "Quote" },
+        { "type": "text", "id": "name", "label": "Name / initials (as consented)" },
+        { "type": "text", "id": "context", "label": "Context (e.g. 'post chemical peel patient')" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Testimonials (clinic-sourced)" }]
+}
+{% endschema %}

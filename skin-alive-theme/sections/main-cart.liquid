@@ -1,0 +1,53 @@
+<section class="cart-page">
+  <h1 class="cart-page__title">{{ 'general.cart.title' | t: default: 'Your cart' }}</h1>
+
+  {%- if cart.item_count == 0 -%}
+    <p class="cart-page__empty">{{ 'general.cart.empty' | t: default: 'Your cart is empty.' }}</p>
+    <a href="{{ routes.all_products_collection_url }}" class="button button--primary">{{ 'general.cart.continue_shopping' | t: default: 'Continue shopping' }}</a>
+  {%- else -%}
+    {%- form 'cart', cart, class: 'cart-page__form' -%}
+      <table class="cart-page__table">
+        <thead>
+          <tr>
+            <th>{{ 'general.cart.product' | t: default: 'Product' }}</th>
+            <th>{{ 'general.cart.price' | t: default: 'Price' }}</th>
+            <th>{{ 'general.cart.quantity' | t: default: 'Quantity' }}</th>
+            <th>{{ 'general.cart.total' | t: default: 'Total' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {%- for item in cart.items -%}
+            <tr>
+              <td>
+                <a href="{{ item.url }}" class="cart-page__item">
+                  <img src="{{ item.image | image_url: width: 150 }}" alt="{{ item.image.alt | escape }}" width="75" height="75" loading="lazy">
+                  <span>
+                    {{ item.product.title }}
+                    {%- unless item.variant.title == 'Default Title' %}<br><small>{{ item.variant.title }}</small>{% endunless -%}
+                  </span>
+                </a>
+              </td>
+              <td>{{ item.final_price | money }}</td>
+              <td>
+                <input type="number" name="updates[{{ forloop.index0 }}]" value="{{ item.quantity }}" min="0" aria-label="{{ 'general.cart.quantity' | t: default: 'Quantity' }}">
+              </td>
+              <td>{{ item.final_line_price | money }}</td>
+            </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
+
+      <div class="cart-page__summary">
+        <p class="cart-page__subtotal">{{ 'general.cart.subtotal' | t: default: 'Subtotal' }}: <strong>{{ cart.total_price | money }}</strong></p>
+        <p class="cart-page__tax-note">{{ 'general.cart.tax_note' | t: default: 'Taxes included. Shipping calculated at checkout.' }}</p>
+        {%- render 'payment-trust-badges' -%}
+        <button type="submit" name="update" class="button button--secondary">{{ 'general.cart.update' | t: default: 'Update cart' }}</button>
+        <button type="submit" name="checkout" class="button button--primary">{{ 'general.cart.checkout' | t: default: 'Checkout' }}</button>
+      </div>
+    {%- endform -%}
+  {%- endif -%}
+</section>
+
+{% schema %}
+{ "name": "Cart page", "settings": [] }
+{% endschema %}

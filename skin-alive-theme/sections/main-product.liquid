@@ -1,0 +1,222 @@
+{%- comment -%}
+  Main product section. Reads clinical/product metadata from metafields:
+  - product.metafields.custom.key_actives            (list.single_line_text_field)
+  - product.metafields.custom.skin_type              (list.single_line_text_field)
+  - product.metafields.custom.recommended_after       (list.single_line_text_field)
+  - product.metafields.custom.dermatologist_formulated (boolean)
+  - product.metafields.custom.how_to_use              (multi_line_text_field)
+  - product.metafields.custom.full_ingredients        (multi_line_text_field)
+  These must be created in Shopify Admin > Settings > Custom data > Products.
+{%- endcomment -%}
+
+<section class="product-section" id="product-{{ section.id }}">
+  <div class="product-layout">
+
+    <div class="product-gallery" data-product-gallery>
+      {%- if product.media.size > 0 -%}
+        <div class="product-gallery__main">
+          {%- for media in product.media -%}
+            <div class="product-gallery__slide{% if forloop.first %} is-active{% endif %}" data-media-id="{{ media.id }}">
+              {%- if media.media_type == 'image' -%}
+                <img
+                  src="{{ media.preview_image | image_url: width: 1000 }}"
+                  srcset="{{ media.preview_image | image_url: width: 500 }} 500w, {{ media.preview_image | image_url: width: 1000 }} 1000w"
+                  sizes="(min-width: 990px) 50vw, 100vw"
+                  alt="{{ media.alt | escape }}"
+                  loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                  width="{{ media.preview_image.width }}"
+                  height="{{ media.preview_image.height }}"
+                >
+              {%- endif -%}
+            </div>
+          {%- endfor -%}
+        </div>
+        {%- if product.media.size > 1 -%}
+          <div class="product-gallery__thumbs" role="tablist" aria-label="{{ 'products.product.gallery' | t: default: 'Product images' }}">
+            {%- for media in product.media -%}
+              <button
+                type="button"
+                class="product-gallery__thumb{% if forloop.first %} is-active{% endif %}"
+                data-media-id="{{ media.id }}"
+                aria-label="{{ 'products.product.view_image' | t: default: 'View image' }} {{ forloop.index }}"
+              >
+                <img src="{{ media.preview_image | image_url: width: 150 }}" alt="" loading="lazy" width="75" height="75">
+              </button>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      {%- else -%}
+        <div class="product-gallery__placeholder">{{ 'product' | placeholder_svg_tag: 'placeholder-svg' }}</div>
+      {%- endif -%}
+    </div>
+
+    <div class="product-info">
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+
+          {%- when 'title' -%}
+            <div {{ block.shopify_attributes }}>
+              <p class="product-info__vendor">{{ product.vendor }}</p>
+              <h1 class="product-info__title">{{ product.title }}</h1>
+            </div>
+
+          {%- when 'price' -%}
+            <div class="product-info__price" {{ block.shopify_attributes }}>
+              {%- render 'price', product: product -%}
+            </div>
+
+          {%- when 'badges' -%}
+            <div {{ block.shopify_attributes }}>
+              {%- render 'product-badges', product: product -%}
+            </div>
+
+          {%- when 'variant_picker' -%}
+            <div class="product-info__variants" {{ block.shopify_attributes }}>
+              {%- unless product.has_only_default_variant -%}
+                {%- for option in product.options_with_values -%}
+                  <fieldset class="product-form__option">
+                    <legend>{{ option.name }}</legend>
+                    {%- for value in option.values -%}
+                      <label class="product-form__option-value">
+                        <input type="radio" name="option-{{ option.position }}" value="{{ value | escape }}" {% if option.selected_value == value %}checked{% endif %}>
+                        <span>{{ value }}</span>
+                      </label>
+                    {%- endfor -%}
+                  </fieldset>
+                {%- endfor -%}
+              {%- endunless -%}
+            </div>
+
+          {%- when 'buy_buttons' -%}
+            <div class="product-info__buy-buttons" {{ block.shopify_attributes }}>
+              {%- form 'product', product, id: 'product-form', class: 'product-form' -%}
+                <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}" data-product-form-variant-id>
+                <input type="number" name="quantity" value="1" min="1" class="product-form__quantity" aria-label="{{ 'products.product.quantity' | t: default: 'Quantity' }}">
+                <button
+                  type="submit"
+                  name="add"
+                  class="button button--primary product-form__submit"
+                  {% if product.selected_or_first_available_variant.available == false %}disabled{% endif %}
+                  data-add-to-cart
+                >
+                  <span data-add-to-cart-text>
+                    {%- if product.selected_or_first_available_variant.available -%}
+                      {{ 'products.product.add_to_cart' | t: default: 'Add to cart' }}
+                    {%- else -%}
+                      {{ 'products.product.sold_out' | t: default: 'Sold out' }}
+                    {%- endif -%}
+                  </span>
+                </button>
+                <p class="product-form__note">{{ 'products.product.secure_checkout_note' | t: default: 'Secure checkout via Razorpay / PhonePe / UPI · Prices in INR' }}</p>
+              {%- endform -%}
+            </div>
+
+          {%- when 'key_actives' -%}
+            {%- assign key_actives = product.metafields.custom.key_actives.value -%}
+            {%- if key_actives != blank -%}
+              <div class="product-info__actives" {{ block.shopify_attributes }}>
+                <h2 class="product-info__section-heading">{{ 'products.product.key_actives' | t: default: 'Key actives' }}</h2>
+                <ul class="product-info__actives-list">
+                  {%- for active in key_actives -%}
+                    <li class="pill">{{ active }}</li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            {%- endif -%}
+
+          {%- when 'skin_type' -%}
+            {%- assign skin_types = product.metafields.custom.skin_type.value -%}
+            {%- if skin_types != blank -%}
+              <div class="product-info__skin-type" {{ block.shopify_attributes }}>
+                <h2 class="product-info__section-heading">{{ 'products.product.skin_type' | t: default: 'Suitable for' }}</h2>
+                <ul class="product-info__skin-type-list">
+                  {%- for type in skin_types -%}
+                    <li class="pill pill--outline">{{ type }}</li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            {%- endif -%}
+
+          {%- when 'recommended_after' -%}
+            {%- assign procedures = product.metafields.custom.recommended_after.value -%}
+            {%- if procedures != blank -%}
+              <div class="product-info__recommended-after" {{ block.shopify_attributes }}>
+                {%- for procedure in procedures -%}
+                  <span class="tag tag--clinical">
+                    {{ 'products.product.recommended_after' | t: default: 'Recommended after' }} {{ procedure }}
+                  </span>
+                {%- endfor -%}
+              </div>
+            {%- endif -%}
+
+          {%- when 'description' -%}
+            <div class="product-info__description rte" {{ block.shopify_attributes }}>
+              {{ product.description }}
+            </div>
+
+          {%- when 'collapsible' -%}
+            {%- assign content = '' -%}
+            {%- case block.settings.heading -%}
+              {%- when 'How to use' -%}
+                {%- assign content = product.metafields.custom.how_to_use.value -%}
+              {%- when 'Full ingredient list' -%}
+                {%- assign content = product.metafields.custom.full_ingredients.value -%}
+              {%- when 'Shipping & returns' -%}
+                {%- assign content = section.settings.shipping_text -%}
+            {%- endcase -%}
+            {%- if content != blank -%}
+              <details class="product-info__collapsible" {{ block.shopify_attributes }}>
+                <summary>{{ block.settings.heading }}</summary>
+                <div class="product-info__collapsible-content rte">{{ content }}</div>
+              </details>
+            {%- endif -%}
+
+        {%- endcase -%}
+      {%- endfor -%}
+    </div>
+  </div>
+
+  <script type="application/json" data-product-variants>
+    {{ product.variants | json }}
+  </script>
+  <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+</section>
+
+{% schema %}
+{
+  "name": "Product page",
+  "tag": "section",
+  "class": "shopify-section--main-product",
+  "settings": [
+    {
+      "type": "text",
+      "id": "shipping_text",
+      "label": "Shipping & returns text",
+      "default": "Ships across India in 2-5 business days. Unopened products can be returned within 7 days of delivery."
+    }
+  ],
+  "blocks": [
+    { "type": "title", "name": "Title", "limit": 1 },
+    { "type": "price", "name": "Price", "limit": 1 },
+    { "type": "badges", "name": "Badges", "limit": 1 },
+    { "type": "variant_picker", "name": "Variant picker", "limit": 1 },
+    { "type": "buy_buttons", "name": "Buy buttons", "limit": 1 },
+    { "type": "key_actives", "name": "Key actives", "limit": 1 },
+    { "type": "skin_type", "name": "Skin type suitability", "limit": 1 },
+    { "type": "recommended_after", "name": "Recommended after (procedure)", "limit": 1 },
+    { "type": "description", "name": "Description", "limit": 1 },
+    {
+      "type": "collapsible",
+      "name": "Collapsible row",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "How to use"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

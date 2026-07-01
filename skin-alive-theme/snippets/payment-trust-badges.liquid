@@ -1,0 +1,16 @@
+{%- comment -%}
+  Text-based payment trust row. Deliberately avoids embedding third-party
+  logo artwork (Razorpay/PhonePe/UPI marks are trademarked) — enable the
+  actual gateways in Shopify Admin > Settings > Payments, this is just a
+  reassurance strip for the storefront.
+{%- endcomment -%}
+
+<div class="payment-trust">
+  <p class="payment-trust__label">{{ 'general.payment.secure_checkout' | t: default: 'Secure checkout' }}</p>
+  <ul class="payment-trust__list">
+    <li class="payment-trust__item">Razorpay</li>
+    <li class="payment-trust__item">PhonePe</li>
+    <li class="payment-trust__item">UPI</li>
+    <li class="payment-trust__item">{{ 'general.payment.cards' | t: default: 'Cards' }}</li>
+  </ul>
+</div>

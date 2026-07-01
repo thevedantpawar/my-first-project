@@ -1,0 +1,43 @@
+<div class="cart-drawer" id="CartDrawer" data-cart-drawer aria-hidden="true">
+  <div class="cart-drawer__panel">
+    <div class="cart-drawer__header">
+      <h2>{{ 'general.cart.title' | t: default: 'Your cart' }}</h2>
+      <button type="button" class="cart-drawer__close" aria-label="{{ 'general.accessibility.close' | t: default: 'Close' }}" data-cart-close>&times;</button>
+    </div>
+
+    <div class="cart-drawer__items" data-cart-items>
+      {%- if cart.item_count == 0 -%}
+        <p class="cart-drawer__empty">{{ 'general.cart.empty' | t: default: 'Your cart is empty.' }}</p>
+      {%- else -%}
+        <ul class="cart-drawer__list">
+          {%- for item in cart.items -%}
+            <li class="cart-drawer__item">
+              <img src="{{ item.image | image_url: width: 150 }}" alt="{{ item.image.alt | escape }}" width="75" height="75" loading="lazy">
+              <div class="cart-drawer__item-details">
+                <p class="cart-drawer__item-title">{{ item.product.title }}</p>
+                {%- unless item.variant.title == 'Default Title' -%}
+                  <p class="cart-drawer__item-variant">{{ item.variant.title }}</p>
+                {%- endunless -%}
+                <p class="cart-drawer__item-price">{{ item.final_price | money }}</p>
+                <div class="cart-drawer__item-qty">
+                  <input type="number" min="1" value="{{ item.quantity }}" data-cart-qty-input data-line="{{ forloop.index }}" aria-label="{{ 'general.cart.quantity' | t: default: 'Quantity' }}">
+                </div>
+              </div>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+
+    <div class="cart-drawer__footer">
+      <div class="cart-drawer__subtotal">
+        <span>{{ 'general.cart.subtotal' | t: default: 'Subtotal' }}</span>
+        <span data-cart-subtotal>{{ cart.total_price | money }}</span>
+      </div>
+      {%- render 'payment-trust-badges' -%}
+      <a href="{{ routes.cart_url }}" class="button button--secondary">{{ 'general.cart.view_cart' | t: default: 'View cart' }}</a>
+      <a href="{{ routes.cart_url }}/checkout" class="button button--primary" data-checkout-button>{{ 'general.cart.checkout' | t: default: 'Checkout' }}</a>
+    </div>
+  </div>
+  <div class="cart-drawer__backdrop" data-cart-close></div>
+</div>

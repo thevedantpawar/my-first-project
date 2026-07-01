@@ -1,0 +1,68 @@
+<header class="site-header" data-site-header>
+  <div class="site-header__row">
+    <button class="site-header__menu-toggle" type="button" aria-expanded="false" aria-controls="MobileNav" data-menu-toggle>
+      <span class="visually-hidden">{{ 'general.accessibility.menu' | t: default: 'Menu' }}</span>
+      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="currentColor" d="M3 6h18v2H3V6Zm0 5h18v2H3v-2Zm0 5h18v2H3v-2Z"/></svg>
+    </button>
+
+    <a href="{{ routes.root_url }}" class="site-header__logo">
+      {%- if settings.logo -%}
+        <img src="{{ settings.logo | image_url: width: 300 }}" alt="{{ shop.name }}" width="{{ settings.logo.width }}" height="{{ settings.logo.height }}">
+      {%- else -%}
+        <span class="site-header__logo-text">{{ shop.name }}</span>
+      {%- endif -%}
+    </a>
+
+    <div class="site-header__actions">
+      <a href="{{ routes.search_url }}" class="site-header__icon-link" aria-label="{{ 'general.search.title' | t: default: 'Search' }}">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M10 2a8 8 0 1 0 4.9 14.3l5.4 5.4 1.4-1.4-5.4-5.4A8 8 0 0 0 10 2Zm0 2a6 6 0 1 1 0 12 6 6 0 0 1 0-12Z"/></svg>
+      </a>
+      <a href="{{ routes.account_url }}" class="site-header__icon-link" aria-label="{{ 'general.account.title' | t: default: 'Account' }}">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-9 2.2-9 5v3h18v-3c0-2.8-4.6-5-9-5Z"/></svg>
+      </a>
+      <button class="site-header__icon-link site-header__cart-toggle" type="button" aria-label="{{ 'general.cart.title' | t: default: 'Cart' }}" data-cart-toggle>
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M7 4h-2v2h2l3.6 7.6-1.4 2.5c-.6 1 .2 2.3 1.4 2.3h9v-2h-8.4l1.1-2h6.9c.8 0 1.4-.4 1.7-1.1l2.1-5.8c.3-.7-.3-1.5-1.1-1.5H7.4L6.6 4H7Zm2 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm9 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg>
+        <span class="site-header__cart-count" data-cart-count>{{ cart.item_count }}</span>
+      </button>
+    </div>
+  </div>
+
+  <nav class="site-header__nav" aria-label="{{ 'general.navigation.main' | t: default: 'Main menu' }}">
+    <ul class="site-header__nav-list">
+      {%- for link in linklists[settings.main_menu_handle].links -%}
+        <li><a href="{{ link.url }}"{% if link.active %} aria-current="page"{% endif %}>{{ link.title }}</a></li>
+      {%- endfor -%}
+    </ul>
+  </nav>
+</header>
+
+<div class="mobile-nav" id="MobileNav" data-mobile-nav aria-hidden="true">
+  <div class="mobile-nav__panel">
+    <button class="mobile-nav__close" type="button" aria-label="{{ 'general.accessibility.close' | t: default: 'Close menu' }}" data-menu-close>&times;</button>
+    <ul class="mobile-nav__list">
+      {%- for link in linklists[settings.main_menu_handle].links -%}
+        <li>
+          <a href="{{ link.url }}">{{ link.title }}</a>
+          {%- if link.links.size > 0 -%}
+            <ul class="mobile-nav__sublist">
+              {%- for childlink in link.links -%}
+                <li><a href="{{ childlink.url }}">{{ childlink.title }}</a></li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+    <a class="mobile-nav__clinic-link" href="{{ settings.clinic_url | default: '#' }}">
+      {{ 'general.navigation.visit_clinic' | t: default: 'Visit Bliss By Skin Alive Clinic' }} →
+    </a>
+  </div>
+  <div class="mobile-nav__backdrop" data-menu-close></div>
+</div>
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": []
+}
+{% endschema %}

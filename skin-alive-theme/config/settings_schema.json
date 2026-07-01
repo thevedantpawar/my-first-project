@@ -1,0 +1,81 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "Skin Alive Essentials",
+    "theme_version": "1.0.0",
+    "theme_author": "Skin Alive Essentials",
+    "theme_documentation_url": "",
+    "theme_support_url": ""
+  },
+  {
+    "name": "Brand",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "logo",
+        "label": "Logo"
+      },
+      {
+        "type": "url",
+        "id": "clinic_url",
+        "label": "Bliss By Skin Alive Clinic website URL",
+        "info": "Used for hero, footer, and product-page clinic links"
+      },
+      {
+        "type": "image_picker",
+        "id": "share_image",
+        "label": "Default social sharing image"
+      }
+    ]
+  },
+  {
+    "name": "Navigation",
+    "settings": [
+      {
+        "type": "text",
+        "id": "main_menu_handle",
+        "label": "Main menu handle",
+        "default": "main-menu",
+        "info": "Handle of the navigation menu created in Admin > Navigation"
+      },
+      {
+        "type": "text",
+        "id": "footer_menu_handle",
+        "label": "Footer menu handle",
+        "default": "footer"
+      }
+    ]
+  },
+  {
+    "name": "Colors",
+    "settings": [
+      {
+        "type": "color",
+        "id": "color_background",
+        "label": "Background",
+        "default": "#faf8f6"
+      },
+      {
+        "type": "color",
+        "id": "color_accent",
+        "label": "Accent (clinical)",
+        "default": "#2f5d50"
+      },
+      {
+        "type": "color",
+        "id": "color_text",
+        "label": "Text",
+        "default": "#201f1d"
+      }
+    ]
+  },
+  {
+    "name": "Payments & checkout",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Enable Razorpay / PhonePe / UPI in Shopify Admin > Settings > Payments. The trust badges below only reflect what's enabled there — theme code cannot add gateways by itself."
+      }
+    ]
+  }
+]

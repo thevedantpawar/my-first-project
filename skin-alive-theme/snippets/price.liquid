@@ -1,0 +1,22 @@
+{%- comment -%}
+  Renders product price in the store's active currency (INR by default, set in
+  Shopify Admin > Settings > General > Store currency). Shows compare-at price
+  and a "MRP incl. of all taxes" note common on Indian storefronts.
+  Usage: {% render 'price', product: product %}
+{%- endcomment -%}
+
+{%- assign target = product.selected_or_first_available_variant | default: product -%}
+{%- assign compare_at = target.compare_at_price -%}
+{%- assign price = target.price -%}
+
+<div class="price">
+  {%- if compare_at > price -%}
+    <span class="price__compare-at"><s>{{ compare_at | money }}</s></span>
+    <span class="price__sale">{{ price | money }}</span>
+    {%- assign discount = compare_at | minus: price | times: 100.0 | divided_by: compare_at -%}
+    <span class="price__discount-badge">{{ discount | round }}% {{ 'products.product.off' | t: default: 'off' }}</span>
+  {%- else -%}
+    <span class="price__regular">{{ price | money }}</span>
+  {%- endif -%}
+  <span class="price__tax-note">{{ 'products.product.mrp_note' | t: default: 'MRP incl. of all taxes' }}</span>
+</div>

@@ -1,0 +1,30 @@
+{%- if section.settings.text != blank -%}
+  <div class="announcement-bar">
+    <p>
+      {%- if section.settings.link != blank -%}
+        <a href="{{ section.settings.link }}">{{ section.settings.text }}</a>
+      {%- else -%}
+        {{ section.settings.text }}
+      {%- endif -%}
+    </p>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Announcement bar",
+  "settings": [
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Message",
+      "default": "Free shipping across India on orders above ₹999"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Link (optional)"
+    }
+  ]
+}
+{% endschema %}

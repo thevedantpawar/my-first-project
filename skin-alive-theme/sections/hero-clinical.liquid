@@ -1,0 +1,85 @@
+{%- comment -%}
+  Homepage hero. Intentionally leads with clinical credibility (dermatologist
+  name, credentials, clinic affiliation) rather than generic beauty-brand
+  imagery/copy.
+{%- endcomment -%}
+
+<section class="hero-clinical">
+  <div class="hero-clinical__media">
+    {%- if section.settings.image -%}
+      <img
+        src="{{ section.settings.image | image_url: width: 1600 }}"
+        srcset="{{ section.settings.image | image_url: width: 800 }} 800w, {{ section.settings.image | image_url: width: 1600 }} 1600w"
+        sizes="100vw"
+        alt="{{ section.settings.image.alt | escape }}"
+        width="{{ section.settings.image.width }}"
+        height="{{ section.settings.image.height }}"
+        loading="eager"
+        fetchpriority="high"
+      >
+    {%- else -%}
+      {{ 'lifestyle-1' | placeholder_svg_tag: 'hero-clinical__placeholder' }}
+    {%- endif -%}
+  </div>
+
+  <div class="hero-clinical__content">
+    <p class="hero-clinical__eyebrow">{{ section.settings.eyebrow }}</p>
+    <h1 class="hero-clinical__heading">{{ section.settings.heading }}</h1>
+    <p class="hero-clinical__subheading">{{ section.settings.subheading }}</p>
+
+    {%- if section.settings.dermatologist_name != blank -%}
+      <div class="hero-clinical__credential">
+        <p class="hero-clinical__derm-name">{{ section.settings.dermatologist_name }}</p>
+        <p class="hero-clinical__derm-title">{{ section.settings.dermatologist_credentials }}</p>
+      </div>
+    {%- endif -%}
+
+    <div class="hero-clinical__ctas">
+      {%- if section.settings.shop_button_label != blank -%}
+        <a href="{{ section.settings.shop_button_link | default: '#' }}" class="button button--primary">{{ section.settings.shop_button_label }}</a>
+      {%- endif -%}
+      {%- if section.settings.consult_button_label != blank -%}
+        <a href="{{ section.settings.consult_button_link | default: settings.clinic_url }}" class="button button--outline">{{ section.settings.consult_button_label }}</a>
+      {%- endif -%}
+    </div>
+
+    {%- if section.settings.stat_1_value != blank or section.settings.stat_2_value != blank or section.settings.stat_3_value != blank -%}
+      <dl class="hero-clinical__stats">
+        {%- if section.settings.stat_1_value != blank -%}
+          <div><dt>{{ section.settings.stat_1_value }}</dt><dd>{{ section.settings.stat_1_label }}</dd></div>
+        {%- endif -%}
+        {%- if section.settings.stat_2_value != blank -%}
+          <div><dt>{{ section.settings.stat_2_value }}</dt><dd>{{ section.settings.stat_2_label }}</dd></div>
+        {%- endif -%}
+        {%- if section.settings.stat_3_value != blank -%}
+          <div><dt>{{ section.settings.stat_3_value }}</dt><dd>{{ section.settings.stat_3_label }}</dd></div>
+        {%- endif -%}
+      </dl>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Hero - Clinical",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Hero image (real product/clinic photography only)" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "From the pharmacy at Bliss By Skin Alive Clinic" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Skincare formulated by dermatologists, not marketers" },
+    { "type": "textarea", "id": "subheading", "label": "Subheading", "default": "Every product is developed and reviewed by the clinical team at Bliss By Skin Alive Clinic, Nashik — based on what we actually prescribe in-clinic." },
+    { "type": "text", "id": "dermatologist_name", "label": "Lead dermatologist name", "default": "Dr. [Name], MD Dermatology" },
+    { "type": "text", "id": "dermatologist_credentials", "label": "Credentials line", "default": "Founder, Bliss By Skin Alive Clinic" },
+    { "type": "text", "id": "shop_button_label", "label": "Shop button label", "default": "Shop the range" },
+    { "type": "url", "id": "shop_button_link", "label": "Shop button link" },
+    { "type": "text", "id": "consult_button_label", "label": "Consult button label", "default": "Book a clinic consultation" },
+    { "type": "url", "id": "consult_button_link", "label": "Consult button link" },
+    { "type": "text", "id": "stat_1_value", "label": "Stat 1 value", "default": "10+ yrs" },
+    { "type": "text", "id": "stat_1_label", "label": "Stat 1 label", "default": "clinical dermatology practice" },
+    { "type": "text", "id": "stat_2_value", "label": "Stat 2 value", "default": "In-clinic" },
+    { "type": "text", "id": "stat_2_label", "label": "Stat 2 label", "default": "tested before retail launch" },
+    { "type": "text", "id": "stat_3_value", "label": "Stat 3 value", "default": "Nashik" },
+    { "type": "text", "id": "stat_3_label", "label": "Stat 3 label", "default": "clinic & pharmacy, est." }
+  ],
+  "presets": [{ "name": "Hero - Clinical" }]
+}
+{% endschema %}
