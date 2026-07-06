@@ -4,6 +4,7 @@ import { Hero } from "@/components/Hero";
 import { Marquee } from "@/components/Marquee";
 import { Services } from "@/components/Services";
 import { Philosophy } from "@/components/Philosophy";
+import { Gallery } from "@/components/Gallery";
 import { Trainers } from "@/components/Trainers";
 import { Plans } from "@/components/Plans";
 import { Transformations } from "@/components/Transformations";
@@ -26,6 +27,7 @@ export default function Home() {
         <Marquee />
         <Services />
         <Philosophy />
+        <Gallery />
         <Trainers />
         <Plans />
         <Transformations />

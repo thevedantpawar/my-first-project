@@ -26,9 +26,9 @@ export const site = {
 export const nav = [
   { label: "Services", href: "#services" },
   { label: "Philosophy", href: "#philosophy" },
+  { label: "Space", href: "#gallery" },
   { label: "Trainers", href: "#trainers" },
   { label: "Plans", href: "#plans" },
-  { label: "Results", href: "#results" },
   { label: "Calculators", href: "#calculators" },
   { label: "Contact", href: "#contact" },
 ] as const;
@@ -39,6 +39,42 @@ export const stats = [
   { value: 96, suffix: "%", label: "Goal completion rate" },
   { value: 9, suffix: " yrs", label: "In medical fitness" },
 ];
+
+// Real photography of the HealthRx / SyncRx space.
+// Drop the image files into `public/gallery/` using the `src` names below and
+// they appear automatically. Until then, a branded placeholder is shown.
+export const gallery = [
+  {
+    src: "/gallery/exterior.jpg",
+    title: "The Building",
+    tag: "Exterior",
+    span: "wide",
+  },
+  {
+    src: "/gallery/reception.jpg",
+    title: "Reception & Lounge",
+    tag: "Arrival",
+    span: "tall",
+  },
+  {
+    src: "/gallery/arrival.jpg",
+    title: "The Archway",
+    tag: "Entrance",
+    span: "normal",
+  },
+  {
+    src: "/gallery/floor.jpg",
+    title: "Strength Floor",
+    tag: "Training",
+    span: "normal",
+  },
+  {
+    src: "/gallery/studio.jpg",
+    title: "SyncRx Studio",
+    tag: "Yoga & Recovery",
+    span: "wide",
+  },
+] as const;
 
 export const services = [
   {
