@@ -8,7 +8,7 @@ export function Philosophy() {
       id="philosophy"
       className="relative overflow-hidden border-y border-white/5 bg-ink-soft py-24 sm:py-32"
     >
-      <div className="absolute inset-0 bg-[radial-gradient(50%_50%_at_15%_50%,rgba(183,255,0,0.08),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(50%_50%_at_15%_50%,rgba(255,242,0,0.08),transparent_60%)]" />
       <div className="shell relative grid gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
         <div>
           <SectionHeading

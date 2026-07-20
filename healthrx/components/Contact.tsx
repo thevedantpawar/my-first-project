@@ -42,7 +42,7 @@ export function Contact() {
 
   return (
     <section id="contact" className="relative py-24 sm:py-32">
-      <div className="absolute inset-0 bg-[radial-gradient(45%_45%_at_20%_30%,rgba(183,255,0,0.08),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(45%_45%_at_20%_30%,rgba(255,242,0,0.08),transparent_60%)]" />
       <div className="shell relative">
         <SectionHeading
           center

@@ -12,9 +12,9 @@ const config: Config = {
         "ink-soft": "#111214",
         "ink-card": "#141517",
         lime: {
-          DEFAULT: "#B7FF00",
-          soft: "#C8FF3D",
-          dim: "#8FCB00",
+          DEFAULT: "#FFF200",
+          soft: "#FFF64D",
+          dim: "#D4C400",
         },
       },
       fontFamily: {
@@ -40,8 +40,8 @@ const config: Config = {
         shell: "1240px",
       },
       boxShadow: {
-        glow: "0 0 40px -8px rgba(183,255,0,0.45)",
-        "glow-lg": "0 0 90px -20px rgba(183,255,0,0.55)",
+        glow: "0 0 40px -8px rgba(255,242,0,0.45)",
+        "glow-lg": "0 0 90px -20px rgba(255,242,0,0.55)",
         card: "0 20px 60px -30px rgba(0,0,0,0.9)",
       },
       backgroundImage: {

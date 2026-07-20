@@ -18,7 +18,7 @@ const activityLevels = [
 
 function bmiCategory(bmi: number) {
   if (bmi < 18.5) return { label: "Underweight", color: "#7dd3fc" };
-  if (bmi < 25) return { label: "Healthy", color: "#B7FF00" };
+  if (bmi < 25) return { label: "Healthy", color: "#FFF200" };
   if (bmi < 30) return { label: "Overweight", color: "#fbbf24" };
   return { label: "Obese", color: "#fb7185" };
 }
@@ -28,7 +28,7 @@ export function Calculators() {
 
   return (
     <section id="calculators" className="relative py-24 sm:py-32">
-      <div className="absolute inset-0 bg-[radial-gradient(45%_45%_at_80%_30%,rgba(183,255,0,0.08),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(45%_45%_at_80%_30%,rgba(255,242,0,0.08),transparent_60%)]" />
       <div className="shell relative">
         <SectionHeading
           eyebrow="Smart tools"
@@ -378,7 +378,7 @@ function MacroCalc() {
               <MacroRing macros={macros} total={target} />
             </div>
             <div className="mt-5 grid grid-cols-3 gap-3 text-center">
-              <MacroStat label="Protein" grams={macros.protein} color="#B7FF00" />
+              <MacroStat label="Protein" grams={macros.protein} color="#FFF200" />
               <MacroStat label="Carbs" grams={macros.carbs} color="#7dd3fc" />
               <MacroStat label="Fat" grams={macros.fat} color="#fbbf24" />
             </div>
@@ -421,7 +421,7 @@ function MacroRing({
   const p = (macros.proteinKcal / total) * 100;
   const c = (macros.carbKcal / total) * 100;
   const f = (macros.fatKcal / total) * 100;
-  const bg = `conic-gradient(#B7FF00 0 ${p}%, #7dd3fc ${p}% ${p + c}%, #fbbf24 ${
+  const bg = `conic-gradient(#FFF200 0 ${p}%, #7dd3fc ${p}% ${p + c}%, #fbbf24 ${
     p + c
   }% 100%)`;
 

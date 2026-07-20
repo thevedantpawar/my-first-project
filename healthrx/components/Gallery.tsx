@@ -19,7 +19,7 @@ export function Gallery() {
       id="gallery"
       className="relative overflow-hidden border-y border-white/5 bg-ink-soft py-24 sm:py-32"
     >
-      <div className="absolute inset-0 bg-[radial-gradient(45%_45%_at_80%_20%,rgba(183,255,0,0.07),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(45%_45%_at_80%_20%,rgba(255,242,0,0.07),transparent_60%)]" />
       <div className="shell relative">
         <SectionHeading
           eyebrow="The space"

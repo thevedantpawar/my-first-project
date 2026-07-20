@@ -28,7 +28,7 @@ export function Hero() {
     >
       {/* Background layers */}
       <div className="absolute inset-0 bg-grid-lines bg-[size:56px_56px] opacity-60" />
-      <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_70%_20%,rgba(183,255,0,0.14),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_70%_20%,rgba(255,242,0,0.14),transparent_60%)]" />
       <div className="absolute -left-40 top-1/3 h-[420px] w-[420px] rounded-full bg-lime/10 blur-[120px]" />
       <Particles />
 
@@ -148,15 +148,15 @@ function HeroArt() {
         <div className="animate-float-slow [transform-style:preserve-3d]">
           <svg
             viewBox="0 0 200 120"
-            className="h-40 w-56 drop-shadow-[0_12px_30px_rgba(183,255,0,0.25)]"
+            className="h-40 w-56 drop-shadow-[0_12px_30px_rgba(255,242,0,0.25)]"
             role="img"
             aria-label="3D dumbbell"
           >
             <defs>
               <linearGradient id="chrome" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor="#e9ffb0" />
-                <stop offset="0.5" stopColor="#b7ff00" />
-                <stop offset="1" stopColor="#6f9c00" />
+                <stop offset="0" stopColor="#fffcb0" />
+                <stop offset="0.5" stopColor="#fff200" />
+                <stop offset="1" stopColor="#9c8f00" />
               </linearGradient>
               <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0" stopColor="#3a3f33" />
