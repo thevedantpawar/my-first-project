@@ -19,7 +19,7 @@
   }
 
   ::selection {
-    background: #fff200;
+    background: #b7ff00;
     color: #0b0b0b;
   }
 
@@ -31,11 +31,11 @@
     background: #0b0b0b;
   }
   ::-webkit-scrollbar-thumb {
-    background: #2f2d22;
+    background: #2a2f22;
     border-radius: 999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #4a441f;
+    background: #3d4a1f;
   }
 }
 
@@ -83,5 +83,5 @@
 
 /* Cinematic loader */
 .loader-line {
-  background: linear-gradient(90deg, transparent, #fff200, transparent);
+  background: linear-gradient(90deg, transparent, #b7ff00, transparent);
 }

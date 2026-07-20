@@ -51,7 +51,7 @@ export function Particles({ className = "" }: { className?: string }) {
         if (p.y > h) p.y = 0;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,242,0,${p.a})`;
+        ctx.fillStyle = `rgba(183,255,0,${p.a})`;
         ctx.fill();
       }
       raf = requestAnimationFrame(draw);

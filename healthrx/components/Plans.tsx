@@ -9,7 +9,7 @@ export function Plans() {
       id="plans"
       className="relative overflow-hidden border-y border-white/5 bg-ink-soft py-24 sm:py-32"
     >
-      <div className="absolute inset-0 bg-[radial-gradient(50%_40%_at_50%_0%,rgba(255,242,0,0.1),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(50%_40%_at_50%_0%,rgba(183,255,0,0.1),transparent_60%)]" />
       <div className="shell relative">
         <SectionHeading
           center
