@@ -82,7 +82,7 @@ function BeforeAfter({ before, after }: { before: string; after: string }) {
       <div
         className="absolute inset-0 flex items-end justify-start p-4"
         style={{
-          background: `linear-gradient(160deg, ${after}, #0b0b0b)`,
+          background: `linear-gradient(160deg, ${after}, #0f1a14)`,
         }}
       >
         <span className="rounded-full bg-lime px-3 py-1 text-[11px] font-semibold text-ink">
@@ -94,7 +94,7 @@ function BeforeAfter({ before, after }: { before: string; after: string }) {
       <div
         className="absolute inset-0 flex items-end justify-end p-4"
         style={{
-          background: `linear-gradient(160deg, ${before}, #0b0b0b)`,
+          background: `linear-gradient(160deg, ${before}, #0f1a14)`,
           clipPath: `inset(0 ${100 - pos}% 0 0)`,
         }}
       >

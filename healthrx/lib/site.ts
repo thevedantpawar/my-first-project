@@ -8,13 +8,15 @@ export const site = {
   city: "Nashik",
   description:
     "HealthRx Fitness Club is Nashik's premium, science-driven medical fitness club. Personal training, transformation coaching, and evidence-based programming. We Prescribe Health.",
-  phone: "+91 90000 00000",
-  whatsapp: "919000000000", // digits only for wa.me link
-  email: "hello@healthrx.fit",
-  address: "College Road, Nashik, Maharashtra 422005, India",
+  phone: "+91 9270 943 644",
+  whatsapp: "919270943644", // digits only for wa.me link
+  email: "hello@healthrx.co.in",
+  address:
+    "Next to Tirumala Anmol, Canal Road, Serene Meadows, Aanadvalli, Nashik 422013",
   mapsEmbed:
-    "https://www.google.com/maps?q=College+Road,+Nashik,+Maharashtra&output=embed",
-  mapsLink: "https://www.google.com/maps?q=College+Road,+Nashik,+Maharashtra",
+    "https://www.google.com/maps?q=Tirumala+Anmol,+Canal+Road,+Aanadvalli,+Nashik+422013&output=embed",
+  mapsLink:
+    "https://www.google.com/maps?q=Tirumala+Anmol,+Canal+Road,+Aanadvalli,+Nashik+422013",
   hours: "Mon–Sun · 5:00 AM – 11:00 PM",
   socials: {
     instagram: "https://instagram.com",
@@ -160,48 +162,45 @@ export const trainers = [
 
 export const plans = [
   {
-    name: "Foundation",
-    price: "₹2,999",
-    period: "/mo",
-    tagline: "Start with structure",
+    name: "Prime",
+    price: "₹20,000",
+    period: "/yr",
+    tagline: "Everything you need to train",
     features: [
-      "Full club & equipment access",
-      "Health & movement screening",
-      "Group strength classes",
-      "Nutrition starter guide",
-      "Progress app access",
+      "Spacious workout floor",
+      "World-class equipment",
+      "40+ strength stations",
+      "20+ cardio stations",
+      "Yoga & Zumba studio",
+      "Meditation zone",
+      "Open lawn for group batches",
+      "Healthy food café",
     ],
     featured: false,
   },
   {
-    name: "Prescription",
-    price: "₹6,499",
-    period: "/mo",
-    tagline: "Our signature program",
+    name: "Elite",
+    price: "₹30,000",
+    period: "/yr",
+    tagline: "Train, recover and restore",
     features: [
-      "Everything in Foundation",
-      "8 × 1:1 personal training / mo",
-      "Custom macro & meal plan",
-      "Bi-weekly re-testing",
-      "Priority booking & recovery zone",
+      "Everything in Prime",
+      "Physiotherapy",
+      "Sauna & steam room",
+      "Ice bath recovery",
+      "Massage room",
+      "Balanced mind + strong body",
     ],
     featured: true,
   },
-  {
-    name: "Elite Clinical",
-    price: "₹12,999",
-    period: "/mo",
-    tagline: "Fully managed transformation",
-    features: [
-      "Everything in Prescription",
-      "Unlimited 1:1 coaching",
-      "Dedicated medical fitness lead",
-      "Quarterly lab-based review",
-      "24/7 coach messaging",
-    ],
-    featured: false,
-  },
 ];
+
+// Headline long-term offer, shown as a banner beneath the two annual tiers.
+export const eliteOffer = {
+  name: "Exclusive 5-Year Membership",
+  price: "₹1,19,999",
+  note: "Our best value — lock in Elite access and save for five full years.",
+};
 
 export const transformations = [
   {

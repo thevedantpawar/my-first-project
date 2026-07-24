@@ -20,7 +20,7 @@
 
   ::selection {
     background: #b7ff00;
-    color: #0b0b0b;
+    color: #0f1a14;
   }
 
   /* Custom lime scrollbar */
@@ -28,7 +28,7 @@
     width: 10px;
   }
   ::-webkit-scrollbar-track {
-    background: #0b0b0b;
+    background: #0f1a14;
   }
   ::-webkit-scrollbar-thumb {
     background: #2a2f22;

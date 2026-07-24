@@ -56,7 +56,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0B0B0B",
+  themeColor: "#0F1A14",
   width: "device-width",
   initialScale: 1,
 };
@@ -71,10 +71,10 @@ const jsonLd = {
   email: site.email,
   address: {
     "@type": "PostalAddress",
-    streetAddress: "College Road",
+    streetAddress: "Next to Tirumala Anmol, Canal Road, Serene Meadows, Aanadvalli",
     addressLocality: "Nashik",
     addressRegion: "Maharashtra",
-    postalCode: "422005",
+    postalCode: "422013",
     addressCountry: "IN",
   },
   areaServed: "Nashik",

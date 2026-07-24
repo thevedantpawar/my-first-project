@@ -8,9 +8,9 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#0B0B0B",
-        "ink-soft": "#111214",
-        "ink-card": "#141517",
+        ink: "#0F1A14",
+        "ink-soft": "#14231B",
+        "ink-card": "#18271F",
         lime: {
           DEFAULT: "#B7FF00",
           soft: "#C8FF3D",

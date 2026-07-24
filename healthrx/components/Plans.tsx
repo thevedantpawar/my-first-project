@@ -1,4 +1,4 @@
-import { plans, site } from "@/lib/site";
+import { plans, eliteOffer } from "@/lib/site";
 import { CheckIcon, ArrowIcon } from "./Icons";
 import { Reveal } from "./Reveal";
 import { SectionHeading } from "./SectionHeading";
@@ -19,16 +19,16 @@ export function Plans() {
               Choose your <span className="text-lime">prescription</span>
             </>
           }
-          intro="Transparent monthly pricing. No long lock-ins. Cancel or upgrade anytime."
+          intro="Annual memberships with early-bird pricing. Flexible monthly plans available too — no long lock-ins."
         />
 
-        <div className="mt-14 grid gap-6 lg:grid-cols-3 lg:items-center">
+        <div className="mx-auto mt-14 grid max-w-3xl gap-6 sm:grid-cols-2">
           {plans.map((plan, i) => (
             <Reveal key={plan.name} delay={i * 0.08}>
               <div
                 className={`glass relative flex h-full flex-col p-8 transition-transform duration-300 hover:-translate-y-1 ${
                   plan.featured
-                    ? "border-lime/50 bg-lime/[0.06] shadow-glow lg:scale-[1.04]"
+                    ? "border-lime/50 bg-lime/[0.06] shadow-glow"
                     : ""
                 }`}
               >
@@ -73,8 +73,29 @@ export function Plans() {
           ))}
         </div>
 
+        {/* 5-year exclusive banner */}
         <Reveal delay={0.2}>
-          <p className="mt-10 text-center text-sm text-white/45">
+          <div className="glass mx-auto mt-6 flex max-w-3xl flex-col items-center gap-4 border-lime/30 bg-lime/[0.04] p-6 text-center sm:flex-row sm:justify-between sm:text-left">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-lime">
+                {eliteOffer.name}
+              </div>
+              <p className="mt-1 text-sm text-white/60">{eliteOffer.note}</p>
+            </div>
+            <div className="flex items-center gap-5">
+              <span className="font-display text-3xl font-bold sm:text-4xl">
+                {eliteOffer.price}
+              </span>
+              <a href="#contact" className="btn-primary shrink-0">
+                Claim offer
+                <ArrowIcon className="h-4 w-4" />
+              </a>
+            </div>
+          </div>
+        </Reveal>
+
+        <Reveal delay={0.26}>
+          <p className="mt-8 text-center text-sm text-white/45">
             Not sure which fits?{" "}
             <a href="#contact" className="text-lime underline-offset-4 hover:underline">
               Book a free consultation

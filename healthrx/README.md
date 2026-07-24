@@ -15,7 +15,7 @@ Apple × Nike × Technogym: black canvas, white type, neon-lime accent.
 
 | Token | Value |
 | ----- | ----- |
-| Ink (background) | `#0B0B0B` |
+| Ink (background) | `#0F1A14` |
 | White (type) | `#FFFFFF` |
 | Lime (accent) | `#B7FF00` |
 
