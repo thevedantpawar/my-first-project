@@ -19,7 +19,7 @@ export function Plans() {
               Choose your <span className="text-lime">prescription</span>
             </>
           }
-          intro="Annual memberships with early-bird pricing. Flexible monthly plans available too — no long lock-ins."
+          intro="Two annual memberships — every facility the club offers, in one clear choice."
         />
 
         <div className="mx-auto mt-14 grid max-w-3xl gap-6 sm:grid-cols-2">

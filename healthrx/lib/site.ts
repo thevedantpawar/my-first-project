@@ -199,7 +199,7 @@ export const plans = [
 export const eliteOffer = {
   name: "Exclusive 5-Year Membership",
   price: "₹1,19,999",
-  note: "Our best value — lock in Elite access and save for five full years.",
+  note: "Five full years of Elite access — one commitment.",
 };
 
 export const transformations = [
