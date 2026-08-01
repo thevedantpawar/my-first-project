@@ -7,7 +7,7 @@ The platform is architected around Indian pharmacy regulation. Prescription gati
 not a feature layered on top of a storefront — it is the spine of the data model, and
 it is enforced in the database, not in the UI.
 
-**Status: Phase 1 (foundation and data model) complete.**
+**Status: Phase 2 (catalogue and discovery) complete.**
 
 ---
 
@@ -23,7 +23,7 @@ createdb ashirwad_wellness
 
 cp .env.example .env       # then fill it in — see "Environment" below
 npm run db:migrate         # applies schema + compliance constraints
-npm run db:seed            # 69 products, 3 users, 16 pincodes
+npm run db:seed            # 86 products, 3 users, 16 pincodes
 
 npm run dev                # http://localhost:3000
 ```
@@ -199,12 +199,48 @@ on file, because that value is stamped onto the statutory H1 register.
 
 ---
 
+## Catalogue and search
+
+**Salt-based search.** Customers arrive knowing either the brand the doctor wrote or
+the molecule. Searching `paracetamol` surfaces Crocin, Dolo, Calpol, Pacimol and
+Paracip — none of which has the word in its name. Searching `cefixime` surfaces Zifi,
+Taxim-O and Mahacef.
+
+**Typo tolerance** via `pg_trgm`. `azithromicin`, `cetrizine`, `pantaprazole`,
+`telmisartin` and `amoxycillin` all resolve. Autocomplete offers salts and brands
+above individual products, because those are the broader query.
+
+**Weak-tail suppression.** Drug names are deliberately similar — cefixime and
+cefpodoxime are a few trigrams apart. When a strong match exists, results scoring
+below 60% of the best are dropped, so a `cefixime` search never quietly includes a
+cefpodoxime product. When *nothing* matches strongly the tail is kept, because then
+the near-misses are the entire value of the search. Both behaviours are pinned by
+tests.
+
+**Salt substitutes.** The product page lists cheaper equivalents, matched on
+`saltKey` — the normalised, sorted salt fingerprint. Two safety properties hold in
+`getSaltSubstitutes`, not in the view:
+
+- A combination drug only matches the *same* combination at the *same* strengths.
+  Paracetamol 650 mg is never offered as a substitute for Paracetamol 500 mg.
+- Schedule type must match. A Schedule H drug is never presented as swappable for an
+  OTC one, whatever the composition.
+
+Substitutes carry the Rx Gate with them, so a prescription-only alternative is still
+visibly prescription-only in the recommendation list.
+
+**Filter state lives in the URL**, so a filtered catalogue view is shareable and
+survives the back button. Params are validated with Zod and a malformed value
+degrades to no filter rather than a 500.
+
+---
+
 ## Verification
 
 Compliance claims in this README are tested, not asserted.
 
 ```bash
-npm test                   # 23 tests
+npm test                   # 53 tests
 npm run test:constraints   # 14 database-level cases
 ```
 
@@ -231,13 +267,17 @@ prisma/
   schema.prisma            25 models, 12 enums
   sql/compliance.sql       CHECK constraints + append-only triggers
   sql/constraint_tests.sql DB-level compliance proof
-  seed.ts                  69 real products
+  seed.ts                  86 real products
 src/
   auth.ts                  NextAuth v5 + server-side role enforcement
   auth.config.ts           Edge-safe half, for middleware
   middleware.ts            Role-based routing (not authorisation)
   lib/
     db.ts                  Prisma client + pg driver adapter
+    catalogue.ts           Filters, sorting, facets, salt substitutes
+    search.ts              Trigram search, autocomplete, salt lookup
+    search-params.ts       Validated URL params -> filters
+    labels.ts              Enum -> customer-facing label
     schedule.ts            Single source of truth for "prescription required"
     claims.ts              Therapeutic-claim linter
     banned-substances.ts   App-layer half of the Schedule X block
@@ -247,7 +287,14 @@ src/
     otp.ts                 Phone OTP behind an interface (stubbed)
   components/
     rx-gate.tsx            The Rx Gate — the signature element
+    product-card.tsx       Catalogue card (Rx Gate surface 1)
+    salt-substitutes.tsx   Cheaper same-composition equivalents
+    search-box.tsx         Autocomplete combobox
+    catalogue-filters.tsx  URL-driven filter rail
+    product-image.tsx      Imagery with deterministic fallback
+    site-header.tsx        Navigation + search
     site-footer.tsx        Statutory disclosure
+    trust-strip.tsx        Licence numbers above the fold
 ```
 
 ### Stack notes
@@ -295,7 +342,7 @@ informative.
 ## Roadmap
 
 - [x] **Phase 1** — Foundation, data model, compliance constraints, auth, seed
-- [ ] **Phase 2** — Catalogue, search, salt substitutes, product pages
+- [x] **Phase 2** — Catalogue, search, salt substitutes, product pages
 - [ ] **Phase 3** — Cart, prescription upload, server-side Rx gate, checkout
 - [ ] **Phase 4** — Customer account, order history, prescription library
 - [ ] **Phase 5** — Pharmacist verification queue, admin portal

@@ -1,157 +1,103 @@
-import { db } from "@/lib/db";
-import { SiteFooter } from "@/components/site-footer";
-import { RxBadge, RxGateBlock } from "@/components/rx-gate";
-import { formatPaise, discountPercent } from "@/lib/money";
-import { SCHEDULE_LABEL } from "@/lib/schedule";
-import { ScheduleType } from "@/generated/prisma/enums";
+import Link from "next/link";
+import { ArrowRight, RotateCcw } from "lucide-react";
 
-/**
- * Phase 1 landing page.
- *
- * Deliberately plain — Phase 2 builds the real home page (category grid, offer
- * rail, reorder shortcut). What this page exists to show is that the tokens,
- * the fonts and the Rx Gate render, and that the catalogue is real.
- */
+import { auth } from "@/auth";
+import {
+  getCategoryTree,
+  getOfferRail,
+  getReorderSuggestions,
+} from "@/lib/catalogue";
+import { ProductGrid } from "@/components/product-card";
+import { TrustStrip } from "@/components/trust-strip";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [total, rxCount, h1Count, categories, sample] = await Promise.all([
-    db.product.count(),
-    db.product.count({ where: { requiresPrescription: true } }),
-    db.product.count({ where: { scheduleType: ScheduleType.SCHEDULE_H1 } }),
-    db.category.count(),
-    db.product.findMany({
-      where: { slug: { in: ["crocin-advance-500mg-tablet", "zifi-200-tablet"] } },
-      include: { brand: true, manufacturer: true },
-      orderBy: { requiresPrescription: "asc" },
-    }),
+  const session = await auth();
+
+  const [categories, offers, reorder] = await Promise.all([
+    getCategoryTree(),
+    getOfferRail(10),
+    session?.user?.id ? getReorderSuggestions(session.user.id) : Promise.resolve([]),
   ]);
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-ink-100 bg-paper-raised">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
-          <div>
-            <p className="font-display text-xl text-pine-700">
-              Ashirwad Wellness
-            </p>
-            <p className="text-xs text-ink-500">Nashik, Maharashtra</p>
-          </div>
-          <span className="identifier rounded-full bg-pine-50 px-3 py-1 text-xs text-pine-700">
-            Phase 1 — foundation
-          </span>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-        <h1 className="max-w-2xl text-3xl leading-tight text-ink sm:text-4xl">
-          A pharmacy platform built around the prescription, not around the
-          shopping cart.
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <section className="rounded-[var(--radius-card)] bg-pine-700 px-6 py-10 sm:px-10 sm:py-14">
+        <h1 className="max-w-2xl text-2xl leading-tight text-paper sm:text-4xl">
+          Medicines dispensed by a pharmacist, not by an algorithm.
         </h1>
+        <p className="mt-3 max-w-xl text-sm text-pine-100 sm:text-base">
+          Every prescription is checked by a registered pharmacist before your
+          order is dispensed. Delivering across Nashik.
+        </p>
+        <Link
+          href="/category/medicines"
+          className="mt-6 inline-flex items-center gap-2 rounded-[var(--radius-control)] bg-living-500 px-5 py-2.5 text-sm font-semibold text-paper hover:bg-living-600"
+        >
+          Browse medicines
+          <ArrowRight aria-hidden="true" className="size-4" />
+        </Link>
+      </section>
 
-        <dl className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {[
-            { label: "Products seeded", value: total },
-            { label: "Prescription-only", value: rxCount },
-            { label: "Schedule H1", value: h1Count },
-            { label: "Categories", value: categories },
-          ].map((stat) => (
+      <div className="mt-6">
+        <TrustStrip />
+      </div>
+
+      {/* Returning customers land on their repeat medication, not on a banner. */}
+      {reorder.length > 0 && (
+        <section className="mt-10">
+          <div className="mb-4 flex items-center gap-2">
+            <RotateCcw aria-hidden="true" className="size-4 text-pine-700" />
+            <h2 className="text-lg text-ink">Order again</h2>
+          </div>
+          <ProductGrid products={reorder} />
+        </section>
+      )}
+
+      <section className="mt-10">
+        <h2 className="text-lg text-ink">Shop by category</h2>
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {categories.map((category) => (
             <div
-              key={stat.label}
+              key={category.id}
               className="rounded-[var(--radius-card)] border border-ink-100 bg-paper-raised p-4 shadow-[var(--shadow-card)]"
             >
-              <dt className="text-xs text-ink-500">{stat.label}</dt>
-              <dd className="identifier mt-1 text-2xl text-pine-700">
-                {stat.value}
-              </dd>
+              <h3 className="text-sm font-semibold text-pine-700">
+                <Link href={`/category/${category.slug}`}>{category.name}</Link>
+              </h3>
+              <ul className="mt-2 space-y-1">
+                {category.children.slice(0, 4).map((child) => (
+                  <li key={child.id}>
+                    <Link
+                      href={`/category/${child.slug}`}
+                      className="text-xs text-ink-500 hover:text-living-600"
+                    >
+                      {child.name}
+                      <span className="identifier ml-1 text-ink-300">
+                        {child._count.products}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
-        </dl>
+        </div>
+      </section>
 
-        <section className="mt-14">
-          <h2 className="text-xl text-ink">The Rx Gate</h2>
-          <p className="mt-2 max-w-prose text-sm text-ink-500">
-            One treatment, reused verbatim on the catalogue card, the product
-            page, the cart line and the checkout line. The{" "}
-            <code className="identifier text-rx-700">--rx</code> colour appears
-            nowhere else in the application, so the colour itself becomes the
-            signal.
-          </p>
-
-          <div className="mt-6 grid gap-5 sm:grid-cols-2">
-            {sample.map((p) => {
-              const off = discountPercent(p.mrpPaise, p.sellingPricePaise);
-              const card = (
-                <>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate font-medium text-ink">{p.name}</p>
-                      {p.nameHi && (
-                        <p className="font-devanagari text-sm text-ink-500">
-                          {p.nameHi}
-                        </p>
-                      )}
-                      <p className="mt-1 text-xs text-ink-500">
-                        {p.composition}
-                      </p>
-                      <p className="mt-0.5 text-xs text-ink-300">
-                        {p.brand?.name} · {p.manufacturer.name}
-                      </p>
-                    </div>
-                    {p.requiresPrescription ? (
-                      <RxBadge />
-                    ) : (
-                      <span className="rounded-full bg-living-50 px-2 py-0.5 text-[0.6875rem] font-semibold uppercase tracking-wide text-living-600">
-                        In stock
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="mt-3 flex items-baseline gap-2">
-                    <span className="identifier text-lg text-pine-700">
-                      {formatPaise(p.sellingPricePaise)}
-                    </span>
-                    <span className="identifier text-sm text-ink-300 line-through">
-                      {formatPaise(p.mrpPaise)}
-                    </span>
-                    {off > 0 && (
-                      <span className="text-xs font-semibold text-savings">
-                        {off}% off
-                      </span>
-                    )}
-                  </div>
-
-                  <p className="mt-2 text-xs text-ink-500">
-                    {SCHEDULE_LABEL[p.scheduleType]} · {p.packSize}
-                  </p>
-                </>
-              );
-
-              return p.requiresPrescription ? (
-                <div
-                  key={p.id}
-                  className="overflow-hidden rounded-[var(--radius-card)] border border-ink-100 bg-paper-raised shadow-[var(--shadow-card)]"
-                >
-                  <div className="p-4">{card}</div>
-                  <div className="px-4 pb-4">
-                    <RxGateBlock scheduleType={p.scheduleType} tone="short" />
-                  </div>
-                </div>
-              ) : (
-                <div
-                  key={p.id}
-                  className="rounded-[var(--radius-card)] border border-ink-100 bg-paper-raised p-4 shadow-[var(--shadow-card)]"
-                >
-                  {card}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      </main>
-
-      <SiteFooter />
+      <section className="mt-10">
+        <div className="mb-4 flex items-baseline justify-between gap-4">
+          <h2 className="text-lg text-ink">Best savings today</h2>
+          <Link
+            href="/search?sort=discount"
+            className="text-sm text-living-600 hover:underline"
+          >
+            See all
+          </Link>
+        </div>
+        <ProductGrid products={offers} />
+      </section>
     </div>
   );
 }
