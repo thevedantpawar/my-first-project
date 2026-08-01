@@ -334,6 +334,7 @@ model Brand {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
   @@map("brands")
 }
 
@@ -369,6 +370,7 @@ model Salt {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
   @@map("salts")
 }
 
@@ -471,6 +473,10 @@ model Product {
   @@index([requiresPrescription])
   @@index([saltKey])
   @@index([isActive])
+  // Trigram indexes backing typo-tolerant search. Declared here rather than
+  // only in raw SQL so `prisma migrate dev` does not drop them.
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@index([composition(ops: raw("gin_trgm_ops"))], type: Gin)
   @@map("products")
 }
 
@@ -702,7 +708,7 @@ model OrderItem {
   order        Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product      Product       @relation(fields: [productId], references: [id])
   prescription Prescription? @relation(fields: [prescriptionId], references: [id])
-  h1Entry      ScheduleH1Register?
+  h1Entries    ScheduleH1Register[]
 
   createdAt DateTime @default(now())
 
@@ -774,8 +780,12 @@ model ScheduleH1Register {
   serialNo    Int      @unique @default(autoincrement())
   dispensedAt DateTime @default(now())
 
-  orderId        String
-  orderItemId    String  @unique
+  orderId String
+  /// NOT globally unique: a correcting entry references the same order item as
+  /// the row it corrects. A partial unique index in the migration enforces the
+  /// real rule — at most one *original* entry per dispensed item, plus
+  /// corrections that point at it.
+  orderItemId    String
   prescriptionId String
 
   /// Prescriber — as confirmed by the verifying pharmacist.

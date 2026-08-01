@@ -7,7 +7,7 @@ The platform is architected around Indian pharmacy regulation. Prescription gati
 not a feature layered on top of a storefront — it is the spine of the data model, and
 it is enforced in the database, not in the UI.
 
-**Status: Phase 3 (cart, prescriptions, checkout) complete.**
+**Status: Phase 5 (pharmacist portal and admin) complete.**
 
 ---
 
@@ -310,12 +310,90 @@ dispensed order was sent.
 
 ---
 
+## Pharmacist portal and admin
+
+### Separation of duties
+
+An administrator cannot verify a prescription, write to the Schedule H1
+register, or release an order held for pharmacist review. Those are dispensing
+decisions and belong to a registered pharmacist under the Pharmacy Act.
+`updateOrderStatus` refuses outright when an order is in
+`PENDING_PHARMACIST_REVIEW`, and the admin layout says so on every page.
+
+Conversely, `requirePharmacist` refuses every verification until a registration
+number is on file, because that number is stamped onto the register. An admin
+sets it in **Staff**, and until then the pharmacist portal shows a blocking
+banner rather than a form that would fail on submit.
+
+### Two decisions, deliberately separate
+
+1. **Prescription verification** — is this genuine, legible and in date? The
+   pharmacist re-enters the prescriber's name and registration number *from the
+   image* rather than accepting what the customer typed, because those values
+   are copied verbatim into the register. Outcome is `VERIFIED`, `REJECTED`, or
+   `CLARIFICATION_REQUESTED` (recoverable — the customer can re-upload).
+   Verification also sets the validity window and repeat budget.
+
+2. **Order review** — does that verified prescription cover *these* drugs at
+   *these* quantities? Only a pharmacist can answer that, which is why passing
+   the Rx gate at checkout is not the end of the process.
+
+Terms cannot be changed once a prescription has been dispensed against — that
+would retroactively alter what an earlier order was permitted to do.
+
+### Writing the Schedule H1 register
+
+Approving an order writes one `ScheduleH1Register` entry per Schedule H1 line,
+**in the same transaction as the status change**, so an approved H1 order with
+no register entry is not a reachable state. Batch number and expiry are required
+per line and are read off the pack being dispensed; they are written back onto
+the order item too, so the invoice and the register cannot disagree.
+
+Approval re-checks that every Rx line still holds a `VERIFIED` prescription. The
+gate ran at checkout, but a prescription can be rejected in between.
+
+Serial numbers come from a Postgres sequence and may contain gaps where a
+transaction rolled back. Gaps are correct; collisions would not be.
+
+### Corrections
+
+The register table rejects `UPDATE`, `DELETE` and `TRUNCATE`, through the ORM
+as well as through raw SQL. A correction is a **new row** pointing at the one it
+corrects, carrying a stated reason (CHECK-enforced), and the original stays
+visible in the register marked as superseded.
+
+A partial unique index enforces the real rule — at most one *original* entry per
+dispensed item — rather than a blanket unique on `orderItemId`, which would have
+made corrections impossible.
+
+The register also pins its own evidence: an order item referenced by an entry
+cannot be deleted, so a dispensed order cannot be tidied away.
+
+### Compliance gates on product writes
+
+`saveProduct` runs four gates before touching the database, and
+`importProductsCsv` runs **the same four** — a bulk path that skipped them would
+be the obvious way to get a banned substance into the catalogue.
+
+1. Schedule type must be one the platform may list.
+2. Name and composition must not match a `BannedSubstance`.
+3. Copy must be free of therapeutic claims for claim-restricted classes.
+4. `requiresPrescription` is derived, never read from the form.
+
+Rejections are audited with the attempted values. CSV import is all-or-nothing:
+if any row fails, nothing is written.
+
+Products are **delisted**, never deleted — a product referenced by a dispensed
+order must remain resolvable. Delisting also clears it from every live cart.
+
+---
+
 ## Verification
 
 Compliance claims in this README are tested, not asserted.
 
 ```bash
-npm test                   # 79 tests
+npm test                   # 90 tests
 npm run test:constraints   # 14 database-level cases
 ```
 
@@ -419,8 +497,8 @@ informative.
 - [x] **Phase 1** — Foundation, data model, compliance constraints, auth, seed
 - [x] **Phase 2** — Catalogue, search, salt substitutes, product pages
 - [x] **Phase 3** — Cart, prescription upload, server-side Rx gate, checkout
+- [x] **Phase 5** — Pharmacist verification queue, H1 register, admin portal
 - [ ] **Phase 4** — Customer account, order history, prescription library
-- [ ] **Phase 5** — Pharmacist verification queue, admin portal
 - [ ] **Phase 6** — Rate limiting, Playwright suite, SEO, Lighthouse
 
 ---
