@@ -62,6 +62,14 @@ export const RX_GATE_COPY = {
   short: "Prescription required",
   long: "This medicine requires a valid prescription. Upload one at checkout — a registered pharmacist will verify it before your order is dispensed.",
   cartNotice: "Cannot be dispensed until a pharmacist verifies your prescription.",
+  // Shown once the gate is satisfied. cartNotice must never appear on a line
+  // that already carries a verified prescription — it would be stating
+  // something untrue about the customer's own order, on the one element of
+  // this interface that has to be exactly honest. The second sentence is not
+  // hedging: passing the gate proves a verified prescription is attached, and
+  // a pharmacist still has to confirm it covers this drug at this quantity.
+  cartVerified:
+    "Verified prescription attached. A pharmacist checks that it covers this item before your order is dispatched.",
   blocked: "A pharmacist-verified prescription is required before this order can be paid for.",
 } as const;
 

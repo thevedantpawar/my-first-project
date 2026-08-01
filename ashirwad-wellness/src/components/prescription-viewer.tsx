@@ -26,12 +26,14 @@ export function PrescriptionViewer({
   const [url, setUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [expired, setExpired] = useState(false);
+  const [unreadable, setUnreadable] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
 
   const load = useCallback(async () => {
     setError(null);
     setExpired(false);
+    setUnreadable(false);
     const result = await getPrescriptionViewUrl({ prescriptionId });
     if (result.ok) {
       setUrl(result.data.url);
@@ -109,6 +111,29 @@ export function PrescriptionViewer({
               Load again
             </button>
           </div>
+        ) : unreadable ? (
+          // A signed URL that resolves to nothing. The object is missing from
+          // storage, or was never written. This must never render as an empty
+          // frame: a pharmacist looking at blank space has to be told they are
+          // looking at blank space, because the whole decision is "read this
+          // image and judge it". Silence here invites verifying unseen.
+          <div className="rx-gate rounded-r-[var(--radius-control)] p-6 text-center">
+            <p className="text-sm font-semibold text-rx-700">
+              This prescription image could not be loaded.
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-rx-700">
+              The file is missing from storage. Do not verify this prescription —
+              there is nothing to verify against. Ask the customer to upload it
+              again, and report this if it recurs.
+            </p>
+            <button
+              type="button"
+              onClick={() => void load()}
+              className="mt-3 rounded-[var(--radius-control)] bg-pine-700 px-3 py-1.5 text-xs font-semibold text-paper"
+            >
+              Try again
+            </button>
+          </div>
         ) : !url ? (
           <div className="grid place-items-center p-12">
             <Loader2 aria-hidden="true" className="size-5 animate-spin text-ink-300" />
@@ -124,6 +149,13 @@ export function PrescriptionViewer({
           <img
             src={url}
             alt="Prescription"
+            onError={() => setUnreadable(true)}
+            // Same reason as ProductImage: a server-rendered image can finish
+            // failing before React attaches onError, so an already-failed load
+            // is detected at attach time too.
+            ref={(node) => {
+              if (node && node.complete && node.naturalWidth === 0) setUnreadable(true);
+            }}
             style={{
               transform: `scale(${zoom}) rotate(${rotation}deg)`,
               transformOrigin: "center center",

@@ -217,7 +217,11 @@ export function CartLine({
           </select>
 
           <p className="mt-2 text-[0.6875rem] leading-relaxed text-rx-700">
-            {violation ? violation.message : RX_GATE_COPY.cartNotice}
+            {violation
+              ? violation.message
+              : item.prescriptionId
+                ? RX_GATE_COPY.cartVerified
+                : RX_GATE_COPY.cartNotice}
           </p>
         </div>
       )}
