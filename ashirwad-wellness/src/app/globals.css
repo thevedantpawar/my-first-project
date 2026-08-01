@@ -1,0 +1,182 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ---------------------------------------------------------------------------
+   Ashirwad Wellness — design tokens
+
+   Tailwind v4 is CSS-first: @theme *is* the config, so these tokens generate
+   the utility classes directly (bg-pine, text-turmeric, border-rx, …). v4 has
+   no tailwind.config.ts unless a plugin needs one.
+
+   The palette is deliberately pine-and-turmeric rather than the interchangeable
+   mint-green every competitor uses. --rx is load-bearing: it appears only on
+   prescription-required signalling and nowhere else, so the colour itself
+   becomes a learned signal.
+--------------------------------------------------------------------------- */
+
+@theme {
+  /* Brand */
+  --color-pine: #0f3d2e;
+  --color-living: #2d8f5f;
+  --color-turmeric: #e8a317;
+  --color-rx: #b3261e;
+  --color-paper: #f7f5f0;
+  --color-ink: #141a17;
+
+  /* Tints and shades derived from the six above. Nothing new is invented here;
+     these exist so components never hand-roll one-off opacities. */
+  --color-pine-900: #071f17;
+  --color-pine-700: #0f3d2e;
+  --color-pine-500: #1c6349;
+  --color-pine-100: #d9e6e0;
+  --color-pine-50: #eef4f1;
+
+  --color-living-600: #24734c;
+  --color-living-500: #2d8f5f;
+  --color-living-100: #d7ede1;
+  --color-living-50: #eff8f3;
+
+  --color-turmeric-600: #b87d0a;
+  --color-turmeric-500: #e8a317;
+  --color-turmeric-100: #fbeccd;
+  --color-turmeric-50: #fdf6e7;
+
+  --color-rx-700: #8c1d17;
+  --color-rx-500: #b3261e;
+  --color-rx-100: #f6dcda;
+  --color-rx-50: #fbefee;
+
+  --color-paper-raised: #fffefb;
+  --color-paper-sunk: #efece4;
+
+  --color-ink-900: #141a17;
+  --color-ink-700: #2f3833;
+  --color-ink-500: #5b6660;
+  --color-ink-300: #8d968f;
+  --color-ink-100: #d5d9d5;
+
+  /* Semantic aliases */
+  --color-background: var(--color-paper);
+  --color-foreground: var(--color-ink);
+  --color-border: var(--color-ink-100);
+  --color-in-stock: var(--color-living-500);
+  --color-out-of-stock: var(--color-ink-300);
+  --color-savings: var(--color-turmeric-600);
+
+  /* Type. Display is used with restraint — headings only, never body copy.
+     Mono carries anything that is an identifier a human might read aloud or
+     check against a pack: order numbers, licence numbers, batch numbers,
+     dosage strengths. */
+  --font-display: var(--font-bricolage), "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-manrope), "Manrope", var(--font-devanagari), "Noto Sans Devanagari", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+  --font-devanagari: var(--font-devanagari), "Noto Sans Devanagari", ui-sans-serif, sans-serif;
+
+  --radius-card: 0.75rem;
+  --radius-control: 0.5rem;
+
+  /* Quiet elevation. The design spends its boldness on the Rx Gate, so
+     everything else stays flat and calm. */
+  --shadow-card: 0 1px 2px rgb(20 26 23 / 0.04), 0 4px 12px rgb(20 26 23 / 0.04);
+  --shadow-raised: 0 2px 4px rgb(20 26 23 / 0.06), 0 12px 28px rgb(20 26 23 / 0.08);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "kern", "liga";
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  /* Every interactive element gets a visible focus ring. This is a floor, not
+     a default for components to override. */
+  :focus-visible {
+    outline: 2px solid var(--color-pine-700);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Identifiers are always mono, always tabular. */
+  .identifier {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   The Rx Gate
+
+   One treatment, reused verbatim on the catalogue card, the product page, the
+   cart line, and the checkout line. A returning customer should recognise a
+   prescription item without reading a word of it.
+
+   Three parts, always together:
+     1. a 3px left rule in --rx
+     2. the ℞ glyph in a filled --rx chip
+     3. the same sentence, every time
+
+   Components must not restyle these. If a surface needs a different size it
+   changes the padding, never the marker.
+--------------------------------------------------------------------------- */
+
+@layer components {
+  .rx-gate {
+    position: relative;
+    border-left: 3px solid var(--color-rx-500);
+    background-color: var(--color-rx-50);
+  }
+
+  .rx-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    background-color: var(--color-rx-500);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    /* #b3261e on white is 6.4:1 — AA at any size. */
+  }
+
+  .rx-badge--quiet {
+    background-color: var(--color-rx-100);
+    color: var(--color-rx-700);
+  }
+}
+
+/* prefers-reduced-motion is handled globally rather than per-animation, so a
+   component author cannot forget it. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
