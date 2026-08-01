@@ -8,6 +8,7 @@ import {
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { siteUrl, pharmacyJsonLd } from "@/lib/seo";
 
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
@@ -37,12 +38,26 @@ const devanagari = Noto_Sans_Devanagari({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl()),
   title: {
     default: "Ashirwad Wellness — Online Pharmacy, Nashik",
     template: "%s | Ashirwad Wellness",
   },
   description:
     "Licensed online pharmacy serving Nashik. Prescription medicines are verified by a registered pharmacist before dispensing.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    siteName: "Ashirwad Wellness",
+    title: "Ashirwad Wellness — Online Pharmacy, Nashik",
+    description:
+      "Licensed online pharmacy serving Nashik. Prescription medicines are verified by a registered pharmacist before dispensing.",
+  },
+  // Search result pages and anything behind a session are excluded in
+  // robots.ts; this is the site-wide default for everything else.
+  robots: { index: true, follow: true },
+  formatDetection: { telephone: false },
 };
 
 export default function RootLayout({
@@ -62,6 +77,10 @@ export default function RootLayout({
       className={`${bricolage.variable} ${manrope.variable} ${plexMono.variable} ${devanagari.variable}`}
     >
       <body className="antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(pharmacyJsonLd()) }}
+        />
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[var(--radius-control)] focus:bg-pine-700 focus:px-4 focus:py-2 focus:text-paper"

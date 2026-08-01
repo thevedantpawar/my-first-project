@@ -84,9 +84,12 @@ export function ProductImage({
       >
         {monogram(name)}
       </span>
+      {/* No opacity on the label. Each tint pair clears 4.5:1 at full strength
+          and none of them does at 70%, and this is 9px text — the size that
+          needs the ratio most. Reach for a lighter token, not a lighter alpha. */}
       {label && (
         <span
-          className="identifier text-[0.5625rem] uppercase tracking-wider opacity-70"
+          className="identifier text-[0.5625rem] uppercase tracking-wider"
           style={{ color: tint.fg }}
         >
           {label}

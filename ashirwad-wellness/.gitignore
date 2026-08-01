@@ -46,3 +46,9 @@ next-env.d.ts
 
 # Private object storage (development only — never commit prescription images)
 /.private-storage
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

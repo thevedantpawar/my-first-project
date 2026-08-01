@@ -31,12 +31,19 @@
   --color-pine-100: #d9e6e0;
   --color-pine-50: #eef4f1;
 
+  /* living-600 is the shade solid buttons use. --living itself (#2d8f5f) only
+     reaches 3.70:1 against paper, so white text on it fails WCAG AA at body
+     size. The brand colour is unchanged — it still carries active states, the
+     in-stock dot and accents, where it is not being asked to sit under text. */
+  --color-living-700: #1b5739;
   --color-living-600: #24734c;
   --color-living-500: #2d8f5f;
   --color-living-100: #d7ede1;
   --color-living-50: #eff8f3;
 
-  --color-turmeric-600: #b87d0a;
+  /* Dark enough to clear 4.5:1 on turmeric-100, which is the tightest pairing
+     it appears in (the savings chip). */
+  --color-turmeric-600: #916308;
   --color-turmeric-500: #e8a317;
   --color-turmeric-100: #fbeccd;
   --color-turmeric-50: #fdf6e7;
@@ -52,7 +59,13 @@
   --color-ink-900: #141a17;
   --color-ink-700: #2f3833;
   --color-ink-500: #5b6660;
-  --color-ink-300: #8d968f;
+  /* The lightest ink that clears 4.5:1 on *every* surface it lands on — paper,
+     raised, sunk, and the pine/living/turmeric/rx tints, including the Rx-tinted
+     product card. Tuning it against paper alone left it failing at 4.39:1 on
+     rx-50, which is exactly the card where the small print matters most. It
+     carries labels, struck-through MRPs and metadata: small text, so it needs
+     the full ratio, not the large-text exemption. */
+  --color-ink-300: #5a605c;
   --color-ink-100: #d5d9d5;
 
   /* Semantic aliases */

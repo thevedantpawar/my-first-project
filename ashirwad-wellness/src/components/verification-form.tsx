@@ -86,7 +86,7 @@ export function VerificationForm({
             className={`flex items-center gap-1.5 rounded-[var(--radius-control)] px-3 py-1.5 text-xs font-medium ${
               mode === tab.key
                 ? tab.key === "verify"
-                  ? "bg-living-500 text-paper"
+                  ? "bg-living-600 text-paper"
                   : tab.key === "reject"
                     ? "bg-rx-500 text-paper"
                     : "bg-turmeric-500 text-ink-900"
@@ -202,7 +202,7 @@ export function VerificationForm({
           <button
             type="submit"
             disabled={pending}
-            className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-control)] bg-living-500 px-4 py-2.5 text-sm font-semibold text-paper hover:bg-living-600 disabled:bg-ink-100 disabled:text-ink-300"
+            className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-control)] bg-living-600 px-4 py-2.5 text-sm font-semibold text-paper hover:bg-living-700 disabled:bg-ink-100 disabled:text-ink-300"
           >
             {pending && <Loader2 aria-hidden="true" className="size-4 animate-spin" />}
             Verify prescription

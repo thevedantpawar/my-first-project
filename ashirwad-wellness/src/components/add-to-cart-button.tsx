@@ -54,7 +54,7 @@ export function AddToCartButton({
         type="button"
         onClick={onClick}
         disabled={disabled || pending}
-        className={`flex w-full items-center justify-center gap-2 rounded-[var(--radius-control)] bg-living-500 px-5 py-3 text-sm font-semibold text-paper transition-colors hover:bg-living-600 disabled:cursor-not-allowed disabled:bg-ink-100 disabled:text-ink-300 ${className}`}
+        className={`flex w-full items-center justify-center gap-2 rounded-[var(--radius-control)] bg-living-600 px-5 py-3 text-sm font-semibold text-paper transition-colors hover:bg-living-700 disabled:cursor-not-allowed disabled:bg-ink-100 disabled:text-ink-300 ${className}`}
       >
         {pending ? (
           <Loader2 aria-hidden="true" className="size-4 animate-spin" />

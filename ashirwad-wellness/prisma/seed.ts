@@ -1606,7 +1606,11 @@ async function main() {
       mrpPaise: rs(p.mrp),
       sellingPricePaise: rs(p.sp),
       stock: p.stock,
-      images: [`/products/${slug}.jpg`],
+      // Empty, not a guessed path. The catalogue ships without photography, and
+      // seeding `/products/<slug>.jpg` made every card request a file that does
+      // not exist — a 404 per tile, hidden behind ProductImage's monogram
+      // fallback. Set a real URL when there is a real photograph.
+      images: [],
       shortDescription: p.shortDescription ?? null,
       uses: p.uses ?? null,
       howItWorks: p.howItWorks ?? null,

@@ -7,7 +7,8 @@ The platform is architected around Indian pharmacy regulation. Prescription gati
 not a feature layered on top of a storefront — it is the spine of the data model, and
 it is enforced in the database, not in the UI.
 
-**Status: Phase 5 (pharmacist portal and admin) complete.**
+**Status: all six phases complete.** Foundation, catalogue, cart and checkout, customer
+account, pharmacist portal and admin, hardening.
 
 ---
 
@@ -48,8 +49,10 @@ All use the password `Ashirwad@2026`.
 | `npm run db:deploy` | Apply migrations (production, non-interactive) |
 | `npm run db:seed` | Seed catalogue and reference data |
 | `npm run db:reset` | Drop, re-migrate and re-seed |
-| `npm test` | Vitest — Rx gate, compliance, search, pricing |
+| `npm test` | Vitest — Rx gate, compliance, search, pricing, rate limits |
 | `npm run test:constraints` | SQL suite proving the DB-level guarantees |
+| `npm run test:e2e` | Playwright — the compliance flows, through a browser |
+| `npm run test:all` | All three, in order |
 
 ---
 
@@ -388,13 +391,172 @@ order must remain resolvable. Delisting also clears it from every live cart.
 
 ---
 
+## Customer account
+
+### Order history and the tax invoice
+
+An order's detail page shows the dispensing timeline as it actually happened —
+placed, held for pharmacist review, approved or declined with the pharmacist's
+stated reason, dispensed. Rx lines carry the Rx Gate here too, and once approved
+they show the batch number and expiry that went onto the register, because a
+patient is entitled to know which pack they were dispensed.
+
+`src/lib/invoice.ts` renders a **GST tax invoice** as a PDF: both drug licence
+numbers, FSSAI licence, GSTIN, and the registered pharmacist's name and
+registration number; per line the HSN code, GST rate, taxable value and tax; and
+for Rx lines the batch, expiry and the prescribing doctor's registration number.
+Amounts come from the order's stored paise figures, never recomputed at render
+time — an invoice must show what was charged, not what today's prices would be.
+
+The route scopes the lookup by `userId` in the query itself. An order number is
+short and guessable, and must never be sufficient on its own to read someone
+else's invoice.
+
+### Reordering
+
+`reorder` rebuilds a cart from a past order rather than copying it. Delisted and
+out-of-stock items are skipped and named, quantities are re-clamped to the
+current `maxPerOrder` and stock, and **prescription links are not carried over**.
+A repeat of an Rx order goes back through the gate and back through pharmacist
+review; the previous approval covered the previous dispensing.
+
+### Prescription library
+
+Every prescription the customer has uploaded, with its status, validity window,
+verifying pharmacist and remaining repeats. The repeat count is **derived from
+dispensed order items**, exactly as the gate derives it — not read from the
+`refillsUsed` mirror — so the customer is never shown a supply the gate would
+refuse. Images open through the same signed-URL path as the pharmacist
+portal — a fresh short-lived URL, minted server-side, audited on every view.
+Rejected prescriptions show the pharmacist's reason so the customer knows what
+to fix, and `CLARIFICATION_REQUESTED` offers a re-upload.
+
+### Family profiles and health records
+
+Orders may be placed for a named family member, which matters because the H1
+register records the **patient's** name, not the account holder's. Health records
+are stored with the same private-storage treatment as prescriptions, with one
+difference: pharmacists cannot read them. A lab report is not a dispensing
+record.
+
+---
+
+## Hardening
+
+### Rate limiting
+
+`src/lib/rate-limit.ts` is an interface with an in-process fixed-window counter
+as the default. That default is honest about what it is: it does not survive a
+restart and does not coordinate across instances, so a multi-instance deployment
+must register the Redis implementation at the same seam.
+
+| Surface | Limit |
+|---|---|
+| Sign-in | 8 / 15 min |
+| Prescription upload | 12 / hour |
+| Health record upload | 20 / hour |
+| Checkout | 10 / 10 min |
+| Search | 120 / min |
+
+When the client IP cannot be determined the key falls back to a constant, which
+makes the limit global rather than per-client — **degrading closed, not open**.
+
+`RATE_LIMIT_DISABLED=true` exists for the E2E suite, which signs in on nearly
+every spec. It throws if `NODE_ENV=production`, so it cannot be left on by
+accident in a deploy.
+
+### SEO and structured data
+
+Canonical URLs, OpenGraph and Twitter cards, `robots.ts` and `sitemap.ts`.
+JSON-LD: `Product` with price and availability on product pages,
+`BreadcrumbList` on catalogue paths, and `Pharmacy` on the storefront carrying
+the drug licence and the registered pharmacist.
+
+Two rules the code enforces rather than trusts:
+
+- `siteUrl()` **throws in production** when `NEXT_PUBLIC_SITE_URL` is unset. A
+  sitemap full of `http://localhost:3000` is worse than a failed boot.
+- Unconfigured regulatory identifiers are **omitted** from JSON-LD, never
+  emitted as `REPLACE_ME_…`. Structured data asserting a fake licence number is
+  worse than structured data that is merely incomplete.
+
+`robots.txt` disallows `/account`, `/admin`, `/pharmacist`, `/checkout` and
+`/cart`, and the sitemap never lists them. Both are asserted in the E2E suite.
+
+### End-to-end suite
+
+`e2e/` drives a real browser against a real database. It runs serially against
+the dev server, because the local-disk storage driver deliberately refuses to
+run under `NODE_ENV=production` — that refusal is a feature, so the suite works
+with it rather than around it.
+
+| Spec | Proves |
+|---|---|
+| Rx gate, no prescription | Cart explains, button disabled, **and `/checkout` redirects back** |
+| Rx gate, unverified prescription | An uploaded-but-unverified prescription is not offered and does not open the gate |
+| Rx gate, after verification | Pharmacist verifies → gate opens → order lands in `PENDING_PHARMACIST_REVIEW` |
+| Pharmacist approval | Batch and expiry are mandatory; approval writes exactly one H1 register entry carrying both registration numbers; the register then refuses `UPDATE` |
+| Pincode | An unserviceable pincode blocks the rest of the address form |
+| COD ceiling | Cash on delivery is withdrawn, and disabled, above the ceiling |
+| Role boundaries | A customer reaches neither the pharmacist portal nor admin; an admin cannot release an order held for review; the audit viewer offers no mutation |
+| Statutory surfaces | Licence numbers in the footer; `Product` and `BreadcrumbList` JSON-LD; robots and sitemap exclude private routes |
+| Quality floor | No horizontal scroll at 360px; one `h1`; a working skip link |
+
+Every fixture is built **through the application** — upload, verification,
+linking, checkout — so an order under test is one the Rx gate genuinely let
+through, not a row inserted behind the app's back.
+
+Two things the suite learned the hard way, both documented in `e2e/helpers.ts`:
+`page.waitForURL` hangs on App Router soft navigations because there is no
+`load` event, so route changes are awaited by polling `location.pathname`; and a
+server-rendered button is present *and enabled* long before React attaches its
+handler, so `clickUntilEffect` clicks and then checks whether the click did
+anything, rather than trusting "enabled" to mean "live".
+
+### Lighthouse
+
+Measured against a **production build** (`next build && next start`), desktop
+preset. Dev-server numbers are meaningless — unminified bundles and on-demand
+compilation.
+
+| Page | Performance | Accessibility | Best practices | SEO |
+|---|---|---|---|---|
+| `/` | 100 | 100 | 100 | 100 |
+| `/category/medicines` | 100 | 100 | 100 | 100 |
+| `/product/zifi-200-tablet` | 100 | 100 | 100 | 100 |
+
+Three real defects surfaced getting there, all now fixed at the source:
+
+- **Contrast.** `--ink-300` sat at 3.02:1, and `--turmeric-600` at 3.00:1 on the
+  savings chip. Both now clear 4.5:1 on *every* surface they land on, including
+  the Rx-tinted product card — tuning `--ink-300` against paper alone still left
+  it failing at 4.39:1 on `rx-50`, which is the card where the small print
+  matters most.
+- **White on `--living`.** The brand green reaches only 3.70:1 under white text,
+  so solid buttons now use `living-600` with a `living-700` hover. `--living`
+  itself is unchanged and still carries active states, the in-stock dot and
+  accents — everywhere it is not being asked to sit under text.
+- **A 404 per catalogue tile.** The seed pointed every product at
+  `/products/<slug>.jpg`, which does not ship. `ProductImage`'s monogram
+  fallback hid it visually, so it cost a wasted request per card and a console
+  error rather than a visible break. The seed now stores no image URL until
+  there is a real photograph.
+
+The Rx card was re-measured after the token changes. On `rx-50`: the product
+name 15.70:1, the ℞ label and notice 8.11:1, the rule and chip 5.82:1, the small
+print 5.73:1. The prescription signal sits above everything except the product
+name itself, and clears AA with room — which is what it is for.
+
+---
+
 ## Verification
 
 Compliance claims in this README are tested, not asserted.
 
 ```bash
-npm test                   # 90 tests
+npm test                   # 96 tests
 npm run test:constraints   # 14 database-level cases
+npm run test:e2e           # 14 browser flows
 ```
 
 `prisma/sql/constraint_tests.sql` proves the guarantees hold against a real Postgres:
@@ -438,6 +600,25 @@ src/
     pharmacy.ts            Statutory identity from env
     money.ts               Integer paise, GST, Indian formatting
     otp.ts                 Phone OTP behind an interface (stubbed)
+    rx-gate.ts             THE enforcement point
+    storage.ts             Private storage + HMAC-signed expiring URLs
+    invoice.ts             GST tax invoice PDF
+    rate-limit.ts          Fixed-window limiter behind an interface
+    seo.ts                 Canonical origin, Pharmacy/Breadcrumb JSON-LD
+  actions/
+    cart.ts                Cart mutations + guest-cart reconciliation
+    prescriptions.ts       Upload, link, signed-URL minting
+    checkout.ts            placeOrder — recomputes everything server-side
+    pharmacist.ts          Verification, order review, H1 register writes
+    admin-products.ts      saveProduct + CSV import (same four gates)
+    admin.ts               Orders, staff, serviceability
+    account.ts             Profile, patients, health records, reorder
+  app/
+    account/               Orders, invoices, prescriptions, records, family
+    pharmacist/            Verification queue and order review
+    admin/                 Catalogue, orders, staff, audit viewer
+    api/private-file/      Signed-URL reads, re-authorised independently
+    robots.ts sitemap.ts   Private routes excluded from both
   components/
     rx-gate.tsx            The Rx Gate — the signature element
     product-card.tsx       Catalogue card (Rx Gate surface 1)
@@ -445,9 +626,13 @@ src/
     search-box.tsx         Autocomplete combobox
     catalogue-filters.tsx  URL-driven filter rail
     product-image.tsx      Imagery with deterministic fallback
+    order-review-form.tsx  Batch/expiry capture for the H1 register
+    prescription-library.tsx  Customer's prescriptions and their status
     site-header.tsx        Navigation + search
     site-footer.tsx        Statutory disclosure
     trust-strip.tsx        Licence numbers above the fold
+e2e/                       Playwright: the compliance flows, in a browser
+tests/                     Vitest: gate bypasses, claims, pricing, limits
 ```
 
 ### Stack notes
@@ -473,11 +658,18 @@ Tokens live in `src/app/globals.css`.
 | Token | Use |
 |---|---|
 | `--pine` `#0F3D2E` | Primary, headers, trust surfaces |
-| `--living` `#2D8F5F` | CTAs, active states, in-stock |
+| `--living` `#2D8F5F` | Active states, in-stock, accents |
 | `--turmeric` `#E8A317` | Offers, savings, urgency |
 | `--rx` `#B3261E` | **Prescription signalling only** |
 | `--paper` `#F7F5F0` | Page background |
 | `--ink` `#141A17` | Primary text |
+
+The six above are the palette. Derived shades exist so components never hand-roll
+an opacity, and two of them carry a rule worth knowing: **solid buttons use
+`living-600`, not `--living`**, because white text on the brand green is 3.70:1
+and fails WCAG AA; and **no token is lightened with `opacity`** — every pairing
+in the interface is a real colour pair that has been measured. Reach for a
+lighter token, not a lighter alpha.
 
 Type: Bricolage Grotesque (display, restrained), Manrope (body), IBM Plex Mono
 (identifiers — order numbers, licence numbers, batch numbers, dosage strengths), Noto
@@ -497,9 +689,9 @@ informative.
 - [x] **Phase 1** — Foundation, data model, compliance constraints, auth, seed
 - [x] **Phase 2** — Catalogue, search, salt substitutes, product pages
 - [x] **Phase 3** — Cart, prescription upload, server-side Rx gate, checkout
+- [x] **Phase 4** — Customer account, order history, tax invoices, prescription library
 - [x] **Phase 5** — Pharmacist verification queue, H1 register, admin portal
-- [ ] **Phase 4** — Customer account, order history, prescription library
-- [ ] **Phase 6** — Rate limiting, Playwright suite, SEO, Lighthouse
+- [x] **Phase 6** — Rate limiting, Playwright suite, SEO and structured data
 
 ---
 

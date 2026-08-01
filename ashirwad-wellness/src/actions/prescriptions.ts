@@ -12,6 +12,7 @@ import {
   signObjectUrl,
 } from "@/lib/storage";
 import { policy } from "@/lib/pharmacy";
+import { enforceRateLimit, RateLimitError } from "@/lib/rate-limit";
 import { PrescriptionStatus } from "@/generated/prisma/enums";
 import type { ActionResult } from "./cart";
 
@@ -48,6 +49,13 @@ export async function uploadPrescription(
   formData: FormData,
 ): Promise<ActionResult<{ prescriptionId: string }>> {
   const user = await requireUser();
+
+  try {
+    await enforceRateLimit("prescriptionUpload", user.id);
+  } catch (error) {
+    if (error instanceof RateLimitError) return { ok: false, error: error.message };
+    throw error;
+  }
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {

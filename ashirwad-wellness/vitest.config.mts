@@ -7,6 +7,8 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["tests/**/*.test.ts"],
+    // Playwright owns e2e/; vitest must not try to run those specs.
+    exclude: ["e2e/**", "node_modules/**"],
     // Loads .env so DATABASE_URL is available to the tests that hit Postgres.
     setupFiles: [path.resolve(root, "./tests/setup.ts")],
   },

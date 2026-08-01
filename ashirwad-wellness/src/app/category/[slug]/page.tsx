@@ -27,6 +27,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description:
       category.description ??
       `Buy ${category.name.toLowerCase()} online from Ashirwad Wellness, a licensed pharmacy in Nashik.`,
+    // Filters and pagination live in the query string; the canonical points at
+    // the unfiltered page so filtered permutations do not compete with it.
+    alternates: { canonical: `/category/${slug}` },
   };
 }
 

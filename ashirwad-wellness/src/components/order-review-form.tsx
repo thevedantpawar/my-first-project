@@ -80,21 +80,25 @@ export function OrderReviewForm({
 
   return (
     <div className="rounded-[var(--radius-card)] border border-ink-100 bg-paper-raised p-4">
-      <div className="flex gap-1.5">
+      <div className="flex gap-1.5" role="tablist" aria-label="Decision">
         <button
           type="button"
+          role="tab"
+          aria-selected={mode === "approve"}
           onClick={() => setMode("approve")}
           className={`flex items-center gap-1.5 rounded-[var(--radius-control)] px-3 py-1.5 text-xs font-medium ${
             mode === "approve"
-              ? "bg-living-500 text-paper"
+              ? "bg-living-600 text-paper"
               : "border border-ink-100 text-ink-700"
           }`}
         >
           <Check aria-hidden="true" className="size-3.5" />
-          Approve for dispensing
+          Approve
         </button>
         <button
           type="button"
+          role="tab"
+          aria-selected={mode === "reject"}
           onClick={() => setMode("reject")}
           className={`flex items-center gap-1.5 rounded-[var(--radius-control)] px-3 py-1.5 text-xs font-medium ${
             mode === "reject"
@@ -209,7 +213,7 @@ export function OrderReviewForm({
           <button
             type="submit"
             disabled={pending}
-            className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-control)] bg-living-500 px-4 py-2.5 text-sm font-semibold text-paper hover:bg-living-600 disabled:bg-ink-100 disabled:text-ink-300"
+            className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-control)] bg-living-600 px-4 py-2.5 text-sm font-semibold text-paper hover:bg-living-700 disabled:bg-ink-100 disabled:text-ink-300"
           >
             {pending && <Loader2 aria-hidden="true" className="size-4 animate-spin" />}
             {h1Lines.length > 0

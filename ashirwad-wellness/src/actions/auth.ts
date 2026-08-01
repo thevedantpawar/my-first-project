@@ -4,6 +4,7 @@ import { AuthError } from "next-auth";
 import { z } from "zod";
 
 import { signIn } from "@/auth";
+import { enforceRateLimit, RateLimitError } from "@/lib/rate-limit";
 import type { ActionResult } from "./cart";
 
 const credentialsSchema = z.object({
@@ -32,6 +33,16 @@ export async function signInWithCredentials(
   }
 
   const { email, password, next } = parsed.data;
+
+  // Keyed by IP *and* the email being tried, so one attacker cannot lock out a
+  // specific account by burning that account's allowance from many addresses,
+  // and cannot spray many accounts from one address either.
+  try {
+    await enforceRateLimit("signIn", email.toLowerCase());
+  } catch (error) {
+    if (error instanceof RateLimitError) return { ok: false, error: error.message };
+    throw error;
+  }
 
   // Only same-origin paths, so `?next=` cannot become an open redirect.
   const redirectTo =

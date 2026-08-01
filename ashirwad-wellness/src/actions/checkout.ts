@@ -14,6 +14,7 @@ import { policy } from "@/lib/pharmacy";
 import { createRazorpayOrder, isRazorpayConfigured } from "@/lib/razorpay";
 import { sendOrderConfirmation } from "@/lib/email";
 import { checkPincode } from "./addresses";
+import { enforceRateLimit, RateLimitError } from "@/lib/rate-limit";
 import {
   OrderStatus,
   PaymentMethod,
@@ -62,6 +63,15 @@ export async function placeOrder(
 
   const user = await requireUser();
   const { addressId, paymentMethod, couponCode } = parsed.data;
+
+  // Order placement decrements stock inside a transaction and runs the Rx gate,
+  // so it is the most expensive thing an authenticated caller can hammer.
+  try {
+    await enforceRateLimit("checkout", user.id);
+  } catch (error) {
+    if (error instanceof RateLimitError) return { ok: false, error: error.message };
+    throw error;
+  }
 
   const address = await db.address.findFirst({
     where: { id: addressId, userId: user.id },

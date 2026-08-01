@@ -33,7 +33,7 @@ export default async function Home() {
         </p>
         <Link
           href="/category/medicines"
-          className="mt-6 inline-flex items-center gap-2 rounded-[var(--radius-control)] bg-living-500 px-5 py-2.5 text-sm font-semibold text-paper hover:bg-living-600"
+          className="mt-6 inline-flex items-center gap-2 rounded-[var(--radius-control)] bg-living-600 px-5 py-2.5 text-sm font-semibold text-paper hover:bg-living-700"
         >
           Browse medicines
           <ArrowRight aria-hidden="true" className="size-4" />

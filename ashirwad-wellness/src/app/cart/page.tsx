@@ -35,7 +35,7 @@ export default async function CartPage() {
         </p>
         <Link
           href="/category/medicines"
-          className="mt-6 inline-flex items-center gap-2 rounded-[var(--radius-control)] bg-living-500 px-5 py-2.5 text-sm font-semibold text-paper hover:bg-living-600"
+          className="mt-6 inline-flex items-center gap-2 rounded-[var(--radius-control)] bg-living-600 px-5 py-2.5 text-sm font-semibold text-paper hover:bg-living-700"
         >
           Browse medicines
           <ArrowRight aria-hidden="true" className="size-4" />
@@ -196,7 +196,7 @@ export default async function CartPage() {
               aria-disabled={!gate.satisfied || cart.outOfStock.length > 0}
               className={`mt-4 flex w-full items-center justify-center gap-2 rounded-[var(--radius-control)] px-5 py-3 text-sm font-semibold ${
                 gate.satisfied && cart.outOfStock.length === 0
-                  ? "bg-living-500 text-paper hover:bg-living-600"
+                  ? "bg-living-600 text-paper hover:bg-living-700"
                   : "pointer-events-none bg-ink-100 text-ink-300"
               }`}
             >

@@ -21,6 +21,7 @@ import { AddToCartButton } from "@/components/add-to-cart-button";
 import { ScheduleType } from "@/generated/prisma/enums";
 import { pharmacy } from "@/lib/pharmacy";
 import { auth } from "@/auth";
+import { siteUrl, breadcrumbJsonLd } from "@/lib/seo";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -29,11 +30,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = await getProductBySlug(slug);
   if (!product) return { title: "Product not found" };
 
+  const description =
+    product.shortDescription ??
+    `${product.name} — ${product.composition}. ${product.packSize}.`;
+
   return {
     title: product.name,
-    description:
-      product.shortDescription ??
-      `${product.name} — ${product.composition}. ${product.packSize}.`,
+    description,
+    alternates: { canonical: `/product/${product.slug}` },
+    openGraph: {
+      type: "website",
+      title: product.name,
+      description,
+      url: `${siteUrl()}/product/${product.slug}`,
+    },
   };
 }
 
@@ -94,6 +104,24 @@ export default async function ProductPage({ params }: Props) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            breadcrumbJsonLd([
+              { name: "Home", path: "/" },
+              ...(product.category.parent
+                ? [{
+                    name: product.category.parent.name,
+                    path: `/category/${product.category.parent.slug}`,
+                  }]
+                : []),
+              { name: product.category.name, path: `/category/${product.category.slug}` },
+              { name: product.name, path: `/product/${product.slug}` },
+            ]),
+          ),
+        }}
       />
 
       <nav aria-label="Breadcrumb" className="text-xs text-ink-500">

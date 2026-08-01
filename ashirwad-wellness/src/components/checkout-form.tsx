@@ -252,7 +252,7 @@ export function CheckoutForm({
         type="button"
         onClick={submit}
         disabled={pending || !selectedAddressId || !paymentMethod}
-        className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-control)] bg-living-500 px-5 py-3.5 text-sm font-semibold text-paper hover:bg-living-600 disabled:cursor-not-allowed disabled:bg-ink-100 disabled:text-ink-300"
+        className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-control)] bg-living-600 px-5 py-3.5 text-sm font-semibold text-paper hover:bg-living-700 disabled:cursor-not-allowed disabled:bg-ink-100 disabled:text-ink-300"
       >
         {pending && <Loader2 aria-hidden="true" className="size-4 animate-spin" />}
         Place order · {formatPaise(totalPaise)}
