@@ -17,8 +17,10 @@ import { FORM_LABEL } from "@/lib/labels";
 import { ProductImage } from "@/components/product-image";
 import { RxBadge, RxGateBlock } from "@/components/rx-gate";
 import { SaltSubstitutes } from "@/components/salt-substitutes";
+import { AddToCartButton } from "@/components/add-to-cart-button";
 import { ScheduleType } from "@/generated/prisma/enums";
 import { pharmacy } from "@/lib/pharmacy";
+import { auth } from "@/auth";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -54,7 +56,7 @@ function InfoSection({
 
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const [product, session] = await Promise.all([getProductBySlug(slug), auth()]);
   if (!product) notFound();
 
   const substitutes = await getSaltSubstitutes(product);
@@ -228,16 +230,11 @@ export default async function ProductPage({ params }: Props) {
                   Out of stock
                 </button>
               ) : (
-                <button
-                  type="button"
-                  className="w-full rounded-[var(--radius-control)] bg-living-500 px-5 py-3 text-sm font-semibold text-paper hover:bg-living-600"
-                >
-                  Add to cart
-                </button>
+                <AddToCartButton
+                  productId={product.id}
+                  isSignedIn={Boolean(session?.user?.id)}
+                />
               )}
-              <p className="mt-2 text-center text-[0.6875rem] text-ink-300">
-                Cart and checkout arrive in Phase 3.
-              </p>
             </div>
           </div>
 

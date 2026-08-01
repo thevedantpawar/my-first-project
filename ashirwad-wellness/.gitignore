@@ -43,3 +43,6 @@ next-env.d.ts
 # Prisma generated client
 /src/generated
 !.env.example
+
+# Private object storage (development only — never commit prescription images)
+/.private-storage

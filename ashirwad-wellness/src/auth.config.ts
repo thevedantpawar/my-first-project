@@ -10,6 +10,18 @@ import Google from "next-auth/providers/google";
  * provider on the Node runtime.
  */
 export const authConfig = {
+  /**
+   * Auth.js refuses to trust the incoming Host header unless it detects a
+   * known hosting provider. This deployment is self-hosted behind a reverse
+   * proxy, so without this every request fails with UntrustedHost and sign-in
+   * is impossible — including on localhost.
+   *
+   * This is safe only because the proxy in front of the app sets Host itself.
+   * If that ever stops being true, set AUTH_URL to the canonical origin
+   * instead, which pins it rather than trusting the request.
+   */
+  trustHost: true,
+
   pages: {
     signIn: "/login",
     error: "/login",

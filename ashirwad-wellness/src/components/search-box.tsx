@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, Pill, Tag, Loader2 } from "lucide-react";
 
@@ -27,6 +27,14 @@ export function SearchBox({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+
+  // The header renders this twice — once for desktop, once for the narrow
+  // layout — so the ids must be per-instance. Hardcoding them produced two
+  // elements sharing #catalogue-search, which makes `label for` and
+  // `aria-activedescendant` ambiguous for a screen reader.
+  const instanceId = useId();
+  const inputId = `search-${instanceId}`;
+  const listboxId = `search-suggestions-${instanceId}`;
 
   const containerRef = useRef<HTMLDivElement>(null);
   // Monotonic request id — a stale response is discarded rather than rendered.
@@ -117,12 +125,10 @@ export function SearchBox({
     }
   }
 
-  const listboxId = "search-suggestions";
-
   return (
     <div ref={containerRef} className="relative w-full">
       <form onSubmit={onSubmit} role="search">
-        <label htmlFor="catalogue-search" className="sr-only">
+        <label htmlFor={inputId} className="sr-only">
           Search for medicines, brands or salts
         </label>
         <div className="relative">
@@ -131,7 +137,7 @@ export function SearchBox({
             className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-300"
           />
           <input
-            id="catalogue-search"
+            id={inputId}
             type="search"
             value={query}
             autoFocus={autoFocus}

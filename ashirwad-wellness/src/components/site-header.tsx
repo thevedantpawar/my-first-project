@@ -3,9 +3,15 @@ import { ShoppingCart, User } from "lucide-react";
 
 import { SearchBox } from "./search-box";
 import { getCategoryTree } from "@/lib/catalogue";
+import { getCartCount } from "@/lib/cart";
+import { auth } from "@/auth";
 
 export async function SiteHeader() {
-  const categories = await getCategoryTree();
+  const session = await auth();
+  const [categories, cartCount] = await Promise.all([
+    getCategoryTree(),
+    session?.user?.id ? getCartCount(session.user.id) : Promise.resolve(0),
+  ]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-ink-100 bg-paper-raised/95 backdrop-blur">
@@ -26,11 +32,13 @@ export async function SiteHeader() {
 
           <nav className="ml-auto flex items-center gap-1 sm:gap-2">
             <Link
-              href="/account"
+              href={session?.user?.id ? "/account" : "/login"}
               className="flex items-center gap-1.5 rounded-[var(--radius-control)] px-2.5 py-2 text-sm text-ink-700 hover:bg-pine-50"
             >
               <User aria-hidden="true" className="size-4" />
-              <span className="hidden sm:inline">Account</span>
+              <span className="hidden sm:inline">
+                {session?.user?.id ? "Account" : "Sign in"}
+              </span>
             </Link>
             <Link
               href="/cart"
@@ -38,6 +46,11 @@ export async function SiteHeader() {
             >
               <ShoppingCart aria-hidden="true" className="size-4" />
               <span className="hidden sm:inline">Cart</span>
+              {cartCount > 0 && (
+                <span className="identifier rounded-full bg-turmeric-500 px-1.5 text-[0.6875rem] font-bold text-ink-900">
+                  {cartCount}
+                </span>
+              )}
             </Link>
           </nav>
         </div>

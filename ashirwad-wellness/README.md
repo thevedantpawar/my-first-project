@@ -7,7 +7,7 @@ The platform is architected around Indian pharmacy regulation. Prescription gati
 not a feature layered on top of a storefront — it is the spine of the data model, and
 it is enforced in the database, not in the UI.
 
-**Status: Phase 2 (catalogue and discovery) complete.**
+**Status: Phase 3 (cart, prescriptions, checkout) complete.**
 
 ---
 
@@ -48,7 +48,7 @@ All use the password `Ashirwad@2026`.
 | `npm run db:deploy` | Apply migrations (production, non-interactive) |
 | `npm run db:seed` | Seed catalogue and reference data |
 | `npm run db:reset` | Drop, re-migrate and re-seed |
-| `npm test` | Vitest — compliance logic and seeded-catalogue checks |
+| `npm test` | Vitest — Rx gate, compliance, search, pricing |
 | `npm run test:constraints` | SQL suite proving the DB-level guarantees |
 
 ---
@@ -146,10 +146,22 @@ survive a rolled-back action.
 
 ### 5. Prescription images are sensitive personal data
 
-The database stores an **opaque storage key only** (`Prescription.imageKey`). Never a
-URL, never a public path, nowhere in the schema. Reads go through a server action that
-mints a short-lived signed URL (default 300s) and writes a `PRESCRIPTION_VIEWED` audit
-row. The bucket must be private. Health-record uploads get identical treatment.
+The database stores an **opaque storage key only** (`Prescription.imageKey`) — a UUID,
+so knowing a customer's id reveals nothing about their prescription paths. Never a URL,
+never a public path, nowhere in the schema.
+
+Reads go through a server action that mints a short-lived signed URL (default 300s) and
+writes a `PRESCRIPTION_VIEWED` audit row naming who looked. The signature covers the key
+*and* the expiry, so neither can be edited without invalidating it.
+
+A signed URL is necessary but **not sufficient**: `/api/private-file` independently
+re-establishes that the caller is signed in and is either the record's owner or a
+pharmacist/admin. A link pasted into a group chat is useless to anyone else. Health
+records get the same treatment except that pharmacists cannot read them — a lab report
+is not a pharmacist's business.
+
+In production the local-disk driver refuses to run at all: prescription images must go
+to configured private object storage, not the application filesystem.
 
 ### 6. No therapeutic claims on nutraceuticals, cosmetics or ayurvedic products
 
@@ -167,7 +179,8 @@ catalogue**, so the seed cannot drift into non-compliance unnoticed.
 
 Drug licence numbers (Form 20B and 21B), FSSAI licence, GSTIN, and the registered
 pharmacist's name and State Pharmacy Council registration number render in the site
-footer via `src/components/site-footer.tsx`, and will render on checkout in Phase 3.
+footer via `src/components/site-footer.tsx`, on the checkout page, on the order
+confirmation page, and in the footer of every transactional email.
 
 Unset values render visibly as "Not configured" in warning colour, with a banner
 stating the deployment is not ready to accept orders. A footer that quietly omits a
@@ -235,12 +248,74 @@ degrades to no filter rather than a 500.
 
 ---
 
+## The Rx gate
+
+`src/lib/rx-gate.ts` is the enforcement point. Everything visual — the ℞ badge, the
+tinted card, the notice at checkout — tells an honest customer what will happen. This
+is what actually happens.
+
+Every Schedule H / H1 line must satisfy all five:
+
+1. A prescription is linked to the line.
+2. It belongs to the customer placing the order.
+3. Its status is `VERIFIED` — set only by a pharmacist, never by a customer.
+4. It has not expired.
+5. Its dispensing budget is not exhausted (`refillsAllowed` repeats *in addition to*
+   the original supply, as a prescriber writes it).
+
+The gate runs **inside the order transaction**, so two concurrent checkouts cannot each
+see the same last repeat available and both consume it. The dispensing count is derived
+from `OrderItem` rather than read from a counter, so it cannot drift;
+`Prescription.refillsUsed` is a display mirror, and where the two disagree the derived
+figure wins. A cancelled or pharmacist-rejected order releases the supply, because it
+never dispensed anything.
+
+### Why an order still needs pharmacist review after passing the gate
+
+The gate proves a *verified* prescription is attached. Only a pharmacist can confirm it
+covers **these** drugs at **these** quantities. Orders containing Rx items are created
+in `PENDING_PHARMACIST_REVIEW` regardless of payment state. The two checks are not
+redundant.
+
+### Bypass attempts, all tested
+
+`tests/rx-gate.test.ts` calls the enforcement path directly — no browser, no form, no
+client validation in the way, because that is what an attacker does.
+
+| Attempt | Result |
+|---|---|
+| Schedule H or H1 line with no prescription | refused |
+| Prescription in any non-`VERIFIED` state | refused |
+| Another customer's genuinely verified prescription | refused |
+| Fabricated prescription id | refused |
+| Expired prescription | refused |
+| Repeats exhausted | refused |
+| Mixed cart where only the OTC line is covered | refused |
+| Exactly `refillsAllowed + 1` supplies | allowed, the next one refused |
+| Cancelled order consuming a repeat | supply released |
+
+Verified end to end in a browser as well: the checkout button is disabled, **and**
+navigating directly to `/checkout` redirects back to the cart, **and** the database
+`CHECK` constraint refuses to strip the prescription from a dispensed H1 line even via
+direct SQL.
+
+### Order placement
+
+`placeOrder` is a public HTTP endpoint and treats itself as one. Recomputed
+server-side from the database, never read from the caller: prices, GST, totals, the
+COD ceiling, pincode serviceability, and stock. Stock is decremented with a conditional
+`updateMany`, so two orders cannot oversell the last unit. The delivery address is
+snapshotted onto the order, so later edits to the address book cannot rewrite where a
+dispensed order was sent.
+
+---
+
 ## Verification
 
 Compliance claims in this README are tested, not asserted.
 
 ```bash
-npm test                   # 53 tests
+npm test                   # 79 tests
 npm run test:constraints   # 14 database-level cases
 ```
 
@@ -343,7 +418,7 @@ informative.
 
 - [x] **Phase 1** — Foundation, data model, compliance constraints, auth, seed
 - [x] **Phase 2** — Catalogue, search, salt substitutes, product pages
-- [ ] **Phase 3** — Cart, prescription upload, server-side Rx gate, checkout
+- [x] **Phase 3** — Cart, prescription upload, server-side Rx gate, checkout
 - [ ] **Phase 4** — Customer account, order history, prescription library
 - [ ] **Phase 5** — Pharmacist verification queue, admin portal
 - [ ] **Phase 6** — Rate limiting, Playwright suite, SEO, Lighthouse
