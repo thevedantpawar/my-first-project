@@ -1,103 +1,157 @@
-import Image from "next/image";
+import { db } from "@/lib/db";
+import { SiteFooter } from "@/components/site-footer";
+import { RxBadge, RxGateBlock } from "@/components/rx-gate";
+import { formatPaise, discountPercent } from "@/lib/money";
+import { SCHEDULE_LABEL } from "@/lib/schedule";
+import { ScheduleType } from "@/generated/prisma/enums";
 
-export default function Home() {
+/**
+ * Phase 1 landing page.
+ *
+ * Deliberately plain — Phase 2 builds the real home page (category grid, offer
+ * rail, reorder shortcut). What this page exists to show is that the tokens,
+ * the fonts and the Rx Gate render, and that the catalogue is real.
+ */
+
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const [total, rxCount, h1Count, categories, sample] = await Promise.all([
+    db.product.count(),
+    db.product.count({ where: { requiresPrescription: true } }),
+    db.product.count({ where: { scheduleType: ScheduleType.SCHEDULE_H1 } }),
+    db.category.count(),
+    db.product.findMany({
+      where: { slug: { in: ["crocin-advance-500mg-tablet", "zifi-200-tablet"] } },
+      include: { brand: true, manufacturer: true },
+      orderBy: { requiresPrescription: "asc" },
+    }),
+  ]);
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen">
+      <header className="border-b border-ink-100 bg-paper-raised">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
+          <div>
+            <p className="font-display text-xl text-pine-700">
+              Ashirwad Wellness
+            </p>
+            <p className="text-xs text-ink-500">Nashik, Maharashtra</p>
+          </div>
+          <span className="identifier rounded-full bg-pine-50 px-3 py-1 text-xs text-pine-700">
+            Phase 1 — foundation
+          </span>
         </div>
+      </header>
+
+      <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+        <h1 className="max-w-2xl text-3xl leading-tight text-ink sm:text-4xl">
+          A pharmacy platform built around the prescription, not around the
+          shopping cart.
+        </h1>
+
+        <dl className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {[
+            { label: "Products seeded", value: total },
+            { label: "Prescription-only", value: rxCount },
+            { label: "Schedule H1", value: h1Count },
+            { label: "Categories", value: categories },
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-[var(--radius-card)] border border-ink-100 bg-paper-raised p-4 shadow-[var(--shadow-card)]"
+            >
+              <dt className="text-xs text-ink-500">{stat.label}</dt>
+              <dd className="identifier mt-1 text-2xl text-pine-700">
+                {stat.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <section className="mt-14">
+          <h2 className="text-xl text-ink">The Rx Gate</h2>
+          <p className="mt-2 max-w-prose text-sm text-ink-500">
+            One treatment, reused verbatim on the catalogue card, the product
+            page, the cart line and the checkout line. The{" "}
+            <code className="identifier text-rx-700">--rx</code> colour appears
+            nowhere else in the application, so the colour itself becomes the
+            signal.
+          </p>
+
+          <div className="mt-6 grid gap-5 sm:grid-cols-2">
+            {sample.map((p) => {
+              const off = discountPercent(p.mrpPaise, p.sellingPricePaise);
+              const card = (
+                <>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-ink">{p.name}</p>
+                      {p.nameHi && (
+                        <p className="font-devanagari text-sm text-ink-500">
+                          {p.nameHi}
+                        </p>
+                      )}
+                      <p className="mt-1 text-xs text-ink-500">
+                        {p.composition}
+                      </p>
+                      <p className="mt-0.5 text-xs text-ink-300">
+                        {p.brand?.name} · {p.manufacturer.name}
+                      </p>
+                    </div>
+                    {p.requiresPrescription ? (
+                      <RxBadge />
+                    ) : (
+                      <span className="rounded-full bg-living-50 px-2 py-0.5 text-[0.6875rem] font-semibold uppercase tracking-wide text-living-600">
+                        In stock
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="mt-3 flex items-baseline gap-2">
+                    <span className="identifier text-lg text-pine-700">
+                      {formatPaise(p.sellingPricePaise)}
+                    </span>
+                    <span className="identifier text-sm text-ink-300 line-through">
+                      {formatPaise(p.mrpPaise)}
+                    </span>
+                    {off > 0 && (
+                      <span className="text-xs font-semibold text-savings">
+                        {off}% off
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="mt-2 text-xs text-ink-500">
+                    {SCHEDULE_LABEL[p.scheduleType]} · {p.packSize}
+                  </p>
+                </>
+              );
+
+              return p.requiresPrescription ? (
+                <div
+                  key={p.id}
+                  className="overflow-hidden rounded-[var(--radius-card)] border border-ink-100 bg-paper-raised shadow-[var(--shadow-card)]"
+                >
+                  <div className="p-4">{card}</div>
+                  <div className="px-4 pb-4">
+                    <RxGateBlock scheduleType={p.scheduleType} tone="short" />
+                  </div>
+                </div>
+              ) : (
+                <div
+                  key={p.id}
+                  className="rounded-[var(--radius-card)] border border-ink-100 bg-paper-raised p-4 shadow-[var(--shadow-card)]"
+                >
+                  {card}
+                </div>
+              );
+            })}
+          </div>
+        </section>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+      <SiteFooter />
     </div>
   );
 }
