@@ -1,7 +1,9 @@
 import "server-only";
-import { createHmac, timingSafeEqual, randomUUID } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual, randomUUID } from "node:crypto";
 import { mkdir, writeFile, readFile, unlink } from "node:fs/promises";
 import path from "node:path";
+
+import { signRequest, uriEncode, amzDateNow } from "./s3";
 
 /**
  * Private object storage for prescriptions and health records.
@@ -79,19 +81,167 @@ class LocalDiskStorage implements PrivateStorage {
   }
 }
 
+/**
+ * S3-compatible private storage.
+ *
+ * Works against AWS S3, Cloudflare R2, DigitalOcean Spaces, MinIO and Backblaze
+ * B2 — the signing is identical and the endpoint is configurable.
+ *
+ * Two properties this class is responsible for, both of which are the reason
+ * prescriptions are not simply put on a CDN:
+ *
+ *  - It never constructs a public URL. `get` returns bytes, which the
+ *    application streams through `/api/private-file` after re-authorising the
+ *    caller. There is deliberately no `getPublicUrl` and no presigned-GET
+ *    helper — a presigned S3 URL would bypass that re-authorisation.
+ *  - Objects are written with private ACL and server-side encryption. A bucket
+ *    misconfigured as public would still not make these readable without the
+ *    key, and the key is a UUID that appears nowhere client-side.
+ */
+class S3Storage implements PrivateStorage {
+  readonly name = "s3";
+
+  constructor(
+    private readonly config: {
+      bucket: string;
+      region: string;
+      accessKeyId: string;
+      secretAccessKey: string;
+      /** Custom endpoint for non-AWS providers. */
+      endpoint?: string;
+    },
+  ) {}
+
+  /**
+   * Path-style addressing (`/bucket/key`) rather than virtual-host style.
+   *
+   * Every S3-compatible provider supports path style; MinIO and several others
+   * do not support virtual-host style without extra DNS setup. Buckets here are
+   * named by an operator, not by end users, so the path-style bucket-naming
+   * restrictions are not a constraint.
+   */
+  private target(key: string): { url: string; host: string; path: string } {
+    const { bucket, region, endpoint } = this.config;
+    const base = endpoint?.replace(/\/$/, "") ?? `https://s3.${region}.amazonaws.com`;
+    const host = new URL(base).host;
+    // The key is encoded segment-by-segment: slashes stay as separators, but
+    // everything else is RFC 3986 encoded so the signature matches the path.
+    const encodedKey = key.split("/").map((s) => uriEncode(s)).join("/");
+    const path = `/${uriEncode(bucket)}/${encodedKey}`;
+    return { url: `${base}${path}`, host, path };
+  }
+
+  private async request(
+    method: "PUT" | "GET" | "DELETE",
+    key: string,
+    body?: Buffer,
+    contentType?: string,
+  ): Promise<Response> {
+    const { url, host, path } = this.target(key);
+    const amzDate = amzDateNow();
+    const payloadHash = createHash("sha256")
+      .update(body ?? Buffer.alloc(0))
+      .digest("hex");
+
+    const headers: Record<string, string> = {
+      Host: host,
+      "x-amz-date": amzDate,
+      "x-amz-content-sha256": payloadHash,
+    };
+    if (body) {
+      headers["Content-Type"] = contentType ?? "application/octet-stream";
+      // Belt and braces alongside a private bucket policy. Providers that do
+      // not implement ACLs ignore these; AWS honours them.
+      headers["x-amz-acl"] = "private";
+      headers["x-amz-server-side-encryption"] = "AES256";
+    }
+
+    headers.Authorization = signRequest({
+      method,
+      path,
+      headers,
+      payloadHash,
+      region: this.config.region,
+      service: "s3",
+      accessKeyId: this.config.accessKeyId,
+      secretAccessKey: this.config.secretAccessKey,
+      amzDate,
+    });
+
+    return fetch(url, { method, headers, body: body ? new Uint8Array(body) : undefined });
+  }
+
+  async put(key: string, body: Buffer, contentType: string): Promise<void> {
+    const response = await this.request("PUT", key, body, contentType);
+    if (!response.ok) {
+      // The body carries S3's error code; without it a 403 is unattributable
+      // between bad credentials, bad clock and bad bucket policy.
+      throw new Error(
+        `S3 PUT failed (${response.status}): ${(await response.text()).slice(0, 500)}`,
+      );
+    }
+  }
+
+  async get(key: string): Promise<StoredObject | null> {
+    const response = await this.request("GET", key);
+    if (response.status === 404) return null;
+    if (!response.ok) {
+      throw new Error(
+        `S3 GET failed (${response.status}): ${(await response.text()).slice(0, 500)}`,
+      );
+    }
+    return {
+      body: Buffer.from(await response.arrayBuffer()),
+      contentType: response.headers.get("content-type") ?? "application/octet-stream",
+    };
+  }
+
+  async delete(key: string): Promise<void> {
+    const response = await this.request("DELETE", key);
+    // S3 returns 204 for a delete, and 204 for deleting something absent.
+    if (!response.ok && response.status !== 404) {
+      throw new Error(
+        `S3 DELETE failed (${response.status}): ${(await response.text()).slice(0, 500)}`,
+      );
+    }
+  }
+}
+
 let storage: PrivateStorage | null = null;
 
 export function getStorage(): PrivateStorage {
   if (storage) return storage;
 
-  // S3 is wired in the same way — implement PrivateStorage against the SDK and
-  // select it here. The rest of the application does not change.
-  if (process.env.S3_BUCKET_PRESCRIPTIONS) {
-    throw new Error(
-      "S3_BUCKET_PRESCRIPTIONS is set but the S3 driver is not implemented " +
-        "yet. Implement PrivateStorage against the S3 SDK and register it in " +
-        "getStorage(). Do not fall back to local disk in production.",
-    );
+  const bucket = process.env.S3_BUCKET_PRESCRIPTIONS;
+  if (bucket) {
+    const accessKeyId = process.env.S3_ACCESS_KEY_ID;
+    const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
+    const region = process.env.S3_REGION;
+
+    // Fail here rather than on the first upload. A pharmacy that discovers its
+    // storage is misconfigured when a customer tries to upload a prescription
+    // has discovered it too late.
+    const missing = [
+      !accessKeyId && "S3_ACCESS_KEY_ID",
+      !secretAccessKey && "S3_SECRET_ACCESS_KEY",
+      !region && "S3_REGION",
+    ].filter(Boolean);
+    if (missing.length > 0) {
+      throw new Error(
+        `S3_BUCKET_PRESCRIPTIONS is set but ${missing.join(", ")} ${
+          missing.length === 1 ? "is" : "are"
+        } not. Private storage must be fully configured or not configured at all.`,
+      );
+    }
+
+    storage = new S3Storage({
+      bucket,
+      region: region!,
+      accessKeyId: accessKeyId!,
+      secretAccessKey: secretAccessKey!,
+      endpoint: process.env.S3_ENDPOINT || undefined,
+    });
+    return storage;
   }
 
   if (process.env.NODE_ENV === "production") {

@@ -49,10 +49,12 @@ All use the password `Ashirwad@2026`.
 | `npm run db:deploy` | Apply migrations (production, non-interactive) |
 | `npm run db:seed` | Seed catalogue and reference data |
 | `npm run db:reset` | Drop, re-migrate and re-seed |
-| `npm test` | Vitest — Rx gate, compliance, search, pricing, rate limits |
+| `npm test` | Vitest — Rx gate, compliance, search, pricing, limits, storage |
 | `npm run test:constraints` | SQL suite proving the DB-level guarantees |
 | `npm run test:e2e` | Playwright — the compliance flows, through a browser |
 | `npm run test:all` | All three, in order |
+| `npm run check:env` | Production readiness gate |
+| `npm run build:production` | Readiness gate, then build |
 
 ---
 
@@ -74,8 +76,10 @@ others. These render in the site footer and on checkout.
 > when any remain unset, and the footer renders "Not configured" in warning colour.
 > **No regulatory identifiers have been invented anywhere in this codebase.**
 
-**Private storage** — `S3_BUCKET_PRESCRIPTIONS` and credentials. This bucket must be
-private. Prescription images are sensitive personal data; see below.
+**Private storage** — `S3_BUCKET_PRESCRIPTIONS`, `S3_REGION` and credentials
+(plus `S3_ENDPOINT` for a non-AWS provider). This bucket must be private.
+Prescription images are sensitive personal data; see below. In production the
+readiness gate refuses to start without it.
 
 ---
 
@@ -554,9 +558,10 @@ name itself, and clears AA with room — which is what it is for.
 Compliance claims in this README are tested, not asserted.
 
 ```bash
-npm test                   # 96 tests
+npm test                   # 126 tests
 npm run test:constraints   # 14 database-level cases
 npm run test:e2e           # 14 browser flows
+npm run check:env          # production readiness
 ```
 
 `prisma/sql/constraint_tests.sql` proves the guarantees hold against a real Postgres:
@@ -605,6 +610,8 @@ src/
     invoice.ts             GST tax invoice PDF
     rate-limit.ts          Fixed-window limiter behind an interface
     seo.ts                 Canonical origin, Pharmacy/Breadcrumb JSON-LD
+    s3.ts                  SigV4, verified against Amazon's test vectors
+    preflight.ts           "May this deployment accept a real order?"
   actions/
     cart.ts                Cart mutations + guest-cart reconciliation
     prescriptions.ts       Upload, link, signed-URL minting
@@ -618,6 +625,7 @@ src/
     pharmacist/            Verification queue and order review
     admin/                 Catalogue, orders, staff, audit viewer
     api/private-file/      Signed-URL reads, re-authorised independently
+    api/health/            503 while the statutory configuration is incomplete
     robots.ts sitemap.ts   Private routes excluded from both
   components/
     rx-gate.tsx            The Rx Gate — the signature element
@@ -632,7 +640,10 @@ src/
     site-footer.tsx        Statutory disclosure
     trust-strip.tsx        Licence numbers above the fold
 e2e/                       Playwright: the compliance flows, in a browser
-tests/                     Vitest: gate bypasses, claims, pricing, limits
+tests/                     Vitest: gate bypasses, claims, pricing, limits, S3
+scripts/
+  check-production-env.mjs The readiness gate, on a terminal
+Dockerfile                 Unprivileged, no toolchain, no writable volume
 ```
 
 ### Stack notes
@@ -695,12 +706,73 @@ informative.
 
 ---
 
+## Deployment
+
+```bash
+npm run check:env        # readiness gate — exits non-zero if not fit to serve
+npm run build:production # the gate, then the build
+npm run db:deploy        # migrations, non-interactive
+```
+
+Or build the image, which runs as an unprivileged user and carries no
+toolchain, no dev dependencies and no writable upload volume — because there is
+nothing to write:
+
+```bash
+docker build --build-arg NEXT_PUBLIC_SITE_URL=https://your-domain . -t ashirwad
+```
+
+`NEXT_PUBLIC_*` values are inlined at build time, so the canonical origin has to
+be a build argument rather than a runtime variable.
+
+### The readiness gate
+
+`npm run check:env` is the answer to "is this deployment allowed to accept a
+real order?", and it answers before the deployment is reachable. The rules live
+in `src/lib/preflight.ts` — one definition shared by the CLI and the health
+endpoint, so they cannot drift.
+
+**Blockers** stop a deploy: any statutory identifier still unset or still a
+`REPLACE_ME_`; no private object storage, or storage only half configured; a
+missing, placeholder or under-32-character `AUTH_SECRET`; a non-https site URL;
+`RATE_LIMIT_DISABLED=true`; a signed-URL lifetime longer than an hour.
+
+**Warnings** do not: no email provider, no payment keys, Razorpay still in test
+mode, the OTP stub. These degrade the service without making it unlawful — a
+pharmacy can lawfully operate cash-on-delivery with no email.
+
+`GET /api/health` applies the same rules and returns 503 when the configuration
+is incomplete, so an unconfigured deployment never reaches a load balancer. It
+reports only a blocker *count*: it is unauthenticated, and the detail names
+infrastructure. Run the CLI for that.
+
+### Private object storage
+
+`src/lib/s3.ts` implements SigV4 by hand — the same reasoning as `razorpay.ts`.
+It works against AWS S3, Cloudflare R2, DigitalOcean Spaces, MinIO and Backblaze
+B2, using path-style addressing so no provider needs extra DNS.
+
+The signing is verified against Amazon's published test vectors rather than
+against a live call, because a wrong signature fails identically to wrong
+credentials, a wrong region or a wrong clock. The driver itself is exercised
+over real HTTP against an S3-compatible stand-in: round-trip, content types,
+RFC-3986 keys, 404-versus-error, and the private-ACL and encryption headers.
+
+There is deliberately **no presigned-GET helper**. Reads return bytes, which the
+application streams through `/api/private-file` after re-authorising the caller;
+a presigned S3 URL would bypass exactly that check.
+
+---
+
 ## Before this goes live
 
+0. Run `npm run check:env`. It lists exactly what is missing and exits non-zero
+   until the deployment is fit to serve. Everything below is on that list.
 1. Replace every `REPLACE_ME_*` value with Ashirwad Medical's real registered details.
 2. Set `PHARMACIST_REG_NO` on the pharmacist account — H1 verification is blocked
    without it, by design.
-3. Confirm the prescription bucket is private and not publicly listable.
+3. Confirm the prescription bucket is private and not publicly listable, and set
+   `S3_BUCKET_PRESCRIPTIONS`, `S3_REGION` and credentials.
 4. Replace the stubbed OTP provider; it throws in production by design.
 5. Have a registered pharmacist review the seeded catalogue's schedule classifications
    before any of it is dispensed against.
