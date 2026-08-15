@@ -1,0 +1,59 @@
+/* ---------------------------------------------------------------------------
+   Tailwind source for index.html.
+   The compiled output is already inlined inside <style> in index.html, so you
+   do NOT need this file to deploy — it is here only if you ever want to add
+   new Tailwind classes and rebuild.
+
+   Rebuild:
+     npx @tailwindcss/cli@4 -i tailwind-source.css -o tailwind.css --minify
+   then paste the contents of tailwind.css between the
+   "tw:start" / "tw:end" markers in index.html.
+   --------------------------------------------------------------------------- */
+
+@import "tailwindcss";
+@source "./index.html";
+
+@theme {
+  --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
+
+  --color-bone: #FBFAF7;
+  --color-shell: #F3F0E9;
+  --color-ink: #1A1917;
+  --color-mute: #5E5B54;
+  --color-line: #E4DFD4;
+  --color-pine: #24443A;
+  --color-pine-soft: #EAF0EC;
+}
+
+/* --- hand-written bits Tailwind does not cover --- */
+
+:root { color-scheme: light; }
+
+html { scroll-behavior: smooth; }
+
+body { text-rendering: optimizeLegibility; }
+
+.hero-wash {
+  background: radial-gradient(115% 75% at 50% 0%, #FFFFFF 0%, #FBFAF7 48%, #F5F1E9 100%);
+}
+
+/* reveal-on-scroll: only hides content when JS is available */
+.js .reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity .7s cubic-bezier(.2,.6,.2,1), transform .7s cubic-bezier(.2,.6,.2,1);
+}
+.js .reveal.is-in { opacity: 1; transform: none; }
+
+/* FAQ accordion */
+summary::-webkit-details-marker { display: none; }
+summary { -webkit-tap-highlight-color: transparent; }
+.faq-plus { transition: transform .25s ease; }
+details[open] .faq-plus { transform: rotate(45deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .js .reveal { opacity: 1; transform: none; transition: none; }
+  .faq-plus { transition: none; }
+}
