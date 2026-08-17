@@ -1,0 +1,132 @@
+name: microns
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: microns-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-microns}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-microns_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # pgcrypto + uuid-ossp, applied on first boot of the volume only.
+      - ./backend/db/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      # Exposed for local psql access. Remove this mapping in production —
+      # nothing outside the compose network should reach the PHI database.
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-microns} -d ${POSTGRES_DB:-microns_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - microns-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: microns-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - microns-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: microns-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Service-name overrides so the same .env works on a laptop and in compose.
+      DATABASE_URL: postgresql://${POSTGRES_USER:-microns}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-microns_db}
+      REDIS_URL: redis://redis:6379/0
+      WIDGET_DIR: /app/widget
+      VOICE_PROMPT_DIR: /app/voice-agent/system-prompts
+    volumes:
+      # Hot reload for development. Drop these three mounts in production and
+      # rely on what is baked into the image.
+      - ./backend:/app
+      - ./frontend/chat-widget:/app/widget:ro
+      - ./voice-agent:/app/voice-agent:ro
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - microns-network
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: microns-n8n
+    restart: unless-stopped
+    environment:
+      # n8n >= 1.0 replaced basic auth with an owner account created on first
+      # login. These are kept because older images still honour them.
+      N8N_BASIC_AUTH_ACTIVE: "true"
+      N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER:-admin}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD:-change-me}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:-change-me-to-a-long-random-string}
+      N8N_HOST: ${N8N_HOST:-localhost}
+      N8N_PORT: "5678"
+      N8N_PROTOCOL: http
+      WEBHOOK_URL: http://localhost:5678/
+      GENERIC_TIMEZONE: ${CLINIC_TIMEZONE:-America/New_York}
+      # Required so the workflows can read MICRONS_API_URL / INTERNAL_API_TOKEN
+      # from the environment instead of hard-coding them into every node.
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
+      N8N_SECURE_COOKIE: "false"
+      N8N_RUNNERS_ENABLED: "true"
+      MICRONS_API_URL: http://backend:8000
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:-change-me-to-a-long-random-string}
+      # Optional. Staff notifications; workflow nodes continue on error when unset.
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
+    volumes:
+      - n8n_data:/home/node/.n8n
+      # Read-only source of the workflow JSON, for UI import or the CLI import
+      # helper below.
+      - ./n8n-workflows:/workflows:ro
+    ports:
+      - "${N8N_PORT:-5678}:5678"
+    depends_on:
+      - backend
+    networks:
+      - microns-network
+
+  # One-shot helper: docker compose --profile import run --rm n8n-import
+  n8n-import:
+    image: n8nio/n8n:latest
+    container_name: microns-n8n-import
+    profiles: ["import"]
+    environment:
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:-change-me-to-a-long-random-string}
+    entrypoint: ["/bin/sh", "-c", "n8n import:workflow --separate --input=/workflows"]
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n-workflows:/workflows:ro
+    networks:
+      - microns-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  n8n_data:
+
+networks:
+  microns-network:
+    driver: bridge

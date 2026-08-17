@@ -1,0 +1,287 @@
+{
+  "name": "Microns — E. Voice Agent Handoff & Callback SLA",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "voice-handoff",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "e5000000-0000-4000-8000-000000000001",
+      "name": "Webhook: Voice Handoff",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-660, 160],
+      "webhookId": "e5000000-0000-4000-8000-0000000000f1",
+      "notes": "Fired by the backend when the voice agent promises a clinical callback. Body: { call_record_id, patient_uuid, reason, priority, requested_at }. The patient's question is NOT included — it is PHI and stays in the encrypted transcript."
+    },
+    {
+      "parameters": {
+        "jsCode": "const first = $input.first().json;\nconst payload = first.body || first;\n\nconst reasonLabels = {\n  medical_question: 'Medical question (contraindications / side effects)',\n  pregnancy: 'Pregnancy or breastfeeding disclosed',\n  blood_thinner: 'Blood thinners disclosed',\n  complaint: 'Complaint — needs a manager',\n  complex_booking: 'Booking the agent could not complete'\n};\n\nreturn [{\n  json: {\n    call_record_id: payload.call_record_id || null,\n    patient_uuid: payload.patient_uuid || null,\n    reason: payload.reason || 'medical_question',\n    reason_label: reasonLabels[payload.reason] || 'Handoff requested',\n    priority: payload.priority || 'normal',\n    requested_at: payload.requested_at || new Date().toISOString(),\n    due_by: new Date(Date.now() + 2 * 3600 * 1000).toISOString()\n  }\n}];"
+      },
+      "id": "e5000000-0000-4000-8000-000000000002",
+      "name": "Build Handoff Card",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-440, 160]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: ':telephone_receiver: *Callback required within 2 hours*\\nReason: ' + $json.reason_label + '\\nPriority: ' + $json.priority + '\\nPatient: ' + ($json.patient_uuid || 'unknown') + '\\nCall record: ' + ($json.call_record_id || 'n/a') + '\\nDue by: ' + $json.due_by + '\\n\\nOpen the patient record in the dashboard for their number — it is not sent to Slack.' }) }}",
+        "options": {}
+      },
+      "id": "e5000000-0000-4000-8000-000000000003",
+      "name": "Notify Clinical Team",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-220, 160],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-urgent",
+              "leftValue": "={{ $json.priority }}",
+              "rightValue": "urgent",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "e5000000-0000-4000-8000-000000000004",
+      "name": "IF Urgent?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [0, 160]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.MICRONS_API_URL }}/internal/retention/events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Internal-Token",
+              "value": "={{ $env.INTERNAL_API_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ event_type: 'nurture_sent', patient_uuid: $json.patient_uuid, channel: 'voice', metadata: { handoff_reason: $json.reason, priority: $json.priority, escalated: true } }) }}",
+        "options": {}
+      },
+      "id": "e5000000-0000-4000-8000-000000000005",
+      "name": "Log Urgent Escalation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 60]
+    },
+    {
+      "parameters": {},
+      "id": "e5000000-0000-4000-8000-000000000006",
+      "name": "End",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [480, 160]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "e5000000-0000-4000-8000-000000000007",
+      "name": "Hourly SLA Check",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-660, 480]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.MICRONS_API_URL }}/internal/voice/pending-callbacks",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "hours",
+              "value": "24"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Internal-Token",
+              "value": "={{ $env.INTERNAL_API_TOKEN }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e5000000-0000-4000-8000-000000000008",
+      "name": "Fetch Pending Callbacks",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-440, 480]
+    },
+    {
+      "parameters": {
+        "jsCode": "// The agent promises a callback \"within 2 hours\". Anything past that is a\n// broken promise to a patient, so it gets escalated rather than logged.\nconst out = [];\n\nfor (const item of $input.all()) {\n  const body = item.json;\n  const rows = Array.isArray(body) ? body : (Array.isArray(body.data) ? body.data : [body]);\n  for (const row of rows) {\n    if (row && row.sla_breached === true) out.push({ json: row });\n  }\n}\n\nreturn out;"
+      },
+      "id": "e5000000-0000-4000-8000-000000000009",
+      "name": "Filter SLA Breaches",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-220, 480]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: ':rotating_light: *Callback SLA breached* — ' + $json.hours_waiting + 'h waiting (promised 2h)\\nCall record: ' + $json.call_record_id + '\\nPatient: ' + ($json.patient_uuid || 'unknown') + '\\nOutcome: ' + $json.outcome }) }}",
+        "options": {}
+      },
+      "id": "e5000000-0000-4000-8000-00000000000a",
+      "name": "Escalate Breached SLA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [0, 480],
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Webhook: Voice Handoff": {
+      "main": [
+        [
+          {
+            "node": "Build Handoff Card",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Handoff Card": {
+      "main": [
+        [
+          {
+            "node": "Notify Clinical Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Clinical Team": {
+      "main": [
+        [
+          {
+            "node": "IF Urgent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Urgent?": {
+      "main": [
+        [
+          {
+            "node": "Log Urgent Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "End",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Urgent Escalation": {
+      "main": [
+        [
+          {
+            "node": "End",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hourly SLA Check": {
+      "main": [
+        [
+          {
+            "node": "Fetch Pending Callbacks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Pending Callbacks": {
+      "main": [
+        [
+          {
+            "node": "Filter SLA Breaches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter SLA Breaches": {
+      "main": [
+        [
+          {
+            "node": "Escalate Breached SLA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true
+  },
+  "pinData": {},
+  "tags": []
+}
