@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Microns Chat Widget — demo</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        color: #0f172a;
+        background: #f8fafc;
+      }
+      .page { max-width: 720px; margin: 0 auto; padding: 64px 24px 160px; }
+      h1 { font-size: 30px; margin: 0 0 8px; }
+      p.lead { color: #475569; font-size: 17px; line-height: 1.6; margin: 0 0 32px; }
+      pre {
+        background: #0f172a; color: #e2e8f0; padding: 18px; border-radius: 12px;
+        overflow-x: auto; font-size: 13px; line-height: 1.55;
+      }
+      code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+      .card {
+        background: #fff; border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 14px; padding: 22px; margin: 0 0 20px;
+      }
+      h2 { font-size: 17px; margin: 0 0 10px; }
+      ul { margin: 0; padding-left: 20px; color: #475569; line-height: 1.7; }
+      button.cta {
+        background: #0f766e; color: #fff; border: 0; border-radius: 10px;
+        padding: 12px 18px; font-size: 15px; font-weight: 600; cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <h1>Microns chat widget</h1>
+      <p class="lead">
+        This page exists to test the embed. The bubble in the bottom-right talks to
+        <code>POST /leads/chat</code> on the backend and walks a visitor through the six
+        qualification questions.
+      </p>
+
+      <div class="card">
+        <h2>Embed snippet</h2>
+        <pre><code>&lt;script
+  src="https://api.your-clinic.com/widget/microns-chat.js"
+  data-api="https://api.your-clinic.com"
+  data-clinic="Radiance Med Spa"
+  data-color="#0f766e"
+  data-title="Chat with us"
+  data-position="right"
+  defer&gt;&lt;/script&gt;</code></pre>
+      </div>
+
+      <div class="card">
+        <h2>Attributes</h2>
+        <ul>
+          <li><code>data-api</code> — backend base URL. Defaults to the page's origin.</li>
+          <li><code>data-clinic</code> — name shown in the header.</li>
+          <li><code>data-color</code> — brand colour for the bubble and buttons.</li>
+          <li><code>data-title</code> — launcher label.</li>
+          <li><code>data-position</code> — <code>right</code> (default) or <code>left</code>.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Opening it from your own button</h2>
+        <pre><code>&lt;button onclick="MicronsChat.open()"&gt;Book a consultation&lt;/button&gt;</code></pre>
+        <p style="color:#475569;margin:12px 0 16px">Try it:</p>
+        <button class="cta" onclick="MicronsChat.open()">Book a consultation</button>
+      </div>
+
+      <div class="card">
+        <h2>Before going live</h2>
+        <ul>
+          <li>Add your site's origin to <code>CORS_ORIGINS</code> in <code>.env</code>.</li>
+          <li>Serve the backend over HTTPS — browsers block mixed content.</li>
+          <li>Put a rate limiter in front of <code>/leads/chat</code>; the built-in one is per-worker.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Same-origin demo: data-api defaults to this page's origin. -->
+    <script src="./microns-chat.js" data-clinic="Radiance Med Spa" data-color="#0f766e" defer></script>
+  </body>
+</html>

@@ -1,0 +1,365 @@
+{
+  "name": "Microns — D. Lead Qualification Follow-Up",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-qualified",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "d4000000-0000-4000-8000-000000000001",
+      "name": "Webhook: Lead Qualified",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-660, 120],
+      "webhookId": "d4000000-0000-4000-8000-0000000000f1",
+      "notes": "Fired by the backend the moment a lead finishes qualification. Body: { lead_id, score, temperature, status, next_action, treatment_interest, timeline, needs_provider_approval }. No PHI."
+    },
+    {
+      "parameters": {
+        "jsCode": "const first = $input.first().json;\nconst payload = first.body || first;\n\nreturn [{\n  json: {\n    lead_id: payload.lead_id,\n    score: payload.score ?? 0,\n    temperature: payload.temperature || 'cold',\n    status: payload.status || 'new',\n    next_action: payload.next_action || 'nurture',\n    treatment_interest: payload.treatment_interest || 'unspecified',\n    timeline: payload.timeline || 'unknown',\n    needs_provider_approval: payload.needs_provider_approval === true\n  }\n}];"
+      },
+      "id": "d4000000-0000-4000-8000-000000000002",
+      "name": "Normalise Lead",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-440, 120]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-hot",
+              "leftValue": "={{ $json.score }}",
+              "rightValue": 80,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "d4000000-0000-4000-8000-000000000003",
+      "name": "IF Hot Lead (80-100)?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-220, 120]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: ':fire: *Hot lead — consultation auto-booked*\\nScore: ' + $json.score + '/100\\nInterest: ' + $json.treatment_interest + '\\nTimeline: ' + $json.timeline + '\\nLead: ' + $json.lead_id + ($json.needs_provider_approval ? '\\n:warning: Blood thinners disclosed — provider approval required before treatment.' : '') }) }}",
+        "options": {}
+      },
+      "id": "d4000000-0000-4000-8000-000000000004",
+      "name": "Alert Staff: Hot Lead",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [20, 20],
+      "onError": "continueRegularOutput",
+      "notes": "Lead id only — look the lead up in the backend for contact details, so Slack never becomes a PHI store."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-warm",
+              "leftValue": "={{ $json.score }}",
+              "rightValue": 50,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "d4000000-0000-4000-8000-000000000005",
+      "name": "IF Warm Lead (50-79)?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [20, 240]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: ':wave: *Warm lead — follow up within 24h*\\nScore: ' + $json.score + '/100\\nInterest: ' + $json.treatment_interest + '\\nTimeline: ' + $json.timeline + '\\nLead: ' + $json.lead_id }) }}",
+        "options": {}
+      },
+      "id": "d4000000-0000-4000-8000-000000000006",
+      "name": "Add to CRM / Staff Follow-Up",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [260, 160],
+      "onError": "continueRegularOutput",
+      "notes": "Swap this for your CRM's create-contact node (HubSpot, Pipedrive, GoHighLevel). Send the lead_id, not the phone number."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.MICRONS_API_URL }}/internal/leads/nurture",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Internal-Token",
+              "value": "={{ $env.INTERNAL_API_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lead_id: $json.lead_id, step: 0 }) }}",
+        "options": {}
+      },
+      "id": "d4000000-0000-4000-8000-000000000007",
+      "name": "Start Educational Nurture Drip",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [260, 340]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 4
+            }
+          ]
+        }
+      },
+      "id": "d4000000-0000-4000-8000-000000000008",
+      "name": "Every 4 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-660, 560]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.MICRONS_API_URL }}/internal/leads/pending-followup",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "hours",
+              "value": "24"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Internal-Token",
+              "value": "={{ $env.INTERNAL_API_TOKEN }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d4000000-0000-4000-8000-000000000009",
+      "name": "Fetch Leads Awaiting Follow-Up",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-440, 560]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Keep only leads that have blown the 24h follow-up promise.\nconst out = [];\n\nfor (const item of $input.all()) {\n  const body = item.json;\n  const rows = Array.isArray(body) ? body : (Array.isArray(body.data) ? body.data : [body]);\n  for (const row of rows) {\n    if (row && row.lead_id && row.overdue === true) out.push({ json: row });\n  }\n}\n\nreturn out;"
+      },
+      "id": "d4000000-0000-4000-8000-00000000000a",
+      "name": "Filter Overdue",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-220, 560]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: ':alarm_clock: *Lead follow-up overdue* — ' + $json.hours_since_created + 'h since qualification\\nScore: ' + $json.score + '/100 (' + $json.temperature + ')\\nInterest: ' + $json.treatment_interest + '\\nLead: ' + $json.lead_id }) }}",
+        "options": {}
+      },
+      "id": "d4000000-0000-4000-8000-00000000000b",
+      "name": "Escalate Overdue Leads",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [0, 560],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "id": "d4000000-0000-4000-8000-00000000000c",
+      "name": "End",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [520, 240]
+    }
+  ],
+  "connections": {
+    "Webhook: Lead Qualified": {
+      "main": [
+        [
+          {
+            "node": "Normalise Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise Lead": {
+      "main": [
+        [
+          {
+            "node": "IF Hot Lead (80-100)?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Hot Lead (80-100)?": {
+      "main": [
+        [
+          {
+            "node": "Alert Staff: Hot Lead",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF Warm Lead (50-79)?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Staff: Hot Lead": {
+      "main": [
+        [
+          {
+            "node": "End",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Warm Lead (50-79)?": {
+      "main": [
+        [
+          {
+            "node": "Add to CRM / Staff Follow-Up",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Start Educational Nurture Drip",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to CRM / Staff Follow-Up": {
+      "main": [
+        [
+          {
+            "node": "End",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Educational Nurture Drip": {
+      "main": [
+        [
+          {
+            "node": "End",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every 4 Hours": {
+      "main": [
+        [
+          {
+            "node": "Fetch Leads Awaiting Follow-Up",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Leads Awaiting Follow-Up": {
+      "main": [
+        [
+          {
+            "node": "Filter Overdue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Overdue": {
+      "main": [
+        [
+          {
+            "node": "Escalate Overdue Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true
+  },
+  "pinData": {},
+  "tags": []
+}

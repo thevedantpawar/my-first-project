@@ -1,0 +1,28 @@
+# Microns AI System — backend dependencies
+# Pinned for reproducible Docker builds. Bump deliberately, not accidentally.
+
+# --- Web framework ---
+fastapi==0.141.1
+uvicorn[standard]==0.52.3
+python-multipart==0.0.32
+
+# --- Data / persistence ---
+SQLAlchemy==2.0.52
+psycopg[binary]==3.3.4
+pydantic==2.13.4
+pydantic-settings==2.15.0
+
+# --- Security (PHI encryption at rest) ---
+cryptography==50.0.0
+
+# --- External services ---
+openai==3.1.0
+twilio==9.11.0
+httpx==0.28.1
+tenacity==9.1.4
+
+# --- Background jobs / cache ---
+redis==8.1.0
+
+# --- Test tooling (kept in the image so `docker compose exec backend pytest` works) ---
+pytest==9.1.1

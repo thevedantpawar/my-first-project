@@ -1,0 +1,38 @@
+{
+  "botox": {
+    "label": "Botox",
+    "from": 12,
+    "unit": "per unit",
+    "typical": "$240 to $480 per area"
+  },
+  "fillers": {
+    "label": "Dermal fillers",
+    "from": 650,
+    "unit": "per syringe",
+    "typical": "$650 to $900 per syringe"
+  },
+  "laser": {
+    "label": "Laser hair removal",
+    "from": 120,
+    "unit": "per session",
+    "typical": "$120 to $400 per session, usually a course of 6"
+  },
+  "facial": {
+    "label": "Signature facial",
+    "from": 150,
+    "unit": "per session",
+    "typical": "$150 to $250"
+  },
+  "peel": {
+    "label": "Chemical peel",
+    "from": 175,
+    "unit": "per session",
+    "typical": "$175 to $350 depending on depth"
+  },
+  "consultation": {
+    "label": "Consultation",
+    "from": 0,
+    "unit": "",
+    "typical": "Complimentary"
+  }
+}
