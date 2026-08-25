@@ -8,10 +8,10 @@ from __future__ import annotations
 
 import logging
 from functools import lru_cache
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
 from pydantic import field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +32,8 @@ class Settings(BaseSettings):
     environment: str = "development"
     log_level: str = "INFO"
     app_name: str = "Microns AI System"
-    cors_origins: List[str] = ["http://localhost:3000", "http://localhost:8000"]
-    allowed_hosts: List[str] = ["*"]
+    cors_origins: Annotated[List[str], NoDecode] = ["http://localhost:3000", "http://localhost:8000"]
+    allowed_hosts: Annotated[List[str], NoDecode] = ["*"]
 
     # --- Database ----------------------------------------------------------
     database_url: str = "postgresql://microns:password@postgres:5432/microns_db"
@@ -42,7 +42,7 @@ class Settings(BaseSettings):
 
     # --- Crypto ------------------------------------------------------------
     encryption_key: Optional[str] = None
-    encryption_keys_old: List[str] = []
+    encryption_keys_old: Annotated[List[str], NoDecode] = []
     fingerprint_secret: str = "change-me-to-a-long-random-string"
     internal_api_token: str = "change-me-to-a-long-random-string"
     #: Shared secret for clinic-staff endpoints (dashboard, at-risk patients).
