@@ -1,0 +1,270 @@
+{
+  "name": "Microns — Dental Booking & Triage Agent (Sarah)",
+  "firstMessage": "Thanks for calling {{PRACTICE_NAME}}! This is Sarah. How can I help you today?",
+  "firstMessageMode": "assistant-speaks-first",
+  "serverUrl": "https://YOUR-DOMAIN.example.com/webhooks/vapi",
+  "serverUrlSecret": "REPLACE_WITH_VAPI_WEBHOOK_SECRET",
+  "serverMessages": [
+    "assistant-request",
+    "tool-calls",
+    "end-of-call-report",
+    "status-update"
+  ],
+  "silenceTimeoutSeconds": 20,
+  "maxDurationSeconds": 900,
+  "backgroundSound": "office",
+  "endCallMessage": "Thanks so much for calling. Take care!",
+  "endCallPhrases": ["goodbye", "bye now", "that's all thanks"],
+  "voicemailDetection": {
+    "provider": "twilio",
+    "enabled": true
+  },
+  "transcriber": {
+    "provider": "deepgram",
+    "model": "nova-2",
+    "language": "en-US",
+    "keywords": [
+      "Invisalign:2",
+      "veneers:2",
+      "implant:2",
+      "root canal:2",
+      "extraction:2",
+      "crown:2",
+      "cavity:2",
+      "wisdom teeth:2"
+    ]
+  },
+  "voice": {
+    "provider": "11labs",
+    "voiceId": "REPLACE_WITH_ELEVENLABS_VOICE_ID",
+    "stability": 0.5,
+    "similarityBoost": 0.75,
+    "speed": 0.98
+  },
+  "model": {
+    "provider": "openai",
+    "model": "gpt-4o",
+    "temperature": 0.4,
+    "messages": [
+      {
+        "role": "system",
+        "content": "PASTE THE CONTENTS OF system-prompts/booking-agent.txt HERE, or reference it via the VAPI dashboard's prompt editor. Keep {{PRACTICE_NAME}} as a template variable — the backend supplies it in assistantOverrides.variableValues on every call."
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "check_availability",
+          "description": "Look up open appointment slots. Always call this before offering any time to a caller.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "service": {
+                "type": "string",
+                "description": "Treatment requested",
+                "enum": ["cleaning", "filling", "crown", "whitening", "invisalign", "implants", "extraction", "root_canal", "veneers", "consultation"]
+              },
+              "days_ahead": {
+                "type": "number",
+                "description": "How many days out to search. Default 7."
+              },
+              "limit": {
+                "type": "number",
+                "description": "How many slots to return. Keep to 3 for a phone call."
+              }
+            },
+            "required": ["service"]
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "book_appointment",
+          "description": "Book a slot the caller has chosen. Confirm their full name and phone number first.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "service": {
+                "type": "string",
+                "enum": ["cleaning", "filling", "crown", "whitening", "invisalign", "implants", "extraction", "root_canal", "veneers", "consultation"]
+              },
+              "slot_start": {
+                "type": "string",
+                "description": "ISO-8601 UTC start time, taken from check_availability. Never invent one."
+              },
+              "patient_name": {
+                "type": "string",
+                "description": "Full name as the caller gave it"
+              },
+              "patient_phone": {
+                "type": "string",
+                "description": "Callback number in E.164 where possible, e.g. +15551234567"
+              }
+            },
+            "required": ["service", "slot_start", "patient_phone"]
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "lookup_appointment",
+          "description": "Find the caller's upcoming appointments by phone number.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "patient_phone": {
+                "type": "string",
+                "description": "Defaults to the caller ID if omitted"
+              }
+            },
+            "required": []
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "reschedule_appointment",
+          "description": "Move an existing appointment to a new time from check_availability.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "appointment_id": {
+                "type": "string",
+                "description": "From lookup_appointment. Omit to use the caller's next appointment."
+              },
+              "new_slot_start": {
+                "type": "string",
+                "description": "ISO-8601 UTC start time"
+              }
+            },
+            "required": ["new_slot_start"]
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "cancel_appointment",
+          "description": "Cancel an appointment. Offer to rebook before ending the call.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "appointment_id": {
+                "type": "string",
+                "description": "Omit to use the caller's next appointment"
+              }
+            },
+            "required": []
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "get_pricing",
+          "description": "Fetch the price range for a treatment. Quote only from this.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "service": {
+                "type": "string",
+                "enum": ["cleaning", "filling", "crown", "whitening", "invisalign", "implants", "extraction", "root_canal", "veneers", "consultation"]
+              }
+            },
+            "required": ["service"]
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "answer_faq",
+          "description": "Answer a non-clinical logistical question — hours, parking, what a visit involves, general aftercare, insurance basics. Follows system-prompts/insurance-faq-agent.txt. Automatically escalates instead of answering if the question turns out to be a real emergency or a clinical judgment call.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "question": {
+                "type": "string",
+                "description": "The caller's question, verbatim"
+              }
+            },
+            "required": ["question"]
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "request_emergency_escalation",
+          "description": "A real dental emergency: knocked-out or badly broken tooth, uncontrolled bleeding, facial trauma or swelling, severe uncontrolled pain. Alerts the on-call dentist immediately (within 15 minutes) — follows system-prompts/emergency-triage-agent.txt. Use this instead of request_callback whenever the situation matches that prompt's escalation criteria.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "description": "Short description of the emergency, e.g. 'knocked-out front tooth from a fall'"
+              },
+              "callback_number": {
+                "type": "string",
+                "description": "Preferred callback number. Ask for it; default to caller ID."
+              }
+            },
+            "required": ["reason"]
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "request_callback",
+          "description": "A clinical question that is NOT an emergency — a treatment-safety judgment call, a medication interaction, anything the dentist should weigh in on. Promises a callback within 2 hours.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "enum": ["clinical_question", "insurance_dispute", "complaint", "complex_treatment_plan"]
+              },
+              "callback_number": {
+                "type": "string",
+                "description": "Preferred callback number. Ask for it; default to caller ID."
+              },
+              "priority": {
+                "type": "string",
+                "enum": ["normal", "urgent"]
+              }
+            },
+            "required": ["reason"]
+          }
+        }
+      }
+    ]
+  },
+  "analysisPlan": {
+    "summaryPlan": {
+      "enabled": true,
+      "messages": [
+        {
+          "role": "system",
+          "content": "Summarise the call in two sentences for practice staff. Record what was booked, changed or asked. Do not include clinical detail the caller volunteered."
+        }
+      ]
+    },
+    "successEvaluationPlan": {
+      "enabled": true,
+      "rubric": "PassFail"
+    }
+  },
+  "_setup_notes": {
+    "1_server_url": "Point serverUrl at https://YOUR-DOMAIN/webhooks/vapi — one URL handles every event type. If you prefer split routes, use /voice/inbound, /voice/action and /voice/end instead.",
+    "2_secret": "serverUrlSecret must equal VAPI_WEBHOOK_SECRET in .env. VAPI sends it as the X-Vapi-Secret header and the backend rejects requests without it.",
+    "3_prompt": "The full system prompt lives in system-prompts/booking-agent.txt (it embeds the emergency-triage escalation rule and points to answer_faq for logistics). Paste it into model.messages[0].content, or manage it in the VAPI dashboard.",
+    "4_variables": "The backend returns assistantOverrides.variableValues (PRACTICE_NAME, PATIENT_FIRST_NAME, IS_RETURNING_PATIENT, BOOKING_URL, AFTER_HOURS) from the assistant-request event, so a returning patient is greeted by name.",
+    "5_local_testing": "Expose the backend with `ngrok http 8000` and set serverUrl to the ngrok URL while testing.",
+    "6_hipaa": "Sign a BAA with VAPI and with your transcription and voice vendors before taking real calls. Transcripts are PHI: this backend encrypts them at rest, but they also exist in each vendor's dashboard until you configure retention there."
+  }
+}

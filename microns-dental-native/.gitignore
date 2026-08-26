@@ -1,0 +1,22 @@
+# Secrets — never commit. .env holds the key that decrypts all PHI;
+# credentials.json/token.json are the Google OAuth client + authorization.
+.env
+.env.*
+!.env.example
+credentials.json
+token.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local data
+*.db
+*.sqlite3
+postgres_data/
+n8n_data/

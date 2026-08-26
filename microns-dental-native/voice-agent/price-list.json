@@ -1,0 +1,62 @@
+{
+  "cleaning": {
+    "label": "Cleaning (Prophylaxis)",
+    "from": 100,
+    "unit": "",
+    "typical": "$100 to $200"
+  },
+  "filling": {
+    "label": "Filling",
+    "from": 150,
+    "unit": "per tooth",
+    "typical": "$150 to $400 per tooth"
+  },
+  "crown": {
+    "label": "Crown",
+    "from": 900,
+    "unit": "",
+    "typical": "$900 to $1,500"
+  },
+  "whitening": {
+    "label": "Whitening",
+    "from": 300,
+    "unit": "",
+    "typical": "$300 to $600"
+  },
+  "invisalign": {
+    "label": "Invisalign",
+    "from": 3500,
+    "unit": "full treatment",
+    "typical": "$3,500 to $7,000, depending on case complexity"
+  },
+  "implants": {
+    "label": "Implant",
+    "from": 3000,
+    "unit": "per tooth",
+    "typical": "$3,000 to $5,000 per tooth, before any bone graft"
+  },
+  "extraction": {
+    "label": "Extraction",
+    "from": 150,
+    "unit": "per tooth",
+    "typical": "$150 to $450 per tooth; surgical or wisdom-tooth extractions run higher"
+  },
+  "root_canal": {
+    "label": "Root Canal",
+    "from": 700,
+    "unit": "per tooth",
+    "typical": "$700 to $1,500 per tooth, plus the crown that usually follows"
+  },
+  "veneers": {
+    "label": "Veneers",
+    "from": 900,
+    "unit": "per tooth",
+    "typical": "$900 to $2,500 per tooth depending on material"
+  },
+  "consultation": {
+    "label": "Consultation / new patient exam",
+    "from": 0,
+    "unit": "",
+    "typical": "Complimentary"
+  }
+}
