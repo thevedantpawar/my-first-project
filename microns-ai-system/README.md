@@ -77,7 +77,7 @@ uvicorn app.main:app --reload
                     └──────┬───────┘
                            │  UUIDs and booleans only — never PHI
                     ┌──────▼───────┐
-                    │     n8n      │  5 workflows: cron + webhook orchestration
+                    │     n8n      │  7 workflows: cron + webhook orchestration
                     └──────────────┘
 ```
 
@@ -102,7 +102,7 @@ microns-ai-system/
 │   ├── tests/                  # 131 tests
 │   ├── Dockerfile
 │   └── requirements.txt
-├── n8n-workflows/              # 5 importable JSON workflows + README
+├── n8n-workflows/              # 7 importable JSON workflows + README
 ├── voice-agent/
 │   ├── vapi-config.json        # assistant config incl. 8 tool definitions
 │   ├── price-list.json
@@ -151,25 +151,36 @@ All four require the `X-Vapi-Secret` header.
      -d '{"message":{"type":"assistant-request","call":{"id":"test_1","customer":{"number":"+15551234567"}}}}'
    ```
 
-### The eight tools
+### The nine tools
 
 `check_availability` · `book_appointment` · `lookup_appointment` ·
 `reschedule_appointment` · `cancel_appointment` · `get_pricing` ·
-`answer_faq` · `request_callback`
+`answer_faq` · `request_callback` · `transfer_call`
 
 Bookings are created as **pending**, not confirmed: the slot is held
 immediately, and the front desk confirms. A voice agent mishearing "the
 fourteenth" as "the fortieth" should not put a confirmed appointment on the
 calendar.
 
-### The clinical boundary
+### The clinical boundary — two tiers, not one
 
-The agent never answers a clinical question. Anything matching contraindications,
-medications, pregnancy, side effects or a reaction routes to `request_callback`,
-which says *"That's an important question for our medical provider. I'll have
-them call you back within 2 hours"*, texts an acknowledgement, and fires the
-handoff workflow. The 2-hour promise is then tracked: `voice_handoff.json`
-escalates anything still outstanding.
+The agent never answers a clinical question, and it distinguishes a *question*
+from a *symptom in progress*:
+
+- **A question** ("is this safe if I'm on blood thinners?") routes to
+  `request_callback`, which says *"That's an important question for our
+  medical provider. I'll have them call you back within 2 hours"*, texts an
+  acknowledgement, and fires the handoff workflow. The 2-hour promise is then
+  tracked: `voice_handoff.json` escalates anything still outstanding.
+- **A reaction happening now** (swelling, an allergic response, unusual pain,
+  bleeding — anything the caller says is wrong at this moment) routes to
+  `transfer_call`, VAPI's native live-transfer tool, to `CLINIC_TRANSFER_NUMBER`
+  immediately. No triage questions, no promised callback — a bot should not be
+  gathering symptom details from someone having a reaction. This tool ships in
+  `voice-agent/vapi-config.json` but needs `CLINIC_TRANSFER_NUMBER` set in
+  `.env` and its exact behaviour (warm vs. cold transfer, destination format)
+  verified against VAPI's current docs in a sandbox call before go-live — the
+  same caveat the Acuity/Square booking adapters carry for their own APIs.
 
 ---
 
@@ -189,6 +200,10 @@ escalates anything still outstanding.
 | `GET` | `/api/appointments/no-shows` | internal | Feeds Workflow B |
 | `POST` | `/internal/reminders/send` | internal | Idempotent reminder send |
 | `POST` | `/internal/no-shows/detect` | internal | Flag past-due appointments as no-shows |
+| `POST` | `/internal/calls/{id}/missed-call-sms` | internal | Feeds Workflow F — instant booking-link text |
+| `POST` | `/internal/calls/{id}/missed-call-nudge` | internal | Feeds Workflow F — 15-minute nudge if unused |
+| `GET` | `/internal/packages/pending-followup` | internal | Feeds Workflow G |
+| `POST` | `/internal/packages/followup` | internal | Idempotent package rebooking nudge |
 | `POST` | `/webhooks/treatment-completed` | — | Starts the review clock |
 
 Every send is **idempotent**: a cron that fires twice texts once.
@@ -368,7 +383,11 @@ matter most:
 | `INTERNAL_API_TOKEN` | n8n → backend. Must match on both services |
 | `STAFF_API_TOKEN` | Staff dashboards (`X-Staff-Token`) |
 | `VAPI_WEBHOOK_SECRET` | Must equal the assistant's `serverUrlSecret` |
-| `BOOKING_SYSTEM_TYPE` | `generic` (built-in), `acuity`, `square`, `mindbody` |
+| `BOOKING_SYSTEM_TYPE` | `generic` (built-in), `acuity`, `square`, `mindbody`, `calcom` |
+| `CALCOM_API_KEY` / `CALCOM_EVENT_TYPE_IDS` | Required only when `BOOKING_SYSTEM_TYPE=calcom` — one Cal.com event type id per service |
+| `CLINIC_TRANSFER_NUMBER` | Front-desk number the `transfer_call` tool dials for an in-progress reaction |
+| `PACKAGE_FOLLOWUP_DAYS` | JSON map of service -> days since last completed session before a package rebooking nudge (Workflow G) |
+| `SLACK_WEBHOOK_URL_*` | Optional per-workflow Slack routing (`_LEADS`, `_REVIEWS`, `_VOICE`, `_RETENTION`); each falls back to `SLACK_WEBHOOK_URL` |
 | `SMS_INCLUDE_TREATMENT_DETAILS` | `false` keeps treatment names off lock screens |
 | `ENVIRONMENT` | `production` enables the strict checks and disables `/docs` |
 
@@ -383,10 +402,11 @@ or a default `FINGERPRINT_SECRET` / `INTERNAL_API_TOKEN`.
 docker compose exec backend pytest -q          # or: cd backend && pytest -q
 ```
 
-131 tests covering encryption at rest and key rotation, de-identification
+142 tests covering encryption at rest and key rotation, de-identification
 round-trips, audit-trail completeness and PHI rejection, the scoring matrix and
 both safety gates, reminder idempotency, no-show recovery, the review flow,
-voice tool handling and transcript encryption, authentication, and rate
+voice tool handling and transcript encryption, missed-call SMS idempotency,
+package-followup cadence and rebooking detection, authentication, and rate
 limiting.
 
 They run on SQLite with no external services, so `pytest` works on a laptop with

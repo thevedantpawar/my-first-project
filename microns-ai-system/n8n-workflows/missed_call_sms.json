@@ -1,0 +1,188 @@
+{
+  "name": "Microns — F. Missed Call Instant SMS",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "missed-call",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "f6000000-0000-4000-8000-000000000001",
+      "name": "Webhook: Missed Call",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-660, 200],
+      "webhookId": "f6000000-0000-4000-8000-0000000000f1",
+      "notes": "Fired by the backend from /voice/end whenever a VAPI call ends 'abandoned' or 'voicemail' — i.e. the caller never got a real conversation with Bella. Body: { call_record_id }. No PHI: the backend looks up the caller's number itself."
+    },
+    {
+      "parameters": {
+        "jsCode": "const first = $input.first().json;\nconst payload = first.body || first;\n\nreturn [{ json: { call_record_id: payload.call_record_id } }];"
+      },
+      "id": "f6000000-0000-4000-8000-000000000002",
+      "name": "Extract Call",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-440, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.MICRONS_API_URL }}/internal/calls/{{ $json.call_record_id }}/missed-call-sms",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Internal-Token",
+              "value": "={{ $env.INTERNAL_API_TOKEN }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f6000000-0000-4000-8000-000000000003",
+      "name": "Send Missed-Call SMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-220, 200],
+      "notes": "Backend creates/looks up the patient by caller number, renders the booking-link copy and sends within seconds of the call ending. Idempotent — a duplicate webhook is a no-op."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL_VOICE || $env.SLACK_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: ':telephone: *Missed call — instant SMS sent*\\nCall record: ' + $json.call_record_id + '\\nBooking link texted. Nudging again in 15 minutes if it goes unused.' }) }}",
+        "options": {}
+      },
+      "id": "f6000000-0000-4000-8000-000000000004",
+      "name": "Notify Front Desk",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [0, 200],
+      "onError": "continueRegularOutput",
+      "notes": "Set SLACK_WEBHOOK_URL_VOICE (falls back to the shared SLACK_WEBHOOK_URL) in the n8n service environment. Continues on error so an unset webhook does not fail the run."
+    },
+    {
+      "parameters": {
+        "amount": 15,
+        "unit": "minutes"
+      },
+      "id": "f6000000-0000-4000-8000-000000000005",
+      "name": "Wait 15 Minutes",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [220, 200],
+      "webhookId": "f6000000-0000-4000-8000-0000000000f2",
+      "notes": "n8n persists waits longer than 65s and resumes them after a restart — same mechanism as 'Wait 5 Days' in review_request.json, just a much shorter window."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.MICRONS_API_URL }}/internal/calls/{{ $json.call_record_id }}/missed-call-nudge",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Internal-Token",
+              "value": "={{ $env.INTERNAL_API_TOKEN }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f6000000-0000-4000-8000-000000000006",
+      "name": "Send Nudge If Still Not Booked",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 200],
+      "notes": "The backend checks whether an appointment was created for this patient since the call ended and skips silently if so — this node fires unconditionally, the booking check happens server-side where the PHI already lives."
+    },
+    {
+      "parameters": {},
+      "id": "f6000000-0000-4000-8000-000000000007",
+      "name": "End",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [660, 200]
+    }
+  ],
+  "connections": {
+    "Webhook: Missed Call": {
+      "main": [
+        [
+          {
+            "node": "Extract Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Call": {
+      "main": [
+        [
+          {
+            "node": "Send Missed-Call SMS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Missed-Call SMS": {
+      "main": [
+        [
+          {
+            "node": "Notify Front Desk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Front Desk": {
+      "main": [
+        [
+          {
+            "node": "Wait 15 Minutes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 15 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Send Nudge If Still Not Booked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Nudge If Still Not Booked": {
+      "main": [
+        [
+          {
+            "node": "End",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true
+  },
+  "pinData": {},
+  "tags": []
+}

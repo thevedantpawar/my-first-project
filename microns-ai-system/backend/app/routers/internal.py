@@ -364,6 +364,65 @@ def pending_callbacks(
 
 
 # --------------------------------------------------------------------- #
+# Workflow F — missed call -> instant SMS
+# --------------------------------------------------------------------- #
+@router.post("/calls/{call_record_id}/missed-call-sms", response_model=ActionResult)
+def missed_call_sms(
+    call_record_id: UUID,
+    db: Session = Depends(get_db),
+    audit: HIPAAAuditLogger = Depends(get_audit),
+) -> ActionResult:
+    """Text a booking link within seconds of a call nobody actually connected on."""
+    from app.services.voice_service import VoiceService
+
+    result = VoiceService(db, audit).send_missed_call_sms(call_record_id)
+    if result.get("status") == "not_found":
+        raise HTTPException(status_code=404, detail="Call record not found")
+    return ActionResult(status=result["status"], detail=result.get("reason"), data=result)
+
+
+@router.post("/calls/{call_record_id}/missed-call-nudge", response_model=ActionResult)
+def missed_call_nudge(
+    call_record_id: UUID,
+    db: Session = Depends(get_db),
+    audit: HIPAAAuditLogger = Depends(get_audit),
+) -> ActionResult:
+    """Second nudge, ~15 minutes later — a no-op if the link was already used."""
+    from app.services.voice_service import VoiceService
+
+    result = VoiceService(db, audit).send_missed_call_nudge(call_record_id)
+    if result.get("status") == "not_found":
+        raise HTTPException(status_code=404, detail="Call record not found")
+    return ActionResult(status=result["status"], detail=result.get("reason"), data=result)
+
+
+# --------------------------------------------------------------------- #
+# Workflow G — package / treatment-plan follow-up
+# --------------------------------------------------------------------- #
+@router.get("/packages/pending-followup")
+def pending_package_followup(
+    limit: int = Query(default=200, ge=1, le=500),
+    db: Session = Depends(get_db),
+    audit: HIPAAAuditLogger = Depends(get_audit),
+) -> list[dict]:
+    """Patients due a rebooking nudge for a package-based service (laser
+    course, injectable touch-up cycle), per ``PACKAGE_FOLLOWUP_DAYS``."""
+    return RetentionService(db, audit).packages_due_for_followup(limit=limit)
+
+
+@router.post("/packages/followup", response_model=ActionResult)
+def package_followup(
+    payload: AppointmentRef,
+    db: Session = Depends(get_db),
+    audit: HIPAAAuditLogger = Depends(get_audit),
+) -> ActionResult:
+    result = RetentionService(db, audit).send_package_followup(payload.appointment_id)
+    if result.get("status") == "not_found":
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    return ActionResult(status=result["status"], detail=result.get("reason"), data=result)
+
+
+# --------------------------------------------------------------------- #
 # Generic event logging
 # --------------------------------------------------------------------- #
 @router.post("/retention/events", response_model=ActionResult)

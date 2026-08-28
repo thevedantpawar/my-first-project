@@ -143,7 +143,7 @@ MEDICAL_QUESTION_PATTERNS = re.compile(
     r"\b(side effect|contraindicat|allerg|medication|prescri|interact|"
     # "safe" unqualified: in a med spa inbox, "is this safe" is always a
     # provider question, and the cost of over-escalating is one extra callback.
-    r"safe|unsafe|risk|bruis|swell|complication|reaction|"
+    r"safe|unsafe|risk|bruis|swell|complication|reaction|pain|painful|hurt|"
     r"blood thinner|thinner|anticoagulant|warfarin|aspirin|fish oil|"
     r"autoimmune|lupus|diabet|blood pressure|surgery|antibiotic|"
     r"accutane|isotretinoin|botulism|migraine|pregnan|breastfeed|nursing)\b",

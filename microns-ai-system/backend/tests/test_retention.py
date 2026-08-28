@@ -49,6 +49,72 @@ def test_upcoming_payload_is_deidentified(db, service, patient):
     assert not any(key in row for key in ("name", "phone", "email"))
 
 
+# --------------------------------------------------------------------- #
+# Package / treatment-plan follow-up
+# --------------------------------------------------------------------- #
+def test_package_followup_due_after_cadence(db, service, patient):
+    # Default cadence: laser -> 28 days.
+    make_appointment(
+        db,
+        patient,
+        hours_from_now=-40 * 24,
+        status=AppointmentStatus.COMPLETED,
+        service="laser",
+        completed_at=utcnow() - timedelta(days=40),
+    )
+    due = service.packages_due_for_followup()
+    assert len(due) == 1
+    assert due[0]["service"] == "laser"
+    assert due[0]["days_since_last_session"] >= 40
+
+
+def test_package_followup_not_due_before_cadence(db, service, patient):
+    make_appointment(
+        db,
+        patient,
+        hours_from_now=-10 * 24,
+        status=AppointmentStatus.COMPLETED,
+        service="laser",
+        completed_at=utcnow() - timedelta(days=10),
+    )
+    assert service.packages_due_for_followup() == []
+
+
+def test_package_followup_skips_if_already_rebooked(db, service, patient):
+    old = make_appointment(
+        db,
+        patient,
+        hours_from_now=-40 * 24,
+        status=AppointmentStatus.COMPLETED,
+        service="laser",
+        completed_at=utcnow() - timedelta(days=40),
+    )
+    make_appointment(db, patient, hours_from_now=5 * 24, status=AppointmentStatus.CONFIRMED, service="laser")
+    assert service.packages_due_for_followup() == []
+    assert old.id  # sanity: the old appointment is still the one that would have matched
+
+
+def test_package_followup_is_idempotent(db, service, patient):
+    make_appointment(
+        db,
+        patient,
+        hours_from_now=-40 * 24,
+        status=AppointmentStatus.COMPLETED,
+        service="laser",
+        completed_at=utcnow() - timedelta(days=40),
+    )
+    due = service.packages_due_for_followup()
+    result = service.send_package_followup(due[0]["appointment_id"])
+    assert result["status"] in {"sent", "suppressed"}
+
+    assert service.packages_due_for_followup() == []
+    second = service.send_package_followup(due[0]["appointment_id"])
+    assert second == {"status": "skipped", "reason": "already_sent"}
+
+    events = db.query(RetentionEvent).filter_by(event_type=RetentionEventType.PACKAGE_FOLLOWUP_SENT).all()
+    assert len(events) == 1
+
+
 def test_reminder_windows(db, service, patient):
     make_appointment(db, patient, hours_from_now=24)
     make_appointment(db, patient, hours_from_now=2)

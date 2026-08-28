@@ -29,7 +29,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "url": "={{ $env.SLACK_WEBHOOK_URL_VOICE || $env.SLACK_WEBHOOK_URL }}",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ text: ':telephone_receiver: *Callback required within 2 hours*\\nReason: ' + $json.reason_label + '\\nPriority: ' + $json.priority + '\\nPatient: ' + ($json.patient_uuid || 'unknown') + '\\nCall record: ' + ($json.call_record_id || 'n/a') + '\\nDue by: ' + $json.due_by + '\\n\\nOpen the patient record in the dashboard for their number — it is not sent to Slack.' }) }}",
@@ -165,7 +165,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "url": "={{ $env.SLACK_WEBHOOK_URL_VOICE || $env.SLACK_WEBHOOK_URL }}",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ text: ':rotating_light: *Callback SLA breached* — ' + $json.hours_waiting + 'h waiting (promised 2h)\\nCall record: ' + $json.call_record_id + '\\nPatient: ' + ($json.patient_uuid || 'unknown') + '\\nOutcome: ' + $json.outcome }) }}",

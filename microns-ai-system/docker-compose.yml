@@ -94,8 +94,14 @@ services:
       N8N_RUNNERS_ENABLED: "true"
       MICRONS_API_URL: http://backend:8000
       INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:-change-me-to-a-long-random-string}
-      # Optional. Staff notifications; workflow nodes continue on error when unset.
+      # Optional. Staff notifications; workflow nodes continue on error when
+      # unset. Each per-workflow var falls back to the shared one, so setting
+      # only SLACK_WEBHOOK_URL still notifies everywhere.
       SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
+      SLACK_WEBHOOK_URL_LEADS: ${SLACK_WEBHOOK_URL_LEADS:-}
+      SLACK_WEBHOOK_URL_REVIEWS: ${SLACK_WEBHOOK_URL_REVIEWS:-}
+      SLACK_WEBHOOK_URL_VOICE: ${SLACK_WEBHOOK_URL_VOICE:-}
+      SLACK_WEBHOOK_URL_RETENTION: ${SLACK_WEBHOOK_URL_RETENTION:-}
     volumes:
       - n8n_data:/home/node/.n8n
       # Read-only source of the workflow JSON, for UI import or the CLI import

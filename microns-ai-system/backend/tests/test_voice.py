@@ -298,6 +298,103 @@ def test_unknown_action_degrades_gracefully(db, service):
 # --------------------------------------------------------------------- #
 # HTTP layer
 # --------------------------------------------------------------------- #
+# --------------------------------------------------------------------- #
+# Missed call -> instant SMS
+# --------------------------------------------------------------------- #
+def test_abandoned_call_gets_a_missed_call_sms(db, service):
+    service.handle_inbound(inbound_payload(call_id="call_missed", number="+15552223333"))
+    service.handle_end(
+        call_id="call_missed",
+        transcript=None,
+        duration_seconds=3,
+        outcome=None,
+        ended_reason="customer-ended-call",
+        summary={},
+    )
+    record = db.query(VoiceCall).filter_by(vapi_call_id="call_missed").one()
+    assert record.outcome == VoiceCallOutcome.ABANDONED
+
+    result = service.send_missed_call_sms(record.id)
+    assert result["status"] in {"sent", "suppressed"}
+
+    db.refresh(record)
+    assert record.summary["missed_call_sms_sent_at"]
+    assert record.patient_id is not None
+
+
+def test_missed_call_sms_is_idempotent(db, service):
+    service.handle_inbound(inbound_payload(call_id="call_missed2", number="+15552223344"))
+    service.handle_end(
+        call_id="call_missed2",
+        transcript=None,
+        duration_seconds=3,
+        outcome=None,
+        ended_reason="customer-ended-call",
+        summary={},
+    )
+    record = db.query(VoiceCall).filter_by(vapi_call_id="call_missed2").one()
+
+    service.send_missed_call_sms(record.id)
+    second = service.send_missed_call_sms(record.id)
+    assert second == {"status": "skipped", "reason": "already_sent"}
+
+
+def test_missed_call_nudge_skips_if_patient_already_booked(db, service):
+    service.handle_inbound(inbound_payload(call_id="call_missed3", number="+15552223355"))
+    service.handle_end(
+        call_id="call_missed3",
+        transcript=None,
+        duration_seconds=3,
+        outcome=None,
+        ended_reason="customer-ended-call",
+        summary={},
+    )
+    record = db.query(VoiceCall).filter_by(vapi_call_id="call_missed3").one()
+    service.send_missed_call_sms(record.id)
+    db.refresh(record)
+
+    service.handle_action(
+        action="book_appointment",
+        parameters={
+            "service": "botox",
+            "slot_start": service.handle_action(
+                action="check_availability", parameters={"service": "botox"}, call_id=None
+            )["result"]["slots"][0]["start"],
+            "patient_phone": "+15552223355",
+        },
+        call_id=None,
+    )
+
+    result = service.send_missed_call_nudge(record.id)
+    assert result == {"status": "skipped", "reason": "already_booked"}
+
+
+def test_completed_call_does_not_trigger_a_missed_call_sms(db, service, patient):
+    service.handle_inbound(inbound_payload())
+    slots = service.handle_action(
+        action="check_availability", parameters={"service": "botox"}, call_id="call_test_1"
+    )["result"]["slots"]
+    service.handle_action(
+        action="book_appointment",
+        parameters={"service": "botox", "slot_start": slots[0]["start"], "patient_phone": patient.phone},
+        call_id="call_test_1",
+    )
+    service.handle_end(
+        call_id="call_test_1",
+        transcript="booked",
+        duration_seconds=60,
+        outcome=None,
+        ended_reason="customer-ended-call",
+        summary={},
+    )
+    record = db.query(VoiceCall).one()
+    assert record.outcome == VoiceCallOutcome.BOOKED
+
+    result = service.send_missed_call_sms(record.id)
+    assert result["status"] == "skipped"
+    assert result["reason"] == "outcome_booked"
+
+
 def test_voice_endpoints_require_the_vapi_secret(client):
     response = client.post("/voice/inbound", json=inbound_payload())
     assert response.status_code == 401

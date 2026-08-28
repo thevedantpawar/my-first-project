@@ -395,6 +395,161 @@ class SquareBookingAdapter(BookingAdapter):
             return BookingRef(external_id=None, confirmed=False, provider_name=self.name, raw={})
 
 
+class CalComBookingAdapter(BookingAdapter):
+    """Cal.com v2 API (Bearer token), one event type per service.
+
+    ``settings.calcom_event_type_ids`` maps a service name to a Cal.com event
+    type id — create one event type per treatment category (consult,
+    injectable follow-up, laser session, ...) in the Cal.com dashboard and
+    paste the ids into ``.env``. Cal.com is the calendar *bridge*: it syncs to
+    Google Calendar/Outlook on its own side, so this adapter only ever talks
+    to Cal.com's API, never the calendar directly.
+
+    Written against Cal.com's documented v2 REST API. As with Acuity and
+    Square above, verify the exact slot/booking response shape against a
+    sandbox account before go-live — Cal.com has shipped breaking changes to
+    ``/v2/slots`` between API versions.
+
+    Cal.com's booking endpoint requires an attendee email. Med spa callers
+    give a phone number, not an email, so one is synthesised
+    (``<phone>@sms.placeholder``) when the patient has none on file. That is a
+    workaround, not a real address — collect email during booking if you want
+    real Cal.com confirmation emails to reach the patient.
+    """
+
+    name = "calcom"
+
+    def __init__(self, db: Session) -> None:
+        super().__init__(db)
+        self._fallback = InternalBookingAdapter(db)
+        self._api_key = settings.calcom_api_key
+        self._event_types = settings.calcom_event_type_ids
+
+    @property
+    def _headers(self) -> dict[str, str]:
+        return {
+            "Authorization": f"Bearer {self._api_key}",
+            "cal-api-version": "2024-08-13",
+            "Content-Type": "application/json",
+        }
+
+    def _event_type_id(self, service: str) -> Optional[int]:
+        value = self._event_types.get(service)
+        try:
+            return int(value) if value is not None else None
+        except (TypeError, ValueError):
+            return None
+
+    def get_available_slots(self, *, service: str, days_ahead: int = 7, limit: int = 12) -> list[Slot]:
+        event_type_id = self._event_type_id(service)
+        if not self._api_key or event_type_id is None or httpx is None:
+            return self._fallback.get_available_slots(service=service, days_ahead=days_ahead, limit=limit)
+
+        now = utcnow()
+        try:
+            response = httpx.get(
+                f"{settings.calcom_api_base_url}/slots",
+                headers=self._headers,
+                params={
+                    "eventTypeId": event_type_id,
+                    "start": now.isoformat() + "Z",
+                    "end": (now + timedelta(days=days_ahead)).isoformat() + "Z",
+                    "timeZone": settings.clinic_timezone,
+                },
+                timeout=10.0,
+            )
+            response.raise_for_status()
+            data = response.json().get("data", {})
+        except Exception as exc:
+            logger.error("Cal.com slots lookup failed: %s", type(exc).__name__)
+            return self._fallback.get_available_slots(service=service, days_ahead=days_ahead, limit=limit)
+
+        slots: list[Slot] = []
+        # Cal.com groups slots by ISO date: {"2026-01-01": [{"start": "..."}], ...}
+        for day_slots in (data.values() if isinstance(data, dict) else []):
+            for entry in day_slots or []:
+                start = parse_datetime(entry.get("start"))
+                if start is None:
+                    continue
+                slots.append(
+                    Slot(start=start, end=start + timedelta(minutes=settings.appointment_slot_minutes))
+                )
+                if len(slots) >= limit:
+                    break
+            if len(slots) >= limit:
+                break
+
+        return slots or self._fallback.get_available_slots(
+            service=service, days_ahead=days_ahead, limit=limit
+        )
+
+    def create_booking(
+        self,
+        *,
+        service: str,
+        start: datetime,
+        patient_name: Optional[str],
+        patient_phone: Optional[str],
+        patient_email: Optional[str] = None,
+        duration_minutes: int = 30,
+    ) -> BookingRef:
+        event_type_id = self._event_type_id(service)
+        if not self._api_key or event_type_id is None or httpx is None:
+            return self._fallback.create_booking(
+                service=service,
+                start=start,
+                patient_name=patient_name,
+                patient_phone=patient_phone,
+                patient_email=patient_email,
+                duration_minutes=duration_minutes,
+            )
+        placeholder_email = f"{(patient_phone or 'patient').lstrip('+')}@sms.placeholder"
+        try:
+            response = httpx.post(
+                f"{settings.calcom_api_base_url}/bookings",
+                headers=self._headers,
+                json={
+                    "eventTypeId": event_type_id,
+                    "start": start.isoformat() + "Z",
+                    "attendee": {
+                        "name": patient_name or "Patient",
+                        "email": patient_email or placeholder_email,
+                        "phoneNumber": patient_phone,
+                        "timeZone": settings.clinic_timezone,
+                    },
+                    "metadata": {"service": service},
+                },
+                timeout=10.0,
+            )
+            response.raise_for_status()
+            data = response.json().get("data", {})
+            return BookingRef(
+                external_id=str(data.get("uid") or data.get("id") or "") or None,
+                confirmed=True,
+                provider_name=self.name,
+                raw=data,
+            )
+        except Exception as exc:
+            logger.error("Cal.com booking failed: %s — recorded locally instead", type(exc).__name__)
+            return BookingRef(external_id=None, confirmed=False, provider_name=self.name, raw={})
+
+    def cancel_booking(self, external_id: str) -> bool:
+        if not self._api_key or httpx is None:
+            return True
+        try:
+            response = httpx.post(
+                f"{settings.calcom_api_base_url}/bookings/{external_id}/cancel",
+                headers=self._headers,
+                json={"cancellationReason": "Cancelled by clinic"},
+                timeout=10.0,
+            )
+            response.raise_for_status()
+            return True
+        except Exception as exc:
+            logger.error("Cal.com cancel failed: %s", type(exc).__name__)
+            return False
+
+
 class MindbodyBookingAdapter(InternalBookingAdapter):
     """Placeholder.
 
@@ -419,6 +574,7 @@ _ADAPTERS = {
     "internal": InternalBookingAdapter,
     "acuity": AcuityBookingAdapter,
     "square": SquareBookingAdapter,
+    "calcom": CalComBookingAdapter,
     "mindbody": MindbodyBookingAdapter,
 }
 

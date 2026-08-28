@@ -49,6 +49,12 @@ TRANSACTIONAL_TEMPLATES = {
     "callback_ack",
     "consultation_confirmation",
     "qualification_reply",
+    # A direct reply to the patient's own inbound call attempt, sent within
+    # minutes of it — closer to a missed-call callback than to marketing.
+    # The 15-minute nudge that follows is NOT in this set on purpose: it is a
+    # second, unsolicited touch and stays gated on marketing_consent. Review
+    # this classification with the clinic's counsel before go-live.
+    "missed_call_sms",
 }
 
 
@@ -245,6 +251,32 @@ def dormant_reactivation(*, first_name: Optional[str] = None, days: int = 45) ->
     )
 
 
+def missed_call_sms(*, first_name: Optional[str] = None) -> str:
+    greeting = f"Hi {first_name}, " if first_name else "Hi, "
+    return (
+        f"{greeting}sorry we missed your call at {settings.clinic_name}! Book a time that "
+        f"works for you here: {settings.clinic_booking_url}. Or call us back at "
+        f"{settings.clinic_phone or 'the clinic'}."
+    )
+
+
+def missed_call_nudge(*, first_name: Optional[str] = None) -> str:
+    greeting = f"{first_name}, " if first_name else ""
+    return (
+        f"{greeting}still there? Grab a spot before it's gone: {settings.clinic_booking_url}. "
+        "Reply STOP to opt out."
+    )
+
+
+def package_followup(*, service: Optional[str] = None, first_name: Optional[str] = None) -> str:
+    greeting = f"Hi {first_name}, " if first_name else "Hi, "
+    label = _service_phrase(service)
+    return (
+        f"{greeting}it's about time for {label if label != 'your appointment' else 'your next session'} "
+        f"at {settings.clinic_name}. Ready to book? {settings.clinic_booking_url}. Reply STOP to opt out."
+    )
+
+
 def consultation_confirmation(*, when_text: str, booking_url: Optional[str] = None) -> str:
     tail = f" Details: {booking_url}" if booking_url else ""
     return (
@@ -286,4 +318,7 @@ __all__ = [
     "consultation_confirmation",
     "medical_callback_ack",
     "nurture_message",
+    "missed_call_sms",
+    "missed_call_nudge",
+    "package_followup",
 ]

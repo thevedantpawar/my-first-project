@@ -60,7 +60,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "url": "={{ $env.SLACK_WEBHOOK_URL_LEADS || $env.SLACK_WEBHOOK_URL }}",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ text: ':fire: *Hot lead — consultation auto-booked*\\nScore: ' + $json.score + '/100\\nInterest: ' + $json.treatment_interest + '\\nTimeline: ' + $json.timeline + '\\nLead: ' + $json.lead_id + ($json.needs_provider_approval ? '\\n:warning: Blood thinners disclosed — provider approval required before treatment.' : '') }) }}",
@@ -108,7 +108,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "url": "={{ $env.SLACK_WEBHOOK_URL_LEADS || $env.SLACK_WEBHOOK_URL }}",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ text: ':wave: *Warm lead — follow up within 24h*\\nScore: ' + $json.score + '/100\\nInterest: ' + $json.treatment_interest + '\\nTimeline: ' + $json.timeline + '\\nLead: ' + $json.lead_id }) }}",
@@ -206,7 +206,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "url": "={{ $env.SLACK_WEBHOOK_URL_LEADS || $env.SLACK_WEBHOOK_URL }}",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ text: ':alarm_clock: *Lead follow-up overdue* — ' + $json.hours_since_created + 'h since qualification\\nScore: ' + $json.score + '/100 (' + $json.temperature + ')\\nInterest: ' + $json.treatment_interest + '\\nLead: ' + $json.lead_id }) }}",

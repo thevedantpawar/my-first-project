@@ -6,6 +6,7 @@ Everything configurable lives here, loaded from environment variables (see
 
 from __future__ import annotations
 
+import json
 import logging
 from functools import lru_cache
 from typing import Annotated, List, Optional
@@ -72,11 +73,23 @@ class Settings(BaseSettings):
     clinic_transfer_number: Optional[str] = None
 
     # --- Booking system ----------------------------------------------------
+    # generic | acuity | square | mindbody | calcom
     booking_system_type: str = "generic"
     booking_api_key: Optional[str] = None
     booking_api_secret: Optional[str] = None
     booking_api_base_url: Optional[str] = None
     booking_calendar_id: Optional[str] = None
+
+    # --- Cal.com (optional booking adapter) ---------------------------------
+    # Set BOOKING_SYSTEM_TYPE=calcom to use this instead of booking_api_key/
+    # booking_calendar_id above. Cal.com is the calendar *bridge* — it syncs to
+    # Google Calendar/Outlook on its own side; this adapter only talks to
+    # Cal.com's API.
+    calcom_api_key: Optional[str] = None
+    #: JSON map of service -> Cal.com event type id, one per treatment
+    #: category, e.g. '{"consultation":111,"botox":222,"laser":333}'.
+    calcom_event_type_ids: Annotated[dict, NoDecode] = {}
+    calcom_api_base_url: str = "https://api.cal.com/v2"
 
     # --- Calendly ----------------------------------------------------------
     calendly_api_key: Optional[str] = None
@@ -97,6 +110,16 @@ class Settings(BaseSettings):
     reactivation_days: int = 45
     review_request_delay_days: int = 5
     no_show_credit_amount: int = 50
+    #: JSON map of service -> days since the last *completed* session before a
+    #: package/treatment-plan rebooking nudge goes out (laser courses,
+    #: injectable touch-ups, ...). Override with a JSON string, e.g.
+    #: '{"laser":28,"botox":90}'. A service with no entry is never nudged.
+    package_followup_days: Annotated[dict, NoDecode] = {
+        "laser": 28,
+        "botox": 90,
+        "fillers": 120,
+        "peel": 30,
+    }
 
     # --- n8n ---------------------------------------------------------------
     #: Base URL for n8n webhook triggers. Set to the ``/webhook-test`` variant
@@ -116,6 +139,23 @@ class Settings(BaseSettings):
         """Accept both a JSON list and a plain comma-separated env string."""
         if isinstance(value, str):
             return [item.strip() for item in value.split(",") if item.strip()]
+        return value
+
+    @field_validator("package_followup_days", "calcom_event_type_ids", mode="before")
+    @classmethod
+    def _parse_json_dict(cls, value):
+        """Accept a JSON object string from the environment, same idea as the
+        comma-separated list parsing below but for the two settings that need
+        a service -> value mapping."""
+        if isinstance(value, str):
+            if not value.strip():
+                return {}
+            try:
+                parsed = json.loads(value)
+            except (TypeError, ValueError):
+                logger.warning("Could not parse JSON setting: %r", value)
+                return {}
+            return parsed if isinstance(parsed, dict) else {}
         return value
 
     @field_validator("encryption_key", mode="before")
@@ -167,6 +207,10 @@ class Settings(BaseSettings):
     @property
     def calendly_enabled(self) -> bool:
         return bool(self.calendly_api_key and self.calendly_event_type_uri)
+
+    @property
+    def calcom_enabled(self) -> bool:
+        return bool(self.calcom_api_key and self.calcom_event_type_ids)
 
     def startup_warnings(self) -> List[str]:
         """Deployment problems worth shouting about at boot.

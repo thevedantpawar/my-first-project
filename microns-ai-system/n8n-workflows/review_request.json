@@ -145,7 +145,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "url": "={{ $env.SLACK_WEBHOOK_URL_REVIEWS || $env.SLACK_WEBHOOK_URL }}",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ text: '*New review — draft reply needs approval*\\nRating: ' + ($json.data && $json.data.rating != null ? $json.data.rating : 'n/a') + '/5\\n\\n> ' + (($json.data && $json.data.draft_response) || '(no draft)') + '\\n\\nApprove and post it to your Google Business Profile if it reads right.' }) }}",

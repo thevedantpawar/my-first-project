@@ -464,6 +464,124 @@ class RetentionService:
         return context.reidentify(reply)
 
     # ------------------------------------------------------------------ #
+    # Workflow F — package / treatment-plan follow-up
+    # ------------------------------------------------------------------ #
+    def packages_due_for_followup(self, limit: int = 200) -> list[dict[str, Any]]:
+        """Most recent completed session per (patient, package service) that
+        has passed ``settings.package_followup_days[service]`` with no
+        rebooking and no nudge sent yet.
+
+        Package services (a laser course, an injectable touch-up cycle) have
+        their own cadence rather than the general 45-day dormancy check —
+        someone six weeks out from a laser session is on schedule, not at
+        risk.
+        """
+        cadence = settings.package_followup_days
+        if not cadence:
+            return []
+
+        rows = (
+            self.db.execute(
+                select(Appointment)
+                .where(
+                    Appointment.service.in_(cadence.keys()),
+                    Appointment.status == AppointmentStatus.COMPLETED,
+                    Appointment.completed_at.is_not(None),
+                )
+                .order_by(Appointment.completed_at.desc())
+            )
+            .scalars()
+            .all()
+        )
+
+        latest: dict[tuple[Any, str], Appointment] = {}
+        for row in rows:
+            key = (row.patient_id, row.service)
+            if key not in latest:  # newest first, so first hit wins
+                latest[key] = row
+
+        already_sent_ids = {
+            appointment_id
+            for (appointment_id,) in self.db.execute(
+                select(RetentionEvent.appointment_id).where(
+                    RetentionEvent.event_type == RetentionEventType.PACKAGE_FOLLOWUP_SENT
+                )
+            ).all()
+        }
+
+        due: list[dict[str, Any]] = []
+        for (patient_id, service), appointment in latest.items():
+            days = cadence.get(service)
+            if not days or appointment.id in already_sent_ids:
+                continue
+            days_since = (utcnow() - appointment.completed_at).days
+            if days_since < days:
+                continue
+            rebooked = self.db.scalar(
+                select(func.count(Appointment.id)).where(
+                    Appointment.patient_id == patient_id,
+                    Appointment.service == service,
+                    Appointment.id != appointment.id,
+                    Appointment.created_at > appointment.completed_at,
+                    Appointment.status.in_(
+                        (AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED, AppointmentStatus.COMPLETED)
+                    ),
+                )
+            )
+            if rebooked:
+                continue
+            due.append(
+                {
+                    "appointment_id": str(appointment.id),
+                    "patient_uuid": str(patient_id),
+                    "service": service,
+                    "days_since_last_session": days_since,
+                    "cadence_days": days,
+                }
+            )
+            if len(due) >= limit:
+                break
+
+        self.audit.log_read(None, DataCategory.APPOINTMENT, "n8n", details={"count": len(due)})
+        return due
+
+    def send_package_followup(self, appointment_id: UUID) -> dict[str, Any]:
+        appointment = self.db.get(Appointment, appointment_id)
+        if appointment is None:
+            return {"status": "not_found"}
+
+        already_sent = self.db.execute(
+            select(RetentionEvent.id).where(
+                RetentionEvent.appointment_id == appointment_id,
+                RetentionEvent.event_type == RetentionEventType.PACKAGE_FOLLOWUP_SENT,
+            )
+        ).first()
+        if already_sent:
+            return {"status": "skipped", "reason": "already_sent"}
+
+        patient = appointment.patient
+        result = self.sms.send(
+            to=patient.phone if patient else None,
+            body=templates.package_followup(service=appointment.service, first_name=_first_name(patient)),
+            template="package_followup",
+            patient_uuid=str(appointment.patient_id),
+            sms_consent=patient.sms_consent if patient else None,
+            marketing_consent=patient.marketing_consent if patient else None,
+        )
+        self.record_event(
+            event_type=RetentionEventType.PACKAGE_FOLLOWUP_SENT,
+            patient_id=appointment.patient_id,
+            appointment_id=appointment.id,
+            metadata={
+                "service": appointment.service,
+                "sms_status": result.status,
+                "suppressed_reason": result.reason,
+            },
+        )
+        self.db.commit()
+        return {"status": "sent" if result.ok else "suppressed", "sms_status": result.status}
+
+    # ------------------------------------------------------------------ #
     # Dormant patients
     # ------------------------------------------------------------------ #
     def patients_at_risk(self, days: Optional[int] = None, limit: int = 200) -> list[dict[str, Any]]:

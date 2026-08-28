@@ -44,6 +44,29 @@ def test_internal_endpoints_accept_the_right_token(client, internal_headers):
     assert client.post("/internal/no-shows/detect", headers=internal_headers).status_code == 200
 
 
+def test_missed_call_and_package_followup_endpoints_require_a_token(client):
+    import uuid
+
+    fake_id = str(uuid.uuid4())
+    assert client.post(f"/internal/calls/{fake_id}/missed-call-sms").status_code == 401
+    assert client.get("/internal/packages/pending-followup").status_code == 401
+
+
+def test_missed_call_sms_returns_404_for_an_unknown_call(client, internal_headers):
+    import uuid
+
+    response = client.post(
+        f"/internal/calls/{uuid.uuid4()}/missed-call-sms", headers=internal_headers
+    )
+    assert response.status_code == 404
+
+
+def test_pending_package_followup_is_empty_with_no_data(client, internal_headers):
+    response = client.get("/internal/packages/pending-followup", headers=internal_headers)
+    assert response.status_code == 200
+    assert response.json() == []
+
+
 def test_staff_endpoints_require_a_token(client, staff_headers):
     assert client.get("/retention/dashboard").status_code == 401
     assert client.get("/retention/dashboard", headers=staff_headers).status_code == 200

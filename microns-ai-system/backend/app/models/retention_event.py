@@ -24,6 +24,9 @@ class RetentionEventType:
     TREATMENT_COMPLETED = "treatment_completed"
     REBOOKED = "rebooked"
     NURTURE_SENT = "nurture_sent"
+    MISSED_CALL_SMS_SENT = "missed_call_sms_sent"
+    MISSED_CALL_NUDGE_SENT = "missed_call_nudge_sent"
+    PACKAGE_FOLLOWUP_SENT = "package_followup_sent"
 
     ALL = (
         REMINDER_SENT,
@@ -37,6 +40,9 @@ class RetentionEventType:
         TREATMENT_COMPLETED,
         REBOOKED,
         NURTURE_SENT,
+        MISSED_CALL_SMS_SENT,
+        MISSED_CALL_NUDGE_SENT,
+        PACKAGE_FOLLOWUP_SENT,
     )
 
 

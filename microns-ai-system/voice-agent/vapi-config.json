@@ -196,6 +196,17 @@
         }
       },
       {
+        "type": "transferCall",
+        "destinations": [
+          {
+            "type": "number",
+            "number": "{{CLINIC_TRANSFER_NUMBER}}",
+            "message": "I want our clinical team to hear about this directly — connecting you now.",
+            "description": "IMMEDIATE live transfer for an adverse reaction or complication in progress — swelling, an allergic reaction, unusual pain, or anything the caller describes as wrong right now. This is not the same as request_callback: an active reaction needs a human on the line in seconds, not a promised callback in 2 hours. destinations[0].number is a template variable — the backend supplies CLINIC_TRANSFER_NUMBER via assistantOverrides.variableValues, so it never needs to be hardcoded per assistant."
+          }
+        ]
+      },
+      {
         "type": "function",
         "function": {
           "name": "request_callback",
@@ -248,8 +259,9 @@
     "1_server_url": "Point serverUrl at https://YOUR-DOMAIN/webhooks/vapi — one URL handles every event type. If you prefer split routes, use /voice/inbound, /voice/action and /voice/end instead.",
     "2_secret": "serverUrlSecret must equal VAPI_WEBHOOK_SECRET in .env. VAPI sends it as the X-Vapi-Secret header and the backend rejects requests without it.",
     "3_prompt": "The full system prompt lives in system-prompts/booking-agent.txt. Paste it into model.messages[0].content, or manage it in the VAPI dashboard.",
-    "4_variables": "The backend returns assistantOverrides.variableValues (CLINIC_NAME, PATIENT_FIRST_NAME, IS_RETURNING_PATIENT, BOOKING_URL) from the assistant-request event, so a returning patient is greeted by name.",
+    "4_variables": "The backend returns assistantOverrides.variableValues (CLINIC_NAME, PATIENT_FIRST_NAME, IS_RETURNING_PATIENT, BOOKING_URL) from the assistant-request event, so a returning patient is greeted by name. Add CLINIC_TRANSFER_NUMBER to that same override map (backend/app/services/voice_service.py, handle_inbound) before enabling the transferCall tool below — it ships templated and does nothing until that variable is wired through.",
     "5_local_testing": "Expose the backend with `ngrok http 8000` and set serverUrl to the ngrok URL while testing.",
-    "6_hipaa": "Sign a BAA with VAPI and with your transcription and voice vendors before taking real calls. Transcripts are PHI: this backend encrypts them at rest, but they also exist in each vendor's dashboard until you configure retention there."
+    "6_hipaa": "Sign a BAA with VAPI and with your transcription and voice vendors before taking real calls. Transcripts are PHI: this backend encrypts them at rest, but they also exist in each vendor's dashboard until you configure retention there.",
+    "7_transfer_call": "The transferCall tool destination number, the transfer message, and whether VAPI supports a warm vs. cold transfer are all worth re-checking against VAPI's current docs before go-live — that surface has changed between API versions and this file was written without a live sandbox to verify against, the same caveat the Acuity/Square booking adapters carry for their own APIs."
   }
 }

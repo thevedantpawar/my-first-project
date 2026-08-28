@@ -25,7 +25,7 @@ import os
 from pathlib import Path
 from typing import Any, Optional
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -38,7 +38,7 @@ from app.services.deidentify import DeidentificationContext
 from app.services.encryption import get_encryption_service, normalise_identifier
 from app.services.hipaa_audit import AuditAction, DataCategory, HIPAAAuditLogger
 from app.services.llm import get_llm
-from app.services.notifier import notify_voice_handoff
+from app.services.notifier import notify_missed_call, notify_voice_handoff
 from app.services.patient_service import find_by_phone, get_or_create_patient
 from app.services.sms_service import SMSService
 from app.utils import format_appointment_time, parse_datetime, utcnow
@@ -108,6 +108,12 @@ class VoiceService:
                     "PATIENT_FIRST_NAME": first_name or "",
                     "IS_RETURNING_PATIENT": "yes" if patient else "no",
                     "BOOKING_URL": settings.clinic_booking_url,
+                    # Fills the transferCall tool's destination number
+                    # (voice-agent/vapi-config.json). Empty until
+                    # CLINIC_TRANSFER_NUMBER is set in .env — VAPI's behaviour
+                    # with a blank transfer destination should be verified in
+                    # a sandbox call before this goes live.
+                    "CLINIC_TRANSFER_NUMBER": settings.clinic_transfer_number or "",
                 },
                 "firstMessage": greeting,
             },
@@ -150,6 +156,14 @@ class VoiceService:
             outcome=record.outcome,
         )
         self.db.commit()
+
+        # A call that never reached booking, a callback or an FAQ answer is a
+        # missed contact — fire the instant-SMS workflow. Anything more
+        # specific (BOOKED, CALLBACK_REQUESTED, ...) is set explicitly by its
+        # own handler before this runs and is left alone here.
+        if record.outcome in (VoiceCallOutcome.ABANDONED, VoiceCallOutcome.VOICEMAIL):
+            notify_missed_call(call_record_id=record.id)
+
         return {
             "call_record_id": str(record.id),
             "outcome": record.outcome,
@@ -558,8 +572,100 @@ class VoiceService:
         }
 
     # ------------------------------------------------------------------ #
+    # Missed call -> instant SMS with a booking link
+    # ------------------------------------------------------------------ #
+    def send_missed_call_sms(self, call_record_id: Any) -> dict[str, Any]:
+        """First touch after a call nobody actually connected on.
+
+        Fires only for calls that ended ``abandoned`` or ``voicemail`` — the
+        caller never got a real conversation with Bella. A call that reached
+        booking, a callback or an FAQ answer already has its own confirmation
+        text.
+        """
+        record = self._find_call_by_id(call_record_id)
+        if record is None:
+            return {"status": "not_found"}
+        if record.outcome not in (VoiceCallOutcome.ABANDONED, VoiceCallOutcome.VOICEMAIL):
+            return {"status": "skipped", "reason": f"outcome_{record.outcome}"}
+        summary = dict(record.summary or {})
+        if summary.get("missed_call_sms_sent_at"):
+            return {"status": "skipped", "reason": "already_sent"}
+        if not record.encrypted_caller_number:
+            return {"status": "skipped", "reason": "no_caller_number"}
+
+        patient, _ = get_or_create_patient(
+            self.db,
+            phone=normalise_identifier(record.encrypted_caller_number),
+            sms_consent=True,
+            audit=self.audit,
+            user_id="voice-agent",
+        )
+        record.patient_id = record.patient_id or patient.id
+
+        result = self.sms.send(
+            to=patient.phone,
+            body=templates.missed_call_sms(first_name=_first_name(patient)),
+            template="missed_call_sms",
+            patient_uuid=str(patient.id),
+            sms_consent=patient.sms_consent,
+        )
+        summary["missed_call_sms_sent_at"] = utcnow().isoformat() + "Z"
+        record.summary = summary
+        self.audit.log_access(
+            "write", str(patient.id), DataCategory.PHONE, "voice-agent", details={"template": "missed_call_sms"}
+        )
+        self.db.commit()
+        return {"status": "sent" if result.ok else "suppressed", "sms_status": result.status}
+
+    def send_missed_call_nudge(self, call_record_id: Any) -> dict[str, Any]:
+        """Second SMS, ~15 minutes later, sent only if the booking link went unused."""
+        record = self._find_call_by_id(call_record_id)
+        if record is None:
+            return {"status": "not_found"}
+        summary = dict(record.summary or {})
+        if not summary.get("missed_call_sms_sent_at"):
+            return {"status": "skipped", "reason": "initial_sms_not_sent"}
+        if summary.get("missed_call_nudge_sent_at"):
+            return {"status": "skipped", "reason": "already_sent"}
+        if record.patient_id is None:
+            return {"status": "skipped", "reason": "no_patient"}
+
+        booked_since = self.db.scalar(
+            select(func.count(Appointment.id)).where(
+                Appointment.patient_id == record.patient_id,
+                Appointment.created_at >= record.created_at,
+                Appointment.status.in_(AppointmentStatus.ACTIVE + (AppointmentStatus.COMPLETED,)),
+            )
+        )
+        if booked_since:
+            summary["missed_call_nudge_sent_at"] = "skipped_booked"
+            record.summary = summary
+            self.db.commit()
+            return {"status": "skipped", "reason": "already_booked"}
+
+        patient = record.patient
+        result = self.sms.send(
+            to=patient.phone if patient else None,
+            body=templates.missed_call_nudge(first_name=_first_name(patient)),
+            template="missed_call_nudge",
+            patient_uuid=str(record.patient_id),
+            sms_consent=patient.sms_consent if patient else None,
+            marketing_consent=patient.marketing_consent if patient else None,
+        )
+        summary["missed_call_nudge_sent_at"] = utcnow().isoformat() + "Z"
+        record.summary = summary
+        self.db.commit()
+        return {"status": "sent" if result.ok else "suppressed", "sms_status": result.status}
+
+    # ------------------------------------------------------------------ #
     # Helpers
     # ------------------------------------------------------------------ #
+    def _find_call_by_id(self, call_record_id: Any) -> Optional[VoiceCall]:
+        try:
+            return self.db.get(VoiceCall, call_record_id)
+        except Exception:  # malformed id
+            return None
+
     def _find_call(self, call_id: Optional[str]) -> Optional[VoiceCall]:
         if not call_id:
             return None

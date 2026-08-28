@@ -90,9 +90,17 @@ def notify_voice_handoff(*, call_record_id, patient_uuid, reason: str, priority:
     )
 
 
+def notify_missed_call(*, call_record_id) -> bool:
+    return notify_n8n(
+        "missed-call",
+        {"call_record_id": str(call_record_id) if call_record_id else None},
+    )
+
+
 __all__ = [
     "notify_n8n",
     "notify_lead_qualified",
     "notify_treatment_completed",
     "notify_voice_handoff",
+    "notify_missed_call",
 ]
