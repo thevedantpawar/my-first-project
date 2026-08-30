@@ -24,6 +24,7 @@ class RetentionEventType:
     TREATMENT_COMPLETED = "treatment_completed"
     REBOOKED = "rebooked"
     NURTURE_SENT = "nurture_sent"
+    URGENT_ESCALATION = "urgent_escalation"
 
     ALL = (
         REMINDER_SENT,
@@ -37,6 +38,7 @@ class RetentionEventType:
         TREATMENT_COMPLETED,
         REBOOKED,
         NURTURE_SENT,
+        URGENT_ESCALATION,
     )
 
 

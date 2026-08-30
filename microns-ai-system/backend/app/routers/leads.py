@@ -227,7 +227,10 @@ def _set_marketing_consent(db: Session, phone: str, consent: bool) -> None:
     patient = find_by_phone(db, phone)
     if patient is not None:
         patient.marketing_consent = consent
-        if not consent:
-            patient.sms_consent = False
+        # STOP withdraws consent for every SMS this system sends, including
+        # transactional reminders. START only restores it, symmetrically —
+        # otherwise a patient who re-opts in stops getting appointment
+        # reminders forever because sms_consent stays False.
+        patient.sms_consent = consent
         db.commit()
         logger.info("Updated SMS consent for patient %s to %s", patient.id, consent)

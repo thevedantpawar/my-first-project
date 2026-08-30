@@ -795,11 +795,22 @@ class LeadService:
             if parsed and parsed > utcnow() - timedelta(days=2):
                 return {"status": "skipped", "reason": "cooldown"}
 
+        # This is a proactive, asynchronous send (an n8n cron firing hours or
+        # days after the conversation), not a reply in an active exchange —
+        # so it must respect an opt-out recorded against this phone number
+        # since the lead last texted in. A hardcoded `sms_consent=True` here
+        # would silently re-text someone who already replied STOP.
+        from app.services.patient_service import find_by_phone
+
+        existing_patient = find_by_phone(self.db, lead.phone)
+        if existing_patient is not None and not existing_patient.sms_consent:
+            return {"status": "skipped", "reason": "opted_out"}
+
         result = self.sms.send(
             to=lead.phone,
             body=templates.nurture_message(step=step, treatment=lead.treatment_interest),
             template="nurture",
-            sms_consent=True,
+            sms_consent=existing_patient.sms_consent if existing_patient is not None else True,
         )
         state["last_nurture_at"] = utcnow().isoformat()
         state["nurture_step"] = step

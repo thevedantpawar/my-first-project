@@ -303,6 +303,25 @@ def test_direct_qualification_endpoint(client):
     assert body["needs_provider_approval"] is True
 
 
+def test_nurture_is_suppressed_for_a_phone_that_already_opted_out(db, service):
+    from app.models.patient import Patient
+    from app.models.retention_event import RetentionEvent
+
+    opted_out = Patient.create(phone="+15557654321", sms_consent=False, marketing_consent=False)
+    db.add(opted_out)
+    db.flush()
+
+    lead = make_lead(db, treatment_interest="botox", timeline="browsing")
+    lead.set_phone("+15557654321")
+    db.flush()
+
+    result = service.send_nurture(lead.id, step=0)
+
+    assert result["status"] == "skipped"
+    assert result["reason"] == "opted_out"
+    assert db.query(RetentionEvent).count() == 0, "no nurture_sent event for a suppressed send"
+
+
 def test_lead_view_is_deidentified(client, staff_headers):
     created = client.post(
         "/leads/qualify",
