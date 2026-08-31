@@ -9,8 +9,8 @@
 
 export const site = {
   name: "Microns",
-  domain: "microns.studio", // TODO confirm the real domain
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://microns.studio",
+  domain: "micronsai.com",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://micronsai.com",
   tagline:
     "Automation systems that catch the calls, leads and no-shows med spas lose.",
 
@@ -18,7 +18,7 @@ export const site = {
     firstName: "Vedant",
     lastName: "Pawar",
     city: "", // TODO add city. Left empty, the sentence omits it.
-    email: "hello@microns.studio", // TODO confirm
+    email: "ved@micronsai.com",
   },
 
   /**
@@ -28,14 +28,12 @@ export const site = {
   bookingUrl: process.env.NEXT_PUBLIC_BOOKING_URL ?? "", // TODO cal.com / Calendly link
 
   /**
-   * Pricing. Section 5.5 of the brief: do not hide this. This is the honest
-   * range wording, not invented precision.
-   * TODO replace with your real numbers before launch.
+   * Pricing. Do not hide this — med spa owners abandon sites that will not say.
    */
   pricing: {
-    rangeLow: "$2,000",
-    rangeHigh: "$6,000",
-    monthly: "$350",
+    rangeLow: "$1,500",
+    rangeHigh: "$3,000",
+    monthly: "$750",
     commitment: "Month to month. No annual contract.",
   },
 

@@ -19,6 +19,18 @@ export const problems = [
   },
 ] as const;
 
+/**
+ * The visual beside each system: a depiction of what the client on the other
+ * end actually receives. Every one is captioned as an illustration on the page.
+ */
+export type SystemVisual = {
+  channel: string;
+  stamp: string;
+  /** Messages, in order. "out" is from the clinic, "in" is the client. */
+  thread: { from: "out" | "in"; text: string }[];
+  outcome?: string;
+};
+
 export type System = {
   n: string;
   slug: string;
@@ -30,6 +42,7 @@ export type System = {
   does: string;
   experience: string;
   connects: string;
+  visual: SystemVisual;
 };
 
 export const systems: System[] = [
@@ -46,6 +59,18 @@ export const systems: System[] = [
       "They get a reply while they are still on your website, not the next morning. It reads like the clinic wrote it, because you wrote it.",
     connects:
       "Your website form, your chat widget, your inbound SMS number and your email inbox.",
+    visual: {
+      channel: "Text message",
+      stamp: "21:47:38 — 38 seconds after the form",
+      thread: [
+        {
+          from: "out",
+          text: "Hi Jenna — thanks for enquiring about lip filler. I can hold a consult on Thursday at 2pm or Friday at 10am. Which suits you better?",
+        },
+        { from: "in", text: "Thursday please" },
+      ],
+      outcome: "Consult booked before the clinic opened.",
+    },
   },
   {
     n: "02",
@@ -59,6 +84,18 @@ export const systems: System[] = [
     experience:
       "A text they can act on with one tap. If Thursday no longer works, they move it instead of quietly not turning up.",
     connects: "Your booking software and your SMS number.",
+    visual: {
+      channel: "Text message",
+      stamp: "24 hours before the appointment",
+      thread: [
+        {
+          from: "out",
+          text: "Reminder: your appointment is tomorrow at 14:00 with Amelia. Reply C to confirm, or tap here to move it — no charge.",
+        },
+        { from: "in", text: "C" },
+      ],
+      outcome: "Confirmed. A second reminder goes out two hours before.",
+    },
   },
   {
     n: "03",
@@ -72,6 +109,17 @@ export const systems: System[] = [
     experience:
       "A message that reads like someone noticed, not like a receipt. Most people who miss an appointment are embarrassed, not gone.",
     connects: "Your booking software and your SMS number.",
+    visual: {
+      channel: "Text message",
+      stamp: "Same day, 16:20",
+      thread: [
+        {
+          from: "out",
+          text: "We missed you this afternoon, Sofia — no problem at all. Here are this week's open slots if you'd like to pick another time.",
+        },
+      ],
+      outcome: "A second message follows three days later if there is no reply.",
+    },
   },
   {
     n: "04",
@@ -85,6 +133,19 @@ export const systems: System[] = [
     experience:
       "One short message asking how it went. Two taps to leave a review if they want to.",
     connects: "Your booking software and your Google Business Profile.",
+    visual: {
+      channel: "Text message",
+      stamp: "Five days after the visit",
+      thread: [
+        { from: "out", text: "Hi Priya — how has your treatment settled in?" },
+        { from: "in", text: "Really happy with it" },
+        {
+          from: "out",
+          text: "That's great to hear. Would you mind leaving that in a quick Google review? It takes about 30 seconds.",
+        },
+      ],
+      outcome: "Anything less than happy is routed to the clinic instead.",
+    },
   },
   {
     n: "05",
@@ -98,6 +159,17 @@ export const systems: System[] = [
     experience:
       "Someone answers at 9pm. They get an answer to a simple question or a slot held, and never a clinical opinion from a machine.",
     connects: "Your phone number, your booking software and your team's inbox.",
+    visual: {
+      channel: "Morning summary",
+      stamp: "08:00 — to the team inbox",
+      thread: [
+        {
+          from: "out",
+          text: "Three calls after close. One booked a consult for Tuesday. One asked about pricing and wants a callback before noon. One asked about swelling after filler — flagged for a practitioner, not answered.",
+        },
+      ],
+      outcome: "Nothing clinical is ever answered by the system.",
+    },
   },
 ];
 
@@ -165,7 +237,7 @@ export const faqs = [
     a: "It's monitored. If something fails, we know before you do, and fixing it is included.",
   },
   {
-    q: "Why a one-person studio and not an agency?",
-    a: "Because you'll be talking to the person who builds it. Nothing gets lost between the salesperson and the developer, because there isn't one.",
+    q: "Who actually builds it?",
+    a: "The people who scoped it. You talk to the team doing the work, not to an account manager relaying it. Nothing gets lost between the person who sold it and the person who writes it.",
   },
 ] as const;

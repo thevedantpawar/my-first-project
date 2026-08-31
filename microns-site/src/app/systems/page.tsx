@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { CtaClose } from "@/components/cta-close";
 import { systems } from "@/content/copy";
+import { SystemVisual } from "@/components/system-visual";
 
 export const metadata: Metadata = {
   title: "The five systems",
@@ -50,6 +51,8 @@ export default function SystemsPage() {
 
               <div className="md:col-span-7 md:col-start-6">
                 <p className="max-w-[48ch] text-lead">{s.does}</p>
+
+                <SystemVisual visual={s.visual} className="mt-10" />
 
                 <dl className="mt-12 border-t border-mist">
                   {rows.map((r) => (

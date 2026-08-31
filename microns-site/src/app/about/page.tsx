@@ -5,12 +5,12 @@ import { site } from "@/content/site";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Microns is a one-person automation studio. The person who scopes your system is the person who builds it and the person who answers when something breaks.",
+    "Microns builds and runs front-desk automation for med spas. You talk to the team that builds your system and answers when something breaks.",
   alternates: { canonical: "/about" },
   openGraph: {
     title: "About — Microns",
     description:
-      "One person. The person who scopes your system builds it and answers when something breaks.",
+      "The team that scopes your system builds it, and answers when something breaks.",
     url: "/about",
     images: ["/opengraph-image"],
   },
@@ -26,7 +26,7 @@ export default function AboutPage() {
         <div className="grid gap-12 md:grid-cols-12">
           <div className="md:col-span-8">
             <h1 className="max-w-[16ch] text-display-1">
-              One person is the point.
+              We build one thing, for one industry.
             </h1>
           </div>
         </div>
@@ -42,14 +42,15 @@ export default function AboutPage() {
 
             <div className="max-w-[58ch] md:col-span-8 md:col-start-5">
               <p className="text-lead">
-                Microns is run by {fullName}
-                {city ? `, from ${city}` : ""}. One person, which means the
-                person who scopes your system is the person who builds it and
-                the person who answers when something breaks.
+                Microns is an automation studio for med spas, founded by{" "}
+                {fullName}
+                {city ? ` in ${city}` : ""}. We are small on purpose: you talk
+                to the people who build your system, and to the people who
+                answer when something breaks.
               </p>
 
               {/*
-                TODO — replace this paragraph with your own words before launch.
+                TODO — rewrite this paragraph in your own words before launch.
                 It is written as an argument rather than a personal story so
                 that nothing here is invented on your behalf.
               */}
@@ -65,9 +66,9 @@ export default function AboutPage() {
               </p>
 
               <p className="mt-8 text-slate">
-                It also means the honest limit is real: one person can only run
-                a handful of these builds at a time. If the timing does not
-                work, I will tell you on the call rather than three weeks in.
+                It also means we take on a limited number of builds at a time.
+                If the timing does not work, we will tell you on the call rather
+                than three weeks in.
               </p>
             </div>
           </div>
@@ -85,8 +86,8 @@ export default function AboutPage() {
             <dl className="border-t border-mist md:col-span-8 md:col-start-5">
               {[
                 {
-                  t: "You talk to the builder",
-                  d: "There is no account manager and no handover. Nothing gets lost between the person who sold it and the person who wrote it.",
+                  t: "You talk to the builders",
+                  d: "No account manager, no handover. Nothing gets lost between the person who scoped it and the person who wrote it.",
                 },
                 {
                   t: "You approve every message",

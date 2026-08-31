@@ -7,6 +7,7 @@ import { Section, Measure, TextLink } from "@/components/ui";
 import { auditChecks, problems, steps, systems } from "@/content/copy";
 import { site } from "@/content/site";
 import { HomeJsonLd } from "@/components/json-ld";
+import { SystemVisual } from "@/components/system-visual";
 
 export const metadata: Metadata = {
   title: "Microns — automation systems for med spas",
@@ -27,6 +28,27 @@ export default function Home() {
     <>
       <HomeJsonLd />
       <Hero />
+
+      {/* The hero instrument, made concrete: the message itself. */}
+      <section className="border-t border-mist bg-mist/45">
+        <div className="mx-auto w-full max-w-[1400px] px-6 py-20 md:px-10 md:py-24 lg:px-16">
+          <div className="grid items-center gap-12 md:grid-cols-12 md:gap-10">
+            <div className="md:col-span-5">
+              <h2 className="max-w-[18ch] text-display-2">
+                This is what 21:47 looks like when the system is on.
+              </h2>
+              <p className="mt-7 max-w-[42ch] text-slate">
+                The enquiry that arrives after you close does not wait until
+                morning. It gets a real answer, in your words, while the person
+                is still deciding.
+              </p>
+            </div>
+            <div className="md:col-span-6 md:col-start-7">
+              <SystemVisual visual={systems[0].visual} />
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* 5.2 — the problem, as money. Three statements, no cards. */}
       <Section index="01" label="What it costs you">

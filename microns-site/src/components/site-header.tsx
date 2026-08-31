@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { routes } from "@/content/site";
 import { BookButton } from "./ui";
+import { Logo } from "./logo";
 
 export function SiteHeader() {
   return (
@@ -8,11 +9,10 @@ export function SiteHeader() {
       <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-6 py-4 md:px-10 md:py-5 lg:px-16">
         <Link
           href="/"
-          className="inline-flex min-h-[44px] items-center text-[1.375rem] leading-none tracking-[-0.01em]"
-          style={{ fontFamily: "var(--font-display)" }}
+          className="inline-flex min-h-[44px] items-center"
           aria-label="Microns, home"
         >
-          Microns
+          <Logo />
         </Link>
 
         <nav aria-label="Main" className="flex items-center gap-7">

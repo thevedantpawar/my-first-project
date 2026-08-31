@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { site } from "@/content/site";
+import { Logo } from "./logo";
 
 const columns = [
   {
@@ -25,12 +26,7 @@ export function SiteFooter() {
       <div className="mx-auto w-full max-w-[1400px] px-6 pb-28 pt-16 md:px-10 md:pb-16 md:pt-20 lg:px-16">
         <div className="grid gap-12 md:grid-cols-12">
           <div className="md:col-span-5">
-            <p
-              className="text-[1.5rem] leading-none"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Microns
-            </p>
+            <Logo size={28} />
             <p className="mt-4 max-w-[34ch] text-[1rem] text-[color:var(--color-slate-inverse)]">
               {site.tagline}
             </p>
@@ -63,7 +59,7 @@ export function SiteFooter() {
 
         <div className="mt-16 flex flex-col gap-2 border-t border-white/12 pt-6 text-meta text-[color:var(--color-slate-inverse)] md:flex-row md:items-center md:justify-between">
           <p>
-            © {new Date().getFullYear()} Microns. A one-person automation studio.
+            © {new Date().getFullYear()} Microns. Automation for med spas.
           </p>
           <p>
             <a
