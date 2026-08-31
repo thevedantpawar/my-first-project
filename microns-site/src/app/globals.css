@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Microns design tokens.
+   One accent. One radius behaviour (none). One display weight.
+--------------------------------------------------------------------------- */
+
+@theme {
+  --color-ink: #14181c;
+  --color-porcelain: #f3f4f2;
+  --color-mist: #dde1df;
+  --color-micron: #1b3fd1;
+  --color-slate: #5a6570;
+
+  /* On the ink surface, secondary type needs to lift off the background. */
+  --color-slate-inverse: #8a939c;
+
+  --font-display: var(--font-instrument-serif), Iowan Old Style, Palatino,
+    Georgia, serif;
+  --font-sans: var(--font-schibsted), ui-sans-serif, system-ui, sans-serif;
+
+  /* Radius: pick one behaviour and mean it. Nothing is rounded. */
+  --radius-none: 0px;
+
+  /* Fluid type scale. 390px -> 1600px. */
+  --text-display-1: clamp(2.75rem, 1.35rem + 5.8vw, 6.25rem);
+  --text-display-1--line-height: 0.94;
+  --text-display-1--letter-spacing: -0.021em;
+
+  --text-display-2: clamp(2.125rem, 1.45rem + 2.8vw, 3.75rem);
+  --text-display-2--line-height: 0.98;
+  --text-display-2--letter-spacing: -0.018em;
+
+  --text-display-3: clamp(1.625rem, 1.3rem + 1.35vw, 2.375rem);
+  --text-display-3--line-height: 1.06;
+  --text-display-3--letter-spacing: -0.012em;
+
+  --text-lead: clamp(1.1875rem, 1.05rem + 0.6vw, 1.5rem);
+  --text-lead--line-height: 1.45;
+
+  --text-body: clamp(1.0625rem, 1.02rem + 0.18vw, 1.1875rem);
+  --text-body--line-height: 1.62;
+
+  --text-meta: 0.8125rem;
+  --text-meta--line-height: 1.4;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-porcelain);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    font-synthesis-weight: none;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    text-wrap: balance;
+  }
+
+  /* Visible keyboard focus everywhere, on both surfaces. */
+  :focus-visible {
+    outline: 2px solid var(--color-micron);
+    outline-offset: 3px;
+  }
+
+  .on-ink :focus-visible,
+  .on-micron :focus-visible {
+    outline-color: var(--color-porcelain);
+  }
+
+  ::selection {
+    background-color: var(--color-micron);
+    color: var(--color-porcelain);
+  }
+
+  /* Numbers in the scale column read as instrument markings, not as a second
+     typeface. Tabular figures of the body face, no monospace family. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+  }
+}
+
+@layer components {
+  /* --- The one page-load sequence. Hero only. --------------------------- */
+  .seq {
+    opacity: 0;
+    transform: translateY(0.5rem);
+    animation: seq-in 0.7s cubic-bezier(0.16, 0.84, 0.44, 1) forwards;
+    animation-delay: var(--seq-delay, 0ms);
+  }
+
+  .seq-rule {
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: seq-rule 0.9s cubic-bezier(0.16, 0.84, 0.44, 1) forwards;
+    animation-delay: var(--seq-delay, 0ms);
+  }
+
+  .seq-scale {
+    transform: scaleY(0);
+    transform-origin: top;
+    animation: seq-rule 1.1s cubic-bezier(0.3, 0.7, 0.3, 1) forwards;
+    animation-delay: var(--seq-delay, 0ms);
+  }
+}
+
+@keyframes seq-in {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes seq-rule {
+  to {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .seq,
+  .seq-rule,
+  .seq-scale {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
