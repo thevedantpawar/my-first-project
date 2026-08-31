@@ -46,6 +46,7 @@ export function TextLink({
     <Link
       {...props}
       className={
+        "inline-flex min-h-[44px] items-center " +
         "underline decoration-mist decoration-1 underline-offset-[6px] " +
         "transition-colors hover:decoration-micron hover:text-micron " +
         className

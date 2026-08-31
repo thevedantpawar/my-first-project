@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     description:
       "What each system does, when it fires, what your client experiences and what it connects to.",
     url: "/systems",
+    images: ["/opengraph-image"],
   },
 };
 

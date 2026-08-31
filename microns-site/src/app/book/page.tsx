@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     description:
       "No deck, no pitch. If there's nothing worth automating, we'll say so.",
     url: "/book",
+    images: ["/opengraph-image"],
   },
 };
 
@@ -88,7 +89,7 @@ export default function BookPage() {
                 Prefer to send the details first?{" "}
                 <Link
                   href="/audit"
-                  className="underline decoration-mist underline-offset-[6px] hover:text-micron"
+                  className="inline-flex min-h-[44px] items-center underline decoration-mist underline-offset-[6px] hover:text-micron"
                 >
                   Request a revenue leak audit
                 </Link>{" "}

@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     description:
       "One person. The person who scopes your system builds it and answers when something breaks.",
     url: "/about",
+    images: ["/opengraph-image"],
   },
 };
 

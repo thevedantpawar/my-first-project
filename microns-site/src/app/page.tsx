@@ -18,6 +18,7 @@ export const metadata: Metadata = {
     description:
       "The front desk can't answer every call. The system can. Automation that recovers the bookings your clinic is losing.",
     url: "/",
+    images: ["/opengraph-image"],
   },
 };
 
@@ -129,7 +130,7 @@ export default function Home() {
                 <Link
                   href="/audit"
                   data-cta="audit"
-                  className="plausible-event-name=Audit+request underline decoration-[color:var(--color-slate-inverse)] underline-offset-[6px] transition-colors hover:decoration-porcelain"
+                  className="plausible-event-name=Audit+request inline-flex min-h-[44px] items-center underline decoration-[color:var(--color-slate-inverse)] underline-offset-[6px] transition-colors hover:decoration-porcelain"
                 >
                   Request the audit
                 </Link>
@@ -166,7 +167,8 @@ export default function Home() {
               you an exact number on the call — not after three meetings.
             </p>
           </div>
-          <dl className="border-t border-mist md:col-span-5 md:col-start-8">
+          <div className="md:col-span-5 md:col-start-8">
+          <dl className="border-t border-mist">
             <div className="flex items-baseline justify-between gap-6 border-b border-mist py-5">
               <dt className="text-slate">Build</dt>
               <dd className="tnum text-[1.0625rem]">
@@ -183,11 +185,12 @@ export default function Home() {
               <dt className="text-slate">Commitment</dt>
               <dd className="text-[1.0625rem]">Month to month</dd>
             </div>
+          </dl>
             <p className="pt-5 text-meta text-slate">
               Monitoring, fixes and copy changes are included in the monthly.
               No annual contract.
             </p>
-          </dl>
+          </div>
         </div>
       </Section>
 

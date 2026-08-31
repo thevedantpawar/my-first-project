@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     description:
       "Five numbers that tell you where your clinic is losing bookings. Free, and useful even if you never hire us.",
     url: "/audit",
+    images: ["/opengraph-image"],
   },
 };
 

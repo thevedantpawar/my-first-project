@@ -45,12 +45,12 @@ export function SiteFooter() {
               <p className="text-meta text-[color:var(--color-slate-inverse)]">
                 {col.heading}
               </p>
-              <ul className="mt-4 space-y-2.5">
+              <ul className="mt-1">
                 {col.links.map((l) => (
                   <li key={l.href}>
                     <Link
                       href={l.href}
-                      className="text-[1rem] underline decoration-transparent underline-offset-[6px] transition-colors hover:decoration-porcelain"
+                      className="inline-flex min-h-[44px] items-center text-[1rem] underline decoration-transparent underline-offset-[6px] transition-colors hover:decoration-porcelain"
                     >
                       {l.label}
                     </Link>
@@ -68,7 +68,7 @@ export function SiteFooter() {
           <p>
             <a
               href={`mailto:${site.founder.email}`}
-              className="underline underline-offset-[6px] hover:text-porcelain"
+              className="inline-flex min-h-[44px] items-center underline underline-offset-[6px] hover:text-porcelain"
             >
               {site.founder.email}
             </a>
