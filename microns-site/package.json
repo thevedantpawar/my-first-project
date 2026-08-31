@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "start:railway": "next start -H 0.0.0.0"
   },
   "dependencies": {
     "next": "16.3.3",
