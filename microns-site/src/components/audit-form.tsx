@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { site } from "@/content/site";
 
 type Errors = Partial<Record<string, string>>;
 
@@ -185,9 +186,9 @@ export function AuditForm() {
           That didn&rsquo;t send. Try again, or email{" "}
           <a
             className="text-ink underline underline-offset-[6px]"
-            href="mailto:hello@microns.studio"
+            href={`mailto:${site.founder.email}`}
           >
-            hello@microns.studio
+            {site.founder.email}
           </a>{" "}
           and it will get the same answer.
         </p>

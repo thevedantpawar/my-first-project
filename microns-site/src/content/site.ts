@@ -16,7 +16,7 @@ export const site = {
 
   founder: {
     firstName: "Vedant",
-    lastName: "Pawar", // TODO confirm spelling
+    lastName: "Pawar",
     city: "", // TODO add city. Left empty, the sentence omits it.
     email: "hello@microns.studio", // TODO confirm
   },
