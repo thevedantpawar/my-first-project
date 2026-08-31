@@ -71,6 +71,7 @@ Project `microns-site` → service `web`, in Vedant Pawar's Railway workspace.
 ```bash
 npm run build && npm start        # then, in another shell:
 node scripts/checks.mjs           # fold, overflow, tap targets, focus, forms, metadata
+node scripts/links.mjs            # every link and button, and that each target resolves
 node scripts/shot.mjs "/,/audit"  # screenshots at 390 and 1280
 ```
 
