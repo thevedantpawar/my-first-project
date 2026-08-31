@@ -16,7 +16,7 @@ export function SiteHeader() {
         </Link>
 
         <nav aria-label="Main" className="flex items-center gap-7">
-          <ul className="hidden items-center gap-7 sm:flex">
+          <ul className="flex items-center gap-6 sm:gap-7">
             {routes.map((r) => (
               <li key={r.href}>
                 <Link
@@ -28,9 +28,11 @@ export function SiteHeader() {
               </li>
             ))}
           </ul>
+          {/* Mobile keeps the nav links and hands the CTA to the hero and the
+              sticky bottom bar, so the header never crowds a 390px viewport. */}
           <BookButton
             label="Book a call"
-            className="min-h-[44px] px-5 text-[0.9375rem]"
+            className="hidden min-h-[44px] px-5 text-[0.9375rem] sm:inline-flex"
           />
         </nav>
       </div>
