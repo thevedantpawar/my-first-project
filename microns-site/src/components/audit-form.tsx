@@ -43,7 +43,9 @@ export function AuditForm() {
     const found = validate(data);
     setErrors(found);
     if (Object.keys(found).length > 0) {
-      const first = form.querySelector<HTMLElement>(`[aria-invalid="true"]`);
+      const first = form.querySelector<HTMLElement>(
+        '[aria-invalid="true"], [aria-describedby$="-leak-error"]',
+      );
       first?.focus();
       return;
     }
@@ -142,7 +144,9 @@ export function AuditForm() {
           Where do you think you&rsquo;re losing the most?
         </legend>
         {errors.leak ? (
-          <p className="mt-2 text-meta text-micron">{errors.leak}</p>
+          <p id={`${id}-leak-error`} className="mt-2 text-meta text-micron">
+            {errors.leak}
+          </p>
         ) : null}
         <div className="mt-4 flex flex-wrap gap-x-6 gap-y-3">
           {leakOptions.map((o) => (
@@ -154,7 +158,7 @@ export function AuditForm() {
                 type="radio"
                 name="leak"
                 value={o}
-                aria-invalid={errors.leak ? true : undefined}
+                aria-describedby={errors.leak ? `${id}-leak-error` : undefined}
                 className="h-[18px] w-[18px] accent-[color:var(--color-micron)]"
               />
               <span>{o}</span>

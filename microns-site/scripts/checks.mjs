@@ -3,7 +3,6 @@ import { chromium } from "playwright-core";
 const B = "http://localhost:3100";
 const launch = { executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome", args: ["--disable-background-networking","--no-sandbox"] };
 const pages = ["/", "/systems", "/about", "/book", "/audit"];
-const out = [];
 const log = (...a) => { console.log(...a); };
 
 const browser = await chromium.launch(launch);
