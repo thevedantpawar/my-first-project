@@ -90,7 +90,6 @@
      typeface. Tabular figures of the body face, no monospace family. */
   .tnum {
     font-variant-numeric: tabular-nums;
-    letter-spacing: 0.01em;
   }
 }
 

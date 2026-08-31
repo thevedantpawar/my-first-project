@@ -1,0 +1,10 @@
+import { chromium } from "playwright-core";
+const [path, sel, name, w] = process.argv.slice(2);
+const out = "/tmp/claude-0/-home-user-my-first-project/9365d613-5919-5685-afa5-486ddb753c4c/scratchpad/shots";
+const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome", args: ["--disable-background-networking","--no-sandbox"] });
+const ctx = await b.newContext({ viewport: { width: Number(w||1280), height: 900 }, deviceScaleFactor: 2 });
+const p = await ctx.newPage();
+await p.goto("http://localhost:3100" + path, { waitUntil: "load" });
+await p.waitForTimeout(1200);
+await p.locator(sel).first().screenshot({ path: `${out}/${name}.png` });
+await b.close();
