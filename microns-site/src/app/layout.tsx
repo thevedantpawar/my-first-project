@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Instrument_Serif, Schibsted_Grotesk } from "next/font/google";
 import { site } from "@/content/site";
 import { Analytics } from "@/components/analytics";
@@ -19,6 +19,11 @@ const sans = Schibsted_Grotesk({
   subsets: ["latin"],
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  themeColor: "#F3F4F2",
+  colorScheme: "light",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),

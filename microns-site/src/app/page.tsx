@@ -6,6 +6,7 @@ import { CtaClose } from "@/components/cta-close";
 import { Section, Measure, TextLink } from "@/components/ui";
 import { auditChecks, problems, steps, systems } from "@/content/copy";
 import { site } from "@/content/site";
+import { HomeJsonLd } from "@/components/json-ld";
 
 export const metadata: Metadata = {
   title: "Microns — automation systems for med spas",
@@ -23,6 +24,7 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
+      <HomeJsonLd />
       <Hero />
 
       {/* 5.2 — the problem, as money. Three statements, no cards. */}
