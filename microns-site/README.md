@@ -40,6 +40,20 @@ two paths apart:
   mobile sticky bar.
 - `Audit request` — the audit form submit and the link from the home page.
 
+## Preview deploy (Railway)
+
+Project `microns-site` → service `web`, in Vedant Pawar's Railway workspace.
+
+- URL: https://web-production-945bf9.up.railway.app
+- Built from `microns-site/Dockerfile`; service root directory is `microns-site`.
+- Start command is `npm run start:railway` (`next start -H 0.0.0.0`). It must not
+  be `next start -p $PORT` — Railway execs the start command without a shell, so
+  `$PORT` arrives literally and the container crash-loops. Next.js reads `PORT`
+  from the environment on its own.
+- The service's connected branch has drifted back to another branch more than
+  once. If a deploy fails at BUILD_IMAGE within ~10 seconds, that is the cause:
+  re-pin the source to `claude/website-build-sections-xvk8f6` and redeploy.
+
 ## Checks
 
 ```bash
