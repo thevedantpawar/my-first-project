@@ -106,7 +106,7 @@ body = body.replace(
  '<a href="mailto:hello@microns.ai?subject=Revenue%20Leak%20Audit" class="group mt-9 inline-flex min-h-12 items-center gap-3 rounded-full bg-champagne px-7 text-[0.8125rem] font-semibold uppercase tracking-[0.14em] text-champagne-foreground shadow-editorial transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift">Book your free audit',
  '<a href="#audit-form" data-calendly class="group mt-9 inline-flex min-h-12 items-center gap-3 rounded-full bg-champagne px-7 text-[0.8125rem] font-semibold uppercase tracking-[0.14em] text-champagne-foreground shadow-editorial transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift">Pick a time now', 1)
 
-AUDIT_FORM = '''<div id="audit-form" class="scroll-mt-24 rounded-2xl border border-ink-border bg-ink-foreground/[0.04] p-6 sm:p-8"><p class="eyebrow text-champagne">Request your audit</p><p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-muted">Tell us where inquiries come in. We reply within one business day \u2014 or book a time straight away.</p><form id="mform" class="mt-6 grid gap-4" novalidate><div class="grid gap-4 sm:grid-cols-2"><label class="mf"><span>Name</span><input name="name" autocomplete="name" required></label><label class="mf"><span>Med spa</span><input name="medspa" required></label></div><label class="mf"><span>Location (city, state)</span><input name="location" placeholder="Scottsdale, AZ" required></label><div class="grid gap-4 sm:grid-cols-2"><label class="mf"><span>Email</span><input type="email" name="email" autocomplete="email" required></label><label class="mf"><span>Phone</span><input type="tel" name="phone" autocomplete="tel"></label></div><label class="mf"><span>New leads / month</span><select name="monthly_leads"><option value="">Select\u2026</option><option>Under 50</option><option>50\u2013150</option><option>150\u2013400</option><option>400+</option><option>Not sure</option></select></label><label class="mf"><span>Biggest gap</span><select name="gap"><option value="">Select\u2026</option><option>Missed calls</option><option>Slow lead response</option><option>No-shows</option><option>Losing no-shows</option><option>Not enough reviews</option><option>Not sure yet</option></select></label><button type="submit" class="group mt-1 inline-flex min-h-12 items-center justify-center gap-2.5 rounded-full bg-champagne px-7 text-[0.8125rem] font-semibold uppercase tracking-[0.14em] text-champagne-foreground shadow-editorial transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift">Get my free audit<span aria-hidden="true" class="transition-transform duration-300 group-hover:translate-x-1">\u2192</span></button><p class="text-[0.75rem] leading-relaxed text-ink-muted">20 minutes \u00b7 no obligation \u00b7 no hard pitch. By submitting you agree to our <a class="underline hover:text-champagne" href="/privacy.html">Privacy Policy</a>.</p></form><div id="mdone" hidden><div class="flex items-center gap-3"><span class="grid size-9 shrink-0 place-items-center rounded-full bg-champagne text-champagne-foreground"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><p class="font-display text-[1.0625rem] font-semibold text-ink-foreground">Request received.</p></div><p class="mt-3 text-[0.9375rem] leading-relaxed text-ink-muted">Pick a 20-minute slot now, or we&#x27;ll email you within one business day.</p><div id="calendly-inline" class="mt-5 overflow-hidden rounded-xl border border-ink-border" style="min-width:280px;height:640px" data-url="https://calendly.com/vedantpawar3690/30min?hide_gdpr_banner=1&background_color=1a1a1a&text_color=f5f3ef&primary_color=e8d5b5"></div></div><iframe name="mform-sink" title="form target" class="hidden" aria-hidden="true"></iframe></div>'''
+AUDIT_FORM = '''<div id="audit-form" class="scroll-mt-24 rounded-2xl border border-ink-border bg-ink-foreground/[0.04] p-6 sm:p-8"><p class="eyebrow text-champagne">Request your audit</p><p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-muted">Tell us where inquiries come in. We reply within one business day \u2014 or book a time straight away.</p><form id="mform" class="mt-6 grid gap-4" novalidate><input type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" class="hidden"><div class="grid gap-4 sm:grid-cols-2"><label class="mf"><span>Name</span><input name="name" autocomplete="name" required></label><label class="mf"><span>Med spa</span><input name="medspa" required></label></div><label class="mf"><span>Location (city, state)</span><input name="location" placeholder="Scottsdale, AZ" required></label><div class="grid gap-4 sm:grid-cols-2"><label class="mf"><span>Email</span><input type="email" name="email" autocomplete="email" required></label><label class="mf"><span>Phone</span><input type="tel" name="phone" autocomplete="tel"></label></div><label class="mf"><span>New leads / month</span><select name="monthly_leads"><option value="">Select\u2026</option><option>Under 50</option><option>50\u2013150</option><option>150\u2013400</option><option>400+</option><option>Not sure</option></select></label><label class="mf"><span>Biggest gap</span><select name="gap"><option value="">Select\u2026</option><option>Missed calls</option><option>Slow lead response</option><option>No-shows</option><option>Losing no-shows</option><option>Not enough reviews</option><option>Not sure yet</option></select></label><button type="submit" class="group mt-1 inline-flex min-h-12 items-center justify-center gap-2.5 rounded-full bg-champagne px-7 text-[0.8125rem] font-semibold uppercase tracking-[0.14em] text-champagne-foreground shadow-editorial transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift">Get my free audit<span aria-hidden="true" class="transition-transform duration-300 group-hover:translate-x-1">\u2192</span></button><p class="text-[0.75rem] leading-relaxed text-ink-muted">20 minutes \u00b7 no obligation \u00b7 no hard pitch. By submitting you agree to our <a class="underline hover:text-champagne" href="/privacy.html">Privacy Policy</a>.</p></form><div id="mdone" hidden><div class="flex items-center gap-3"><span class="grid size-9 shrink-0 place-items-center rounded-full bg-champagne text-champagne-foreground"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><p class="font-display text-[1.0625rem] font-semibold text-ink-foreground">Request received.</p></div><p class="mt-3 text-[0.9375rem] leading-relaxed text-ink-muted">Pick a 20-minute slot now, or we&#x27;ll email you within one business day.</p><div id="calendly-inline" class="mt-5 overflow-hidden rounded-xl border border-ink-border" style="min-width:280px;height:640px" data-url="https://calendly.com/vedantpawar3690/30min?hide_gdpr_banner=1&background_color=1a1a1a&text_color=f5f3ef&primary_color=e8d5b5"></div></div><iframe name="mform-sink" title="form target" class="hidden" aria-hidden="true"></iframe></div>'''
 
 # insert the form as a new right-hand column inside the audit grid, before the existing 3-step <ol> wrapper
 _audit_anchor = '<div class="transition-[opacity,transform] duration-700 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none reveal"><ol class="space-y-4"><li class="group flex gap-5 rounded-2xl border border-ink-border'
@@ -130,7 +130,7 @@ body = body.replace('</nav></header>', '</nav>' + NAVPANEL + '</header>', 1)
 
 # ---------------------------------------------------------------- 3 (footer). legal + contact links
 FOOTNAV = ('<nav class="mt-8 flex flex-wrap gap-4 border-t border-border pt-6 text-[0.8125rem] text-muted-foreground">'
- '<a class="hover:text-foreground" href="mailto:hello@microns.ai">hello@microns.ai</a>'
+ '<a class="hover:text-foreground" href="mailto:ved@micronsai.com">ved@micronsai.com</a>'
  '<a class="hover:text-foreground" data-calendly href="https://calendly.com/vedantpawar3690/30min">Book a call</a>'
  '<a class="hover:text-foreground" href="/privacy.html">Privacy Policy</a>'
  '<a class="hover:text-foreground" href="/terms.html">Terms of Service</a>'
@@ -139,7 +139,7 @@ body = body.replace('<div class="mt-10 flex flex-col gap-3 border-t border-borde
                     FOOTNAV + '<div class="mt-6 flex flex-col gap-3 border-t border-border pt-6', 1)
 
 # ---------------------------------------------------------------- HEAD
-ORG_LD = '''<script type="application/ld+json">{"@context":"https://schema.org","@type":["Organization","ProfessionalService"],"name":"MICRONS","description":"AI revenue-recovery and front-desk automation built exclusively for medical spas in the United States.","url":"__SITE__/","email":"hello@microns.ai","areaServed":{"@type":"Country","name":"United States"},"knowsAbout":["Med spa automation","AI front desk for med spas","Missed call automation","Lead response automation","No-show recovery","Review automation"],"makesOffer":[{"@type":"Offer","name":"Starter system","priceCurrency":"USD","price":"1500"},{"@type":"Offer","name":"Revenue recovery build"},{"@type":"Offer","name":"Ongoing optimization","priceCurrency":"USD","price":"750"}]}</script>'''
+ORG_LD = '''<script type="application/ld+json">{"@context":"https://schema.org","@type":["Organization","ProfessionalService"],"name":"MICRONS","description":"AI revenue-recovery and front-desk automation built exclusively for medical spas in the United States.","url":"__SITE__/","email":"ved@micronsai.com","areaServed":{"@type":"Country","name":"United States"},"knowsAbout":["Med spa automation","AI front desk for med spas","Missed call automation","Lead response automation","No-show recovery","Review automation"],"makesOffer":[{"@type":"Offer","name":"Starter system","priceCurrency":"USD","price":"1500"},{"@type":"Offer","name":"Revenue recovery build"},{"@type":"Offer","name":"Ongoing optimization","priceCurrency":"USD","price":"750"}]}</script>'''
 
 HEAD = '''<meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -199,12 +199,14 @@ APP_JS = '''<script src="https://assets.calendly.com/assets/external/widget.js" 
 (function(){
   "use strict";
   // ------- config: fill in once you share the Google Form -------
-  window.MICRONS_CONFIG = window.MICRONS_CONFIG || {
-    googleFormAction: "",            // e.g. https://docs.google.com/forms/d/e/XXXX/formResponse
-    entries: {                       // Google Form field IDs -> our field names
-      name:"", medspa:"", location:"", email:"", phone:"", monthly_leads:"", gap:""
-    }
-  };
+  window.MICRONS_CONFIG = Object.assign({
+    // Leads are emailed here via FormSubmit (https://formsubmit.co). The FIRST submission
+    // sends a one-time activation link to this address - click it once, then leads flow.
+    formEndpoint: "https://formsubmit.co/ajax/ved@micronsai.com",
+    // Optional: also mirror submissions into a Google Form (fill action + entry IDs).
+    googleFormAction: "",
+    entries: { name:"", medspa:"", location:"", email:"", phone:"", monthly_leads:"", gap:"" }
+  }, window.MICRONS_CONFIG || {});
   var CAL = "https://calendly.com/vedantpawar3690/30min";
   var $=function(s,c){return (c||document).querySelector(s)};
   var $$=function(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))};
@@ -302,23 +304,43 @@ APP_JS = '''<script src="https://assets.calendly.com/assets/external/widget.js" 
   if(form){
     form.addEventListener("submit", function(e){
       e.preventDefault();
+      if(form.querySelector('[name="company"]').value){ return; } // honeypot
       if(!form.checkValidity()){ form.reportValidity(); return; }
       var cfg = window.MICRONS_CONFIG, data = {};
-      $$("input,select", form).forEach(function(f){ if(f.name) data[f.name]=f.value; });
-      // 1) Google Form (if configured) via hidden iframe -> no navigation
+      $$("input,select", form).forEach(function(f){ if(f.name && f.name!=="company") data[f.name]=f.value; });
+      var btn = form.querySelector('button[type="submit"]'); if(btn){ btn.disabled = true; btn.style.opacity = .6; }
+
+      function finish(){
+        form.hidden = true;
+        var done = $("#mdone");
+        if(done){ done.hidden = false; inlineCal(); done.scrollIntoView({behavior:reduce?"auto":"smooth",block:"nearest"}); }
+      }
+      // local backup (survives any network failure)
+      try{ var box=JSON.parse(localStorage.getItem("microns_leads")||"[]"); box.push(Object.assign({t:Date.now()},data)); localStorage.setItem("microns_leads",JSON.stringify(box)); }catch(_){}
+
+      // optional Google Form mirror
       if(cfg.googleFormAction && cfg.entries && cfg.entries.name){
-        var gf = document.createElement("form");
-        gf.action = cfg.googleFormAction; gf.method = "POST"; gf.target = "mform-sink"; gf.style.display="none";
-        Object.keys(cfg.entries).forEach(function(k){
-          if(!cfg.entries[k]) return;
-          var i=document.createElement("input"); i.type="hidden"; i.name=cfg.entries[k]; i.value=data[k]||""; gf.appendChild(i);
-        });
+        var gf=document.createElement("form"); gf.action=cfg.googleFormAction; gf.method="POST"; gf.target="mform-sink"; gf.style.display="none";
+        Object.keys(cfg.entries).forEach(function(k){ if(!cfg.entries[k]) return;
+          var i=document.createElement("input"); i.type="hidden"; i.name=cfg.entries[k]; i.value=data[k]||""; gf.appendChild(i); });
         document.body.appendChild(gf); gf.submit(); setTimeout(function(){ gf.remove(); }, 1000);
       }
-      // 2) local backup
-      try{ var box=JSON.parse(localStorage.getItem("microns_leads")||"[]"); box.push(Object.assign({t:Date.now()},data)); localStorage.setItem("microns_leads",JSON.stringify(box)); }catch(_){}
-      // 3) reveal confirmation + inline Calendly
-      form.hidden = true; var done = $("#mdone"); if(done){ done.hidden = false; inlineCal(); done.scrollIntoView({behavior:reduce?"auto":"smooth",block:"nearest"}); }
+
+      // primary: email the lead via FormSubmit
+      if(cfg.formEndpoint){
+        var payload = Object.assign({
+          _subject: "New revenue leak audit request — " + (data.medspa || data.name || ""),
+          _template: "table", _captcha: "false"
+        }, data);
+        fetch(cfg.formEndpoint, {
+          method:"POST", headers:{ "Content-Type":"application/json", "Accept":"application/json" },
+          body: JSON.stringify(payload)
+        }).then(function(r){ return r.json().catch(function(){ return {}; }); })
+          .then(function(){ finish(); })
+          .catch(function(){ finish(); });
+      } else {
+        finish();
+      }
     });
   }
 })();
