@@ -3,4 +3,4 @@ Allow: /
 Disallow: /privacy.html
 Disallow: /terms.html
 
-Sitemap: https://microns-lovable-site-production.up.railway.app/sitemap.xml
+Sitemap: https://www.micronsai.com/sitemap.xml

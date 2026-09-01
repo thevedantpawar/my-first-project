@@ -351,7 +351,7 @@ APP_JS = '''<script src="https://assets.calendly.com/assets/external/widget.js" 
 import json
 app_js = APP_JS.replace("__DEMOS_JSON__", json.dumps(DEMOS))
 
-SITE_URL = "https://microns-lovable-site-production.up.railway.app"
+SITE_URL = "https://www.micronsai.com"
 html = ("<!doctype html>\n<html lang=\"en\">\n<head>\n"
         + HEAD.replace("__SITE__", SITE_URL)
         + "\n</head>\n<body>\n"

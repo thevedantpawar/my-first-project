@@ -34,8 +34,16 @@ function send(res, status, body, type) {
   res.end(body);
 }
 
+const CANONICAL_HOST = 'www.micronsai.com';
+
 const server = http.createServer((req, res) => {
   try {
+    // redirect the bare apex to the canonical www host (only for the real domain)
+    const host = (req.headers.host || '').toLowerCase();
+    if (host === 'micronsai.com') {
+      res.writeHead(301, { Location: `https://${CANONICAL_HOST}${req.url || '/'}` });
+      return res.end();
+    }
     let urlPath = decodeURIComponent((req.url || '/').split('?')[0]);
     if (urlPath === '/') urlPath = '/index.html';
     if (urlPath.endsWith('/')) urlPath += 'index.html';
