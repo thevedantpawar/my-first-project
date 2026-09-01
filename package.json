@@ -1,0 +1,12 @@
+{
+  "name": "microns-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MICRONS marketing site (static, zero-dependency Node server)",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
