@@ -1,0 +1,498 @@
+<title>Med Spa Outreach Dossier</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#f4f6f5; --surface:#ffffff; --surface-2:#eef2f1;
+  --ink:#12191b; --ink-2:#33474a; --muted:#5d6f70; --line:#dde4e2; --line-2:#c8d3d0;
+  --accent:#0f766e; --accent-soft:#e2efec; --accent-ink:#0b5951;
+  --amber:#a25c17; --amber-soft:#f7ecdf;
+  --rust:#9a3412; --rust-soft:#f7e7e0;
+  --shadow:0 1px 2px rgba(16,32,32,.05),0 8px 24px -14px rgba(16,32,32,.22);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0d1314; --surface:#151e1f; --surface-2:#1c2728;
+    --ink:#e9efed; --ink-2:#b9c8c6; --muted:#8ea09e; --line:#25302f; --line-2:#33403f;
+    --accent:#48b8a7; --accent-soft:#14332f; --accent-ink:#7fd3c5;
+    --amber:#d9974a; --amber-soft:#31261a;
+    --rust:#d97757; --rust-soft:#331e17;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0d1314; --surface:#151e1f; --surface-2:#1c2728;
+  --ink:#e9efed; --ink-2:#b9c8c6; --muted:#8ea09e; --line:#25302f; --line-2:#33403f;
+  --accent:#48b8a7; --accent-soft:#14332f; --accent-ink:#7fd3c5;
+  --amber:#d9974a; --amber-soft:#31261a;
+  --rust:#d97757; --rust-soft:#331e17;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -14px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+body{
+  background:var(--ground); color:var(--ink);
+  font-family:"Source Serif 4",Georgia,serif; font-size:16.5px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:44px 26px 96px}
+h1,h2,h3,h4,.ui{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+h1{font-size:clamp(30px,4.4vw,46px);line-height:1.08;letter-spacing:-.022em;font-weight:700;margin:0 0 14px;text-wrap:balance}
+h2{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink);margin:0 0 18px}
+h3{font-size:21px;font-weight:600;letter-spacing:-.012em;margin:0;text-wrap:balance}
+p{margin:0 0 13px;max-width:68ch}
+a{color:var(--accent-ink)}
+
+/* header */
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--muted);margin:0 0 16px}
+.lede{font-size:19px;line-height:1.55;color:var(--ink-2);max-width:64ch;margin:0 0 8px}
+.rule{height:1px;background:var(--line);border:0;margin:38px 0}
+
+/* notice */
+.notice{
+  background:var(--amber-soft);border:1px solid var(--amber);border-left-width:4px;
+  border-radius:3px;padding:20px 22px;margin:30px 0 0;
+}
+.notice .ui{font-size:12px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--amber);margin:0 0 9px}
+.notice p{font-size:15.5px;margin-bottom:10px;color:var(--ink)}
+.notice p:last-child{margin-bottom:0}
+
+/* automations */
+.autos{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.auto{background:var(--surface);padding:16px 17px}
+.auto .n{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--accent);font-weight:600;letter-spacing:.08em}
+.auto .t{font-family:Archivo,sans-serif;font-weight:600;font-size:15px;margin:5px 0 5px}
+.auto .d{font-size:13.5px;color:var(--muted);line-height:1.45}
+
+/* matrix */
+.scroller{overflow-x:auto;border:1px solid var(--line);border-radius:3px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:760px}
+th,td{text-align:left;padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:middle}
+thead th{
+  font-family:Archivo,sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);background:var(--surface-2);border-bottom:1px solid var(--line-2);white-space:nowrap
+}
+tbody tr:last-child td{border-bottom:0}
+td.name{font-family:Archivo,sans-serif;font-weight:600;font-size:14.5px;line-height:1.3}
+td.name span{display:block;font-family:"IBM Plex Mono",monospace;font-weight:400;font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.02em}
+td.tot{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-weight:600;font-size:14px}
+/* dot meter */
+.meter{display:flex;gap:3px}
+.meter i{width:7px;height:7px;border-radius:50%;background:var(--line-2);display:block}
+.meter i.on{background:var(--accent)}
+/* tier pills */
+.tier{font-family:Archivo,sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:3px 8px;border-radius:2px;white-space:nowrap}
+.tA{background:var(--accent-soft);color:var(--accent-ink);box-shadow:inset 0 0 0 1px var(--accent)}
+.tB{background:var(--surface-2);color:var(--ink-2);box-shadow:inset 0 0 0 1px var(--line-2)}
+.tC{background:var(--rust-soft);color:var(--rust);box-shadow:inset 0 0 0 1px var(--rust)}
+.legend{font-size:13px;color:var(--muted);margin-top:12px;max-width:70ch}
+
+/* dossier entries */
+.entry{border-top:1px solid var(--line-2);padding-top:26px;margin-top:38px}
+.entry-head{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;justify-content:space-between;margin-bottom:4px}
+.entry .meta{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);letter-spacing:.02em;margin:5px 0 16px}
+.idx{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--accent);font-weight:600;margin-right:9px}
+.sig{margin:0 0 16px;padding:0;list-style:none;display:grid;gap:7px}
+.sig li{font-size:15px;line-height:1.5;padding-left:17px;position:relative;color:var(--ink-2);max-width:70ch}
+.sig li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:1.5px;background:var(--accent)}
+.read{background:var(--surface-2);border-radius:3px;padding:15px 17px;margin:0 0 18px;border-left:3px solid var(--accent)}
+.read .ui{font-size:10.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--accent-ink);margin:0 0 6px}
+.read p{margin:0;font-size:15px;color:var(--ink)}
+
+/* email block */
+.mail{background:var(--surface);border:1px solid var(--line);border-radius:3px;box-shadow:var(--shadow);overflow:hidden}
+.mail-top{background:var(--surface-2);border-bottom:1px solid var(--line);padding:10px 17px;display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
+.mail-top .lbl{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+.mail-top .subj{font-family:Archivo,sans-serif;font-weight:600;font-size:14.5px;color:var(--ink)}
+.mail-body{padding:19px 21px;font-size:15.5px;line-height:1.62}
+.mail-body p{margin:0 0 12px;max-width:64ch}
+.mail-body p:last-child{margin-bottom:0}
+
+.foot{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-size:14px;color:var(--muted)}
+.foot p{max-width:72ch}
+@media (max-width:640px){
+  .wrap{padding:32px 18px 70px}
+  body{font-size:16px}
+}
+</style>
+
+<div class="wrap">
+
+<p class="eyebrow">Prospect research &middot; 11 US med spas &middot; Microns AI</p>
+<h1>Med Spa Outreach Dossier</h1>
+<p class="lede">Eleven aesthetic practices, scored against your five automations and written up with a ready-to-send email for each. Every claim below traces to a public source — nothing is inferred about their internals.</p>
+
+<div class="notice">
+  <p class="ui">One thing I could not do</p>
+  <p>The SEO audit is missing, and I'd rather tell you than fake it. This session's network policy blocks page fetching outright — every one of the eleven domains returned <span class="mono">EGRESS_BLOCKED</span>, as did a control fetch of <span class="mono">example.com</span>. Web <em>search</em> works, which is where all the research below came from.</p>
+  <p>A real audit needs the pages themselves: title tags, canonicals, <span class="mono">robots.txt</span>, sitemaps, heading structure, Core Web Vitals, schema, alt text. I can't see any of it. I'm not going to invent findings — you'd be emailing eleven real businesses about technical problems that may not exist, and one reply of "that's wrong, we fixed that in March" costs you the account and the referral.</p>
+  <p><strong>To get it:</strong> re-run this from a session with open egress, or paste each page's view-source and I'll audit against the same rubric. The fit scoring and emails below don't depend on it.</p>
+</div>
+
+<hr class="rule">
+
+<h2>The five automations, as built</h2>
+<div class="autos">
+  <div class="auto"><div class="n">01</div><div class="t">No-show prevention</div><div class="d">Hourly cron, 24h + 2h reminders. Idempotent — a cron that fires twice still texts once.</div></div>
+  <div class="auto"><div class="n">02</div><div class="t">Reactivation</div><div class="d">Flags no-shows and 45-day dormant patients, texts a booking link, then a credit offer at day 3. 30-day cooldown.</div></div>
+  <div class="auto"><div class="n">03</div><div class="t">Review request</div><div class="d">Fires on treatment-completed, AI-drafts replies for manager approval. Public auto-post ships disabled.</div></div>
+  <div class="auto"><div class="n">04</div><div class="t">Lead qualification</div><div class="d">Chat + SMS, six questions, scored 0&ndash;100, routed hot / warm / cold. Pregnancy and blood-thinner gates sit outside the arithmetic.</div></div>
+  <div class="auto"><div class="n">05</div><div class="t">Voice handoff</div><div class="d">24/7 phone agent that never answers a clinical question — routes to a provider callback on a tracked 2-hour SLA.</div></div>
+</div>
+
+<hr class="rule">
+
+<h2>Fit matrix</h2>
+<div class="scroller">
+<table>
+<thead><tr>
+  <th>Practice</th><th>Voice</th><th>No-show</th><th>Reactiv.</th><th>Review</th><th>Lead qual</th><th>Total</th><th>Tier</th>
+</tr></thead>
+<tbody>
+<tr>
+  <td class="name">Kumi Laser &amp; MedSpa<span>Katy + Downtown Houston, TX</span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td class="tot">24</td><td><span class="tier tA">Tier A</span></td>
+</tr>
+<tr>
+  <td class="name">Aventura Dermatology<span>Aventura, FL</span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td class="tot">23</td><td><span class="tier tA">Tier A</span></td>
+</tr>
+<tr>
+  <td class="name">Elase Medical Spa &mdash; Sugar House<span>Salt Lake City, UT</span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td>
+  <td class="tot">22</td><td><span class="tier tA">Tier A</span></td>
+</tr>
+<tr>
+  <td class="name">Refresh &mdash; Jupiter<span>Jupiter, FL</span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td class="tot">22</td><td><span class="tier tA">Tier A</span></td>
+</tr>
+<tr>
+  <td class="name">Suddenly Slimmer Med Spa<span>Phoenix, AZ</span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td>
+  <td class="tot">22</td><td><span class="tier tA">Tier A</span></td>
+</tr>
+<tr>
+  <td class="name">Beauty Lab + Laser &mdash; Murray<span>Murray, UT &middot; your primary target</span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td>
+  <td class="tot">21</td><td><span class="tier tB">Tier B</span></td>
+</tr>
+<tr>
+  <td class="name">Couture Dermatology &amp; Plastic Surgery<span>Las Vegas, NV</span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td class="tot">21</td><td><span class="tier tB">Tier B</span></td>
+</tr>
+<tr>
+  <td class="name">Nob Hill Aesthetics<span>San Francisco, CA</span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td>
+  <td class="tot">21</td><td><span class="tier tB">Tier B</span></td>
+</tr>
+<tr>
+  <td class="name">Cosmetica Med Spa<span>Boca Raton, FL</span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td class="tot">20</td><td><span class="tier tB">Tier B</span></td>
+</tr>
+<tr>
+  <td class="name">The Palm Medspa + Wellness<span>Orlando, FL</span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td>
+  <td class="tot">20</td><td><span class="tier tB">Tier B</span></td>
+</tr>
+<tr>
+  <td class="name">All Is Well Holistic Spa<span>Katy, TX</span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></td>
+  <td><span class="meter"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span></td>
+  <td class="tot">18</td><td><span class="tier tC">Partial</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="legend">Scored 1&ndash;5 per automation on how directly that practice's public operating facts — hours, location count, service mix, review posture, booking path — map to what the automation does. Tier A means lead with it this week.</p>
+
+<hr class="rule">
+
+<h2>The eleven, in priority order</h2>
+<div class="read" style="margin-bottom:30px">
+<p class="ui">How these emails are built</p>
+<p>Written to the cold-email spec, so they may look under-sold next to a normal pitch. Subjects are two to four words, lowercase, and deliberately boring &mdash; the subject's only job is the open. Each email opens on their world rather than yours, carries one proof point instead of a feature list, and closes on an interest-based ask (&ldquo;worth a look?&rdquo;) rather than a request for thirty minutes. All land between 70 and 110 words. Remove the opening line from any of them and the rest stops making sense &mdash; that's the test that the personalization is load-bearing rather than decorative.</p>
+</div>
+
+<!-- 1 KUMI -->
+<div class="entry">
+<div class="entry-head"><h3><span class="idx">A1</span>Kumi Laser &amp; MedSpa</h3><span class="tier tA">Tier A &middot; 24</span></div>
+<p class="meta">Katy + Downtown Houston, TX &middot; 2 locations &middot; 4.6&#9733; / 979 reviews &middot; M&ndash;F 9&ndash;6, Sat 9&ndash;4, closed Sun</p>
+<ul class="sig">
+  <li>BBB rating of <strong>C+</strong> — specifically for failing to respond to one filed complaint, not for the complaint itself.</li>
+  <li>Runs a <strong>free test spot and consultation</strong> offer — high lead volume, low commitment, historically brutal no-show rates.</li>
+  <li>Candela laser hair removal is the core service: multi-session courses that stall mid-package.</li>
+</ul>
+<div class="read"><p class="ui">Why they're first</p><p>The only prospect on this list with a documented, publicly verifiable reputation failure you can name in a first email without guessing. An unanswered complaint dragging a 979-review practice to C+ is your review automation's exact use case, and the free-consult funnel sells the qualification scoring on its own.</p></div>
+<div class="mail">
+  <div class="mail-top"><span class="lbl">Subject</span><span class="subj">bbb response</span></div>
+  <div class="mail-body">
+    <p>Your BBB profile sits at C+ &mdash; not for the complaint, but for not answering it. One unanswered item outweighing 979 reviews at 4.6.</p>
+    <p>That's a system problem, not a staffing one. Review requests fire on treatment completion, and replies come back drafted for your manager to approve before anything posts. Public auto-posting stays off by default &mdash; replying to a review confirms that person was a patient, and that's a human's call to make.</p>
+    <p>Your free test spot offer is the other thing worth a look. Free consults no-show hard.</p>
+    <p>Worth exploring?</p>
+  </div>
+</div>
+</div>
+
+<!-- 2 AVENTURA -->
+<div class="entry">
+<div class="entry-head"><h3><span class="idx">A2</span>Aventura Dermatology &amp; Aesthetics</h3><span class="tier tA">Tier A &middot; 23</span></div>
+<p class="meta">Aventura, FL &middot; Dr. Bertha Baum, board-certified derm + cosmetic surgeon &middot; 4.9&#9733; / 872 reviews</p>
+<ul class="sig">
+  <li>Runs <strong>medical dermatology and cosmetic side by side</strong> — one inbound line triaging a suspicious mole and a filler consult.</li>
+  <li>Stated booking path is <em>"call to schedule a consultation."</em> The phone is the funnel.</li>
+  <li>Dense competitive market — Advanced Dermatology and Skin &amp; Cancer Associates both hold Aventura locations.</li>
+</ul>
+<div class="read"><p class="ui">Why they're high</p><p>Your voice agent's clinical boundary isn't a nice-to-have here, it's the entire reason a physician practice could say yes. Plus annual skin-check recall is the textbook reactivation cadence, and it runs on the engine you already built.</p></div>
+<div class="mail">
+  <div class="mail-top"><span class="lbl">Subject</span><span class="subj">front desk triage</span></div>
+  <div class="mail-body">
+    <p>Your booking path is &ldquo;call to schedule,&rdquo; which means one line is triaging a suspicious mole and a lip filler consult with the same greeting.</p>
+    <p>Cosmetic inquiries can be sorted before they reach your desk &mdash; intent, budget, timing. Anything clinical never gets an automated answer at all; it routes to a provider callback on a two-hour clock that's tracked and escalated if it slips.</p>
+    <p>Annual skin-check recall runs off the same engine, which is usually the part derm practices care about most.</p>
+    <p>Useful?</p>
+  </div>
+</div>
+</div>
+
+<!-- 3 ELASE -->
+<div class="entry">
+<div class="entry-head"><h3><span class="idx">A3</span>Elase Medical Spa &mdash; Sugar House</h3><span class="tier tA">Tier A &middot; 22</span></div>
+<p class="meta">2236 S 1300 E, Salt Lake City, UT &middot; multi-location UT chain &middot; 10,400+ Google reviews brand-wide</p>
+<ul class="sig">
+  <li>Hours carry a genuine oddity: <strong>closed the fifth Saturday of the month</strong> — a rule that reliably generates confused calls and no-shows.</li>
+  <li>Laser hair removal is the core offer, sold as multi-session courses.</li>
+  <li>Multi-location, so inbound needs routing before it needs answering.</li>
+</ul>
+<div class="read"><p class="ui">Why they're high</p><p>Acquisition is visibly solved at 10,000+ reviews. Everything left is retention: package abandonment mid-course, and hours complexity across locations. That's automations 01, 02 and 05 with almost no overlap wasted.</p></div>
+<div class="mail">
+  <div class="mail-top"><span class="lbl">Subject</span><span class="subj">fifth saturday</span></div>
+  <div class="mail-body">
+    <p>Your Sugar House hours say closed the fifth Saturday of the month. I'd guess that one line costs you a run of confused calls and a few no-shows every quarter.</p>
+    <p>At 10,000-plus reviews acquisition clearly isn't the issue. Laser revenue leaks at package abandonment &mdash; session three of six, and nobody follows up.</p>
+    <p>That's a cron job, not a hire. Same system knows each location's real hours, fifth Saturday included.</p>
+    <p>Worth a look?</p>
+  </div>
+</div>
+</div>
+
+<!-- 4 REFRESH -->
+<div class="entry">
+<div class="entry-head"><h3><span class="idx">A4</span>Refresh &mdash; Jupiter</h3><span class="tier tA">Tier A &middot; 22</span></div>
+<p class="meta">775 W Indiantown Rd, Jupiter, FL &middot; 3 locations (Jupiter, Port St. Lucie, Vero Beach) &middot; 4.8&#9733; / 1,242 reviews</p>
+<ul class="sig">
+  <li><strong>LegitScript Certified</strong> — they market compliance as a differentiator, which means they'll actually read your HIPAA architecture.</li>
+  <li><strong>Closed Saturday and Sunday</strong> across the board; weekdays end at 5:30pm.</li>
+  <li>Heavy on medical weight loss and GLP-1s — a category with real contraindication screening and a monthly refill cadence.</li>
+</ul>
+<div class="read"><p class="ui">Why they're high</p><p>The single best compliance-narrative fit on the list. Your de-identification layer and UUID-only orchestration are a sales argument here rather than a footnote — and their GLP-1 line maps cleanly onto both the qualification gates and the reactivation cadence.</p></div>
+<div class="mail">
+  <div class="mail-top"><span class="lbl">Subject</span><span class="subj">weekend inquiries</span></div>
+  <div class="mail-body">
+    <p>You're closed Saturday and Sunday across all three locations. GLP-1 inquiries don't keep those hours.</p>
+    <p>Reason I'm writing you specifically: you're LegitScript certified, so you'd actually read the architecture. Most AI booking tools drop patient names and numbers straight into a workflow tool's execution logs. This one de-identifies before anything reaches a model &mdash; in production it refuses to send a prompt still carrying an identifier &mdash; and the orchestration layer only ever sees UUIDs.</p>
+    <p>Screens the weekend GLP-1 leads, contraindication gates included, and books them.</p>
+    <p>Worth exploring?</p>
+  </div>
+</div>
+</div>
+
+<!-- 5 SUDDENLY SLIMMER -->
+<div class="entry">
+<div class="entry-head"><h3><span class="idx">A5</span>Suddenly Slimmer Med Spa</h3><span class="tier tA">Tier A &middot; 22</span></div>
+<p class="meta">3313 E Indian School Rd, Phoenix, AZ &middot; operating since 1988 &middot; 12,000 sq ft &middot; ratings split 4.9&#9733; aggregate vs 3.8&#9733; elsewhere</p>
+<ul class="sig">
+  <li><strong>38 years of patient history</strong> — by far the largest dormant database of anyone on this list.</li>
+  <li>Ratings genuinely diverge by platform, and the negative TripAdvisor reviews read as unanswered.</li>
+  <li>Three business lines under one roof: med spa, day spa, wellness.</li>
+</ul>
+<div class="read"><p class="ui">Why they're high</p><p>Reactivation value scales with database age, and nobody else here is close. The reputation split is the opener; the dormant list is the actual money.</p></div>
+<div class="mail">
+  <div class="mail-top"><span class="lbl">Subject</span><span class="subj">dormant list</span></div>
+  <div class="mail-body">
+    <p>Since 1988, out of 12,000 square feet &mdash; that's the largest dormant patient list of any med spa in Phoenix, and it's most likely just sitting there.</p>
+    <p>A daily job finds anyone with no visit in 45-plus days and nothing booked, texts a booking link, follows with a credit offer three days later, then leaves them alone for 30 days.</p>
+    <p>Separately, your ratings split by platform. The aggregate says 4.9; TripAdvisor tells a rougher story, and the critical ones look unanswered.</p>
+    <p>Worth a look?</p>
+  </div>
+</div>
+</div>
+
+<!-- 6 BEAUTY LAB -->
+<div class="entry">
+<div class="entry-head"><h3><span class="idx">B1</span>Beauty Lab + Laser &mdash; Murray</h3><span class="tier tB">Tier B &middot; 21</span></div>
+<p class="meta">5496 S 900 E, Murray, UT &middot; 2 locations (Murray, Riverton) &middot; 4.9&#9733; / 3,600+ Google reviews &middot; founded 2017</p>
+<ul class="sig">
+  <li>Founded by <strong>Heather Gay</strong> (Real Housewives of Salt Lake City) and Dre Robinson — demand spikes are national and televised, capacity is two Utah locations.</li>
+  <li>Explicit brand promise: <em>"no pushy sales tactics, no mystery pricing, no tipping, no commissions."</em></li>
+  <li>Riverton runs to 8pm weekdays; both closed Sunday. Online booking already in place.</li>
+</ul>
+<div class="read"><p class="ui">Honest read on your primary target</p><p>Strong fit, but Tier B rather than Tier A — and the reason matters for your pitch. They already have online booking, 3,600+ reviews and visible operational maturity, so the easy wins are taken. Your opening isn't "you're broken," it's that their stated promise of no mystery pricing is hardest to keep at 9pm on a Sunday. Lead with the voice agent quoting real prices from their own list; the review automation is your weakest angle here, so leave it out.</p></div>
+<div class="mail">
+  <div class="mail-top"><span class="lbl">Subject</span><span class="subj">sunday voicemail</span></div>
+  <div class="mail-body">
+    <p>No mystery pricing is a hard promise to keep at 8:47 on a Sunday, when Murray and Riverton are both closed and a Daxxify question gets voicemail.</p>
+    <p>An agent that answers around the clock and quotes your actual prices &mdash; not &ldquo;call us for pricing&rdquo; &mdash; holds the promise the brand's already built on. It books as pending so your front desk still confirms, and it won't touch a clinical question; those route to a provider callback on a two-hour clock.</p>
+    <p>3,600 reviews says demand isn't the issue. Coverage is.</p>
+    <p>Worth exploring?</p>
+  </div>
+</div>
+</div>
+
+<!-- 7 COUTURE -->
+<div class="entry">
+<div class="entry-head"><h3><span class="idx">B2</span>Couture Dermatology &amp; Plastic Surgery</h3><span class="tier tB">Tier B &middot; 21</span></div>
+<p class="meta">Las Vegas, NV &middot; Dr. Marvin Spann &amp; Dr. Candace Thornton Spann &middot; integrated derm + plastic surgery</p>
+<ul class="sig">
+  <li><strong>Correction worth noting:</strong> <span class="mono">couturemedical.com</span> is Couture Dermatology &amp; Plastic Surgery in Las Vegas — not the Florida "Couture Med Spa" chain that dominates search for the name. Different business entirely.</li>
+  <li>Medical dermatology, surgical and non-surgical aesthetics under one roof.</li>
+  <li>Surgical consults make no-shows expensive in a way injectable appointments aren't.</li>
+</ul>
+<div class="read"><p class="ui">The angle</p><p>Lead with the clinical boundary and nothing else. A physician-owned surgical practice's first objection to any AI is liability, so open by conceding it — the pitch is an agent defined by what it refuses to do.</p></div>
+<div class="mail">
+  <div class="mail-top"><span class="lbl">Subject</span><span class="subj">clinical questions</span></div>
+  <div class="mail-body">
+    <p>A derm and plastic surgery practice probably shouldn't put an AI on the phone. Speculating about a lesion or a post-op reaction isn't worth any amount of booking convenience.</p>
+    <p>So this one's built to refuse. Scheduling, pricing, FAQs &mdash; and the moment someone mentions a medication, contraindication, pregnancy or a reaction, it stops: that's a question for the provider, callback within two hours, tracked and escalated if it's missed.</p>
+    <p>It books as pending, too. Mishearing &ldquo;the fourteenth&rdquo; as &ldquo;the fortieth&rdquo; shouldn't put a surgical consult on Dr. Spann's calendar.</p>
+    <p>Worth a look?</p>
+  </div>
+</div>
+</div>
+
+<!-- 8 NOB HILL -->
+<div class="entry">
+<div class="entry-head"><h3><span class="idx">B3</span>Nob Hill Aesthetics</h3><span class="tier tB">Tier B &middot; 21</span></div>
+<p class="meta">909 Hyde St, San Francisco, CA &middot; 4.9&#9733; / 758 Google reviews &middot; physician-directed</p>
+<ul class="sig">
+  <li>Runs a <strong>membership program with fixed monthly payments</strong> — structurally a subscription business, so churn is the governing metric.</li>
+  <li>Reviews note high demand, advance booking, and short wait times — a capacity-constrained calendar.</li>
+  <li>CoolSculpting and CoolTone body contouring alongside injectables.</li>
+</ul>
+<div class="read"><p class="ui">The angle</p><p>Reframe their business as a subscription, because it is. On a fully booked calendar a no-show isn't an inconvenience, it's revenue a waitlisted member would have paid for — that framing does the selling.</p></div>
+<div class="mail">
+  <div class="mail-top"><span class="lbl">Subject</span><span class="subj">membership churn</span></div>
+  <div class="mail-body">
+    <p>Fixed monthly payments make Nob Hill a subscription business, so churn and no-shows matter more than acquisition &mdash; and your reviews already say you're booked out.</p>
+    <p>Which is the actual problem. On a full calendar a no-show isn't a gap in the day, it's revenue a waitlisted member would have paid for.</p>
+    <p>Reminders at 24 and 2 hours that can't double-send, no-show recovery with a rebooking link then a credit, dormant flags at 45 days. Consent-aware, STOP handled automatically.</p>
+    <p>Worth exploring?</p>
+  </div>
+</div>
+</div>
+
+<!-- 9 COSMETICA -->
+<div class="entry">
+<div class="entry-head"><h3><span class="idx">B4</span>Cosmetica Med Spa</h3><span class="tier tB">Tier B &middot; 20</span></div>
+<p class="meta">4400 N Federal Hwy, Boca Raton, FL &middot; 4.8&#9733; / 985 reviews &middot; open 7 days, 8am&ndash;8pm</p>
+<ul class="sig">
+  <li><strong>84 hours a week of opening time</strong> — seven days, 8 to 8. Phone coverage is a standing payroll line.</li>
+  <li>Unusually broad menu: HydraFacial and peels through PRP, PDO threads, hair restoration, TRT, P-Shot and O-Shot.</li>
+  <li>Runs a new-patient offer ($100 off $200+), which pulls in volume that needs sorting.</li>
+</ul>
+<div class="read"><p class="ui">The angle</p><p>Menu breadth is the pain. A prospect who doesn't know whether they want a HydraFacial or hormone therapy is a triage problem, and the sensitive end of that menu makes qualification-before-booking an argument about safety as much as efficiency.</p></div>
+<div class="mail">
+  <div class="mail-top"><span class="lbl">Subject</span><span class="subj">eighty-four hours</span></div>
+  <div class="mail-body">
+    <p>Open 8 to 8, seven days &mdash; 84 hours a week of phone coverage against a menu running from HydraFacial to TRT. Plenty of that inbound doesn't know which one it wants yet.</p>
+    <p>Six questions over chat or SMS sorts them: scored, routed, and the hot ones book themselves. Two gates sit outside the score &mdash; pregnant or breastfeeding disqualifies to a medical callback regardless of every other answer, and blood thinners flag for provider approval without penalizing the lead.</p>
+    <p>For a menu that clinically varied, the triage is most of the work.</p>
+    <p>Worth a look?</p>
+  </div>
+</div>
+</div>
+
+<!-- 10 PALM -->
+<div class="entry">
+<div class="entry-head"><h3><span class="idx">B5</span>The Palm Medspa + Wellness</h3><span class="tier tB">Tier B &middot; 20</span></div>
+<p class="meta">12301 Lake Underhill Rd, Orlando, FL &middot; 4.9&#9733; / 1,195 reviews &middot; M&ndash;F 10&ndash;6 (Thu 12&ndash;8), closed weekends</p>
+<ul class="sig">
+  <li><strong>Closed Saturday and Sunday</strong>, and Thursday doesn't open until noon — a narrow window for an Orlando consumer market.</li>
+  <li>Morpheus8, RF microneedling and BBL are multi-session series that stall partway.</li>
+  <li>Books through <strong>Vagaro</strong> — which you don't integrate with yet.</li>
+</ul>
+<div class="read"><p class="ui">Say the integration gap out loud</p><p>You support generic, Acuity and Square; Mindbody is unimplemented and Vagaro isn't built. Naming that in the first email costs you nothing and buys more trust than it spends — they'd find out on the demo call anyway.</p></div>
+<div class="mail">
+  <div class="mail-top"><span class="lbl">Subject</span><span class="subj">weekend bookings</span></div>
+  <div class="mail-body">
+    <p>Closed Saturday and Sunday, and Thursday doesn't open till noon. In Orlando that's a lot of hours where someone interested hits voicemail and books elsewhere by Monday.</p>
+    <p>An agent covering those hours quotes real prices and books as pending, so your team still confirms every slot. Pairs with a sequence for series that stall &mdash; Morpheus8 at one of three being the usual culprit.</p>
+    <p>One thing upfront: you're on Vagaro. I integrate with Acuity and Square, not Vagaro yet. Real gap, better said now than on a demo call.</p>
+    <p>Worth exploring?</p>
+  </div>
+</div>
+</div>
+
+<!-- 11 ALL IS WELL -->
+<div class="entry">
+<div class="entry-head"><h3><span class="idx">C1</span>All Is Well Holistic Spa</h3><span class="tier tC">Partial &middot; 18</span></div>
+<p class="meta">2001 Katy Mills Blvd, Katy, TX &middot; 1 location &middot; mixed ratings across platforms &middot; closed Tuesdays</p>
+<ul class="sig">
+  <li><strong>Not a med spa.</strong> Holistic massage, facials, skincare and couples suites — no injectables, no lasers, minimal PHI.</li>
+  <li>Membership-based and faith-inspired positioning.</li>
+  <li>Ratings genuinely mixed: 92% recommend on Facebook, but Yelp and TripAdvisor carry upselling complaints and one review titled "SCAM!!!"</li>
+</ul>
+<div class="read"><p class="ui">Why they're last, and what to do</p><p>Your HIPAA architecture — the expensive, differentiating part — is dead weight here. There are no treatment courses to reactivate in the laser sense and no clinical boundary to enforce. Two of five automations genuinely apply. Either deprioritize, or pitch narrow and say why; the narrow pitch is the stronger email, so that's what's drafted.</p></div>
+<div class="mail">
+  <div class="mail-top"><span class="lbl">Subject</span><span class="subj">partial fit</span></div>
+  <div class="mail-body">
+    <p>Straight version: most of what I build is for medical aesthetics &mdash; injectables, lasers, regulated patient data. You're a holistic massage and skincare spa, so half of it would be overkill you'd be paying for.</p>
+    <p>Two parts do fit. Membership means churn is your real metric, and dormant clients can be flagged at 45 days and won back over two touches. And your ratings split &mdash; strong on Facebook, rougher on Yelp and TripAdvisor, the critical ones unanswered.</p>
+    <p>I'd rather sell you the two things that fit than five that don't.</p>
+    <p>Worth a look?</p>
+  </div>
+</div>
+</div>
+
+<div class="foot">
+<p><strong>Before you send.</strong> These are first touches only &mdash; no follow-up sequence is drafted here. When you want one, the rule is that each follow-up rotates to a genuinely new angle rather than checking in. Three things to hold to: HIPAA-deployable is not the same as HIPAA-compliant, and the system only gets a practice there alongside signed BAAs, policies and training — don't let an email imply otherwise. Booking integrations cover generic, Acuity and Square; Mindbody is explicitly not implemented and Vagaro isn't built. And every fact cited above comes from public listings and review platforms, which go stale — spot-check hours and review counts the morning you send, because a wrong detail in line one costs you the whole email.</p>
+</div>
+
+</div>
