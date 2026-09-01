@@ -3,4 +3,4 @@ Allow: /
 Disallow: /privacy.html
 Disallow: /terms.html
 
-Sitemap: https://REPLACE_WITH_DOMAIN/sitemap.xml
+Sitemap: https://microns-lovable-site-production.up.railway.app/sitemap.xml
