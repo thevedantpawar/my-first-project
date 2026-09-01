@@ -1,0 +1,20 @@
+{
+  "total_rows": 1048,
+  "tiers": {
+    "C": 104,
+    "A": 540,
+    "SUPPRESS": 244,
+    "B": 160
+  },
+  "sendable_A_plus_B": 700,
+  "signals_used": {
+    "weekend_gap_high_demand": 236,
+    "high_volume_phone_load": 41,
+    "full_weekend_closed": 163,
+    "sunday_closed": 225,
+    "service_breadth": 18,
+    "rating_floor": 103,
+    "monday_closed": 18
+  },
+  "first_lines_with_spam_flags": 0
+}
