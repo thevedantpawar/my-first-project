@@ -88,8 +88,9 @@ ol.steps li b{font-family:Archivo,sans-serif;font-weight:600}
 <p class="lede">Every lead in the workbook scored against the five automations and the receptionist offer, then written up. This is what exists, what it's worth, and what is still missing.</p>
 
 <div class="stats">
-  <div class="stat hero"><div class="n">804</div><div class="l">Emails written</div></div>
-  <div class="stat"><div class="n">804</div><div class="l">Leads scored</div></div>
+  <div class="stat hero"><div class="n">4,020</div><div class="l">Emails written</div></div>
+  <div class="stat"><div class="n">804</div><div class="l">Leads covered</div></div>
+  
   <div class="stat"><div class="n">58</div><div class="l">Fully qualified</div></div>
   <div class="stat"><div class="n">170</div><div class="l">Apollo enriched</div></div>
   <div class="stat"><div class="n">49</div><div class="l">Credits left</div></div>
@@ -201,6 +202,26 @@ ol.steps li b{font-family:Archivo,sans-serif;font-weight:600}
 </div>
 
 <hr class="rule">
+<h2>Follow-up sequences</h2>
+<p>Every lead now carries a five-touch sequence, not a single email. The spec is blunt about why: <strong>55% of replies come from follow-ups</strong>, and 4&ndash;7 touch campaigns reply at 27% against 9% for one to three. Cadence widens as it goes &mdash; day 0, 3, 7, 14, 21 &mdash; and each touch rotates to a genuinely new angle rather than bumping the last one.</p>
+<div class="scroller"><table>
+<thead><tr><th>Touch</th><th>Day</th><th>Angle</th></tr></thead>
+<tbody>
+<tr><td class="n">T1</td><td class="n">0</td><td>The personalized hook &mdash; their closed days, review count, or rating gap</td></tr>
+<tr><td class="n">T2</td><td class="n">3</td><td>A different automation entirely: dormant patients, idempotent reminders, or per-location reporting</td></tr>
+<tr><td class="n">T3</td><td class="n">7</td><td>Product mechanics &mdash; books as pending, refuses clinical questions</td></tr>
+<tr><td class="n">T4</td><td class="n">14</td><td>An observation drawn from their own numbers</td></tr>
+<tr><td class="n">T5</td><td class="n">21</td><td>Breakup, in the 1-2-3 reply format</td></tr>
+</tbody></table></div>
+
+<div class="warn">
+  <p class="ui">One slot is deliberately not what the spec asks for</p>
+  <p>Touch 3 is supposed to be <em>social proof &mdash; a case study from a similar company</em>. You have no customers yet, so there is no case study to cite. Inventing one would put fabricated client results into 804 sequences, and a single prospect who asks &ldquo;which clinic was that?&rdquo; ends the conversation and the referral.</p>
+  <p>That slot instead carries verifiable product mechanics: bookings land as <em>pending</em> rather than confirmed, and clinical questions get refused outright. Both are true of the system as built. <strong>Replace touch 3 with a real case study the moment you close your first clinic</strong> &mdash; it is the single highest-leverage edit in the whole sequence.</p>
+</div>
+<p>Phrases the spec flags as response-killers are absent throughout: no &ldquo;just checking in,&rdquo; no &ldquo;following up on my previous message,&rdquo; no &ldquo;did you see my last email.&rdquo; The breakup honors itself &mdash; if you send touch 5, do not contact that prospect again.</p>
+
+<hr class="rule">
 <h2>Send sequence</h2>
 <ol class="steps">
   <li><b>Fix the three bad domains</b> and spot-check the two load-bearing claims. Half an hour, and it protects everything after it.</li>
@@ -213,6 +234,6 @@ ol.steps li b{font-family:Archivo,sans-serif;font-weight:600}
 </ol>
 
 <div class="foot">
-<p>Deliverables live in <span class="mono">outreach/</span> on branch <span class="mono">claude/med-spa-outreach-audit-h1y4fp</span>: the enriched qualified list, five generated-pool CSVs carrying full email bodies and per-row warnings, four markdown files of hand-written copy, and the generator scripts. Every figure in this report was computed from the workbook rather than recalled, and the category counts reconcile to 804 exactly.</p>
+<p><strong><span class="mono">MASTER_send_list.csv</span> is the file to work from</strong> &mdash; all 804 leads ranked in send order, each with five touches, its warnings, and its enrichment attached. Everything else is provenance. Deliverables live in <span class="mono">outreach/</span> on branch <span class="mono">claude/med-spa-outreach-audit-h1y4fp</span>: the enriched qualified list, five generated-pool CSVs carrying full email bodies and per-row warnings, four markdown files of hand-written copy, and the generator scripts. Every figure in this report was computed from the workbook rather than recalled, and the category counts reconcile to 804 exactly.</p>
 </div>
 </div>
