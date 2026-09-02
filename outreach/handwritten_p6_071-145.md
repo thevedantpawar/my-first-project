@@ -320,11 +320,17 @@ An agent covers it and books as pending. Worth exploring?
 
 ---
 ## 121 · Foxy Med Spa by Hope — Denver, CO · 5.0 / 46
-**support@vagaro.com** · **Subject:** ⚠ WRONG ADDRESS — DO NOT SEND
-The address on file is **Vagaro's own support inbox**, not this business. Sending here
-reaches a software vendor's help desk, not Hope.
-Find the real address before this one goes out — everything else about the lead (5.0 across
-46 reviews, both weekend days closed) makes it worth contacting properly.
+**support@vagaro.com** · **Subject:** weekend calls
+**⚠ DO NOT SEND TO THE ADDRESS ON FILE.** It is Vagaro's own support inbox — a software
+vendor's help desk, not Hope. Find the real address first. Copy is ready below.
+
+Hope — both weekend days closed, and 46 reviews at a flat 5.0 says the people who reach
+you are happy. The ones who call Saturday and get voicemail don't leave a review either way.
+
+An agent answers in your voice, quotes your real prices, and books as pending so you still
+confirm every slot. Nothing clinical gets an automated answer.
+
+Worth a look?
 
 ---
 ## 122 · BeyondSkin MedSpa — Los Angeles, CA · 4.4 / 45

@@ -126,8 +126,9 @@ Tina — closed Sunday and Monday. An agent covers both and books as pending for
 **272 · VICZ Care** · viczcare@gmail.com · 5.0/46 · *sunday calls*
 Sunday closed. An agent covers it and books as pending. Worth exploring?
 
-**273 · West Point Aesthetic Center** · john.doe@gmail.com · 4.9/44 · *⚠ PLACEHOLDER ADDRESS — DO NOT SEND*
-The address on file is literally **john.doe@gmail.com** — placeholder data, not a real contact. This will not reach the business. Find the real address first; at 4.9 across 44 reviews the lead itself is worth contacting properly.
+**273 · West Point Aesthetic Center** · john.doe@gmail.com · 4.9/44 · *front desk*
+**⚠ DO NOT SEND TO THE ADDRESS ON FILE** — `john.doe@gmail.com` is placeholder data and will not reach the business. Find the real address first. Copy is ready below.
+44 reviews at 4.9 and no hours on file, so I won't guess at closures. At your size the call that costs most is the one that comes while the desk is with a patient. An agent picks those up and books as pending for you to confirm. Worth a look?
 
 **274 · The Aesthetic Touch by Raya** · certifiedinjectorraya@gmail.com · 5.0/44 · *weekend calls*
 Raya — both weekend days closed, and people call asking for you by name. An agent picks up in your voice. Worth a look?

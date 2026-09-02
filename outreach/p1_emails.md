@@ -48,19 +48,20 @@ Worth a look?
 ---
 
 ## 3 · Elase Medical Spa · Salt Lake City, UT
-**To:** sugarhouse@elase.com · 4.9 / 1,556 reviews · 4 locations · closed Sunday
+**To:** sugarhouse@elase.com · 4.9 / 1,556 reviews · 38 locations, 7 states · closed Sunday
 **Subject:** location routing
 
-Four Elase locations means every inbound call is a routing decision before it's a
-booking — and Sugar House still shows Sunday dark, plus that fifth-Saturday rule
-most callers won't know about.
+Thirty-eight locations across seven states means every inbound call is a routing
+decision before it's a booking — and Sugar House still shows Sunday dark, plus that
+fifth-Saturday rule most callers won't know about.
 
 At 1,556 reviews on this location alone, acquisition clearly isn't the problem.
 Laser revenue leaks at package abandonment — session three of six, and nobody
 follows up.
 
-That's a cron job, not a hire. The same agent knows each location's real hours,
-fifth Saturday included.
+At your scale I wouldn't propose anything network-wide. One location, measured
+against its own prior eight weeks. The agent knows that site's real hours, fifth
+Saturday included.
 
 Worth exploring?
 
