@@ -77,42 +77,58 @@ There are no first names. The copy was written with no greeting line on purpose 
 
 ---
 
-## 3 · Capacity — this is the correction to my earlier schedule
+## 3 · Capacity at 10/day per mailbox
 
-My previous plan said 20→40 emails a day across 22 waves, 8 Sep – 27 Oct. **That counted
-only first emails.** Once follow-ups are in flight, every lead you start today costs five
-sends over the next three weeks, so steady-state daily volume is roughly five times the
-new-lead rate. The old schedule would have hit ~200 emails/day at steady state — 40 per
-mailbox — which is above where cold outreach on Google Workspace stays safe.
+**Your cap: 5 mailboxes × 10 cold sends/day = 50/day.** Warm-up traffic runs on top of that,
+not inside it.
 
-Corrected model, 5 mailboxes at 25 cold sends/day each (warm-up traffic runs on top of
-this, not inside it):
+The thing to hold onto: **that 50 is total sends, not new leads.** Every lead you start costs
+five emails over three weeks, so at steady state you can only *begin* about 10 new leads a day.
 
-| | Total capacity | New leads you can start |
-|---|---|---|
-| Week 1 | 10/mailbox = 50/day | ~10/day |
-| Week 2 | 15/mailbox = 75/day | ~15/day |
-| Week 3 | 20/mailbox = 100/day | ~20/day |
-| Week 4+ | 25/mailbox = 125/day | ~25/day |
+Ramp, starting the day warm-up finishes:
 
-Two schedules, both simulated against the real 739 leads and their per-segment step counts:
-
-| Plan | New-lead starts finish | All sending done | Avg/day |
+| | Per mailbox | Total/day | New leads/day |
 |---|---|---|---|
-| **Tue–Thu only** | week 7 | ~11 weeks | 49 |
-| **Mon–Fri** | week 5 | ~9 weeks | 63 |
+| Week 1 | 5 | 25 | ~5 |
+| Week 2 | 7 | 35 | ~7 |
+| Week 3 onward | 10 | 50 | ~10 |
 
-Tue–Thu is the better-replying window; Mon–Fri finishes two weeks sooner. **Recommendation:
-Tue–Thu for the first 200 leads, then open to Mon–Fri.** The top of the list is where reply
-rate is worth protecting; the tail is where speed is worth more.
+Simulated against the real 739 leads and their per-segment step counts:
 
-Week-by-week volume on the Mon–Fri plan: 301 · 431 · 575 · 669 · 589 · 530 · 282 · 182 · 100.
+| Scope | Days | New-lead starts done | Last email sent |
+|---|---|---|---|
+| **All 739** | Mon–Fri | week 13 | **~17 weeks** |
+| All 739 | Tue–Thu | week 18 | ~22 weeks |
+| 543 with 50+ reviews | Mon–Fri | week 10 | ~13 weeks |
+| Top 350 by rank | Mon–Fri | week 6 | ~10 weeks |
 
-### Loading the campaigns
+**Mon–Fri, all 739.** Tue–Thu is the better-replying window, but it costs five extra weeks
+here and there is no capacity headroom to make up. At 50/day the constraint is the cap, not
+the calendar.
 
-Don't dump 458 prospects into the coverage campaign on day one — Snov.io will start them
-all and blow through the daily cap. Load in weekly batches sized to the table above, in
-`microns_rank` order (the CSVs are already sorted that way, best leads first).
+### The scope call is yours
+
+17 weeks is a long campaign. The tail is thin: **196 of the 739 have under 50 reviews** and
+they sit at the bottom of the rank order for a reason. Cutting to the 543 with 50+ reviews
+saves four weeks and drops the leads least likely to reply.
+
+I would run all 739 anyway — the copy is written, the marginal cost is time rather than
+money, and week 14 onward is only ~40 sends a day. But if you want the campaign to conclude
+sooner, cut at 50 reviews and stop. Say the word and I will re-cut the files.
+
+### The daily load plan
+
+`snovio/daily_load_plan.csv` — 137 rows, one per campaign per send day. Each row says the
+date, which campaign, how many prospects to add, and which `microns_rank` range they cover.
+
+- First send: **Mon 28 Sep 2026** (assumes warm-up completes ~4 weeks from now)
+- Last new lead started: **1 Jan 2027**
+- Last email in the whole campaign: **22 Jan 2027**
+
+Peak weekly volume is 289 emails, in week 7. Nothing ever exceeds the 50/day cap.
+
+Work it top to bottom. Each morning, open the campaigns named for that date and add the
+prospects in the listed rank range. Ten minutes a day.
 
 ---
 
@@ -120,7 +136,7 @@ all and blow through the daily cap. Load in weekly batches sized to the table ab
 
 | Setting | Value | Why |
 |---|---|---|
-| Sending limit per mailbox | Start 10/day, +5/week, cap 25 | The whole capacity model above |
+| Sending limit per mailbox | 5/day wk1 → 7 wk2 → **10 and hold** | Your cap |
 | Open tracking | **Off** | The tracking pixel is a spam signal and open rates are unreliable post-MPP anyway |
 | Link tracking | **Off** for touch 1 | A rewritten link on a first cold email costs more deliverability than the data is worth |
 | Email format | **Plain text** | HTML templates on cold outreach read as marketing |
@@ -128,13 +144,53 @@ all and blow through the daily cap. Load in weekly batches sized to the table ab
 | Stop on bounce | **On** | |
 | Unsubscribe link | **On** | CAN-SPAM |
 | Physical address | In the signature of every step | CAN-SPAM. It has to be a real address |
-| Warm-up | **Keep running** during the campaign | Warm-up is not a one-time phase |
+| Warm-up | **Keep running** for the whole 17 weeks | Warm-up is not a phase you finish |
 | Sending window | 9–11am and 1–3pm, prospect's local time | From the directives |
 
 Mailbox rotation: let Snov.io rotate across all five. Don't pin a campaign to one mailbox —
 that concentrates the reputation risk you bought five mailboxes to spread.
 
 ---
+
+## 4b · You are on the main domain — what that changes
+
+You said there's no option, so this is about damage control rather than argument. Sending
+cold from the domain the business runs on means a reputation problem doesn't stay in the
+campaign; it reaches your invoices, your client mail, your calendar invites.
+
+Three things follow. The first is not optional.
+
+### Verify all 739 addresses before a single send
+
+This is now the highest-value thing on the whole list. These addresses came out of a scraped
+workbook and **not one of them has been validated.** I already found 22 that are definitely
+dead — an image filename, a GIF filename, `john@doe.com`, two typo TLDs. Those were the ones
+visible by reading. There will be more among the other 717 that only a verifier catches.
+
+Bounce rate is the single fastest way to damage a domain, and on a main domain the damage is
+expensive. Snov.io includes an email verifier. **Run all 739 through it, remove everything
+that comes back invalid or risky, and only then start.** Budget an afternoon.
+
+If the verifier kills more than ~10% of the list, tell me — that changes the timeline and I
+will re-cut the daily plan.
+
+### Register the domain in Google Postmaster Tools
+
+Free, takes ten minutes, and it is the only way to see your actual Gmail spam rate and domain
+reputation rather than guessing. Given where you're sending from, you want that dashboard
+open weekly. **Spam rate above 0.10% means stop immediately** — that is Google's own
+threshold and it is the number Postmaster Tools shows you directly.
+
+### One complaint is the stop signal, not a data point
+
+Across 739 addresses, 0.1% is less than one complaint. Whatever the standard would be on a
+throwaway domain, here it's zero tolerance: a complaint means suppress and pause, not "note
+it and continue."
+
+**What is already working in your favour:** Snov.io sends through the Google Workspace
+mailboxes themselves, not through a third-party relay. That means SPF, DKIM and DMARC stay
+aligned on your real domain — no alignment breakage, no "via" header in Gmail. Confirm all
+three are published and passing before wave 1, and keep your DMARC reports on.
 
 ## 5 · Where replies actually land
 
@@ -154,24 +210,30 @@ types. The four-hour rule in it is the part that matters most.
 
 ## 6 · What is still blocking
 
-1. **Pricing.** §2.2 of the playbook is a blank. The first person who replies "how much?"
-   gets a non-answer until you fill it in.
-2. **The BAA answer.** §2.6, same. Every serious medical buyer asks. "I'll check" costs the deal.
-3. **Which domain the 5 mailboxes are on.** If they're on the domain the business runs on,
-   this campaign is putting that domain's reputation at risk. Cold outreach belongs on a
-   separate domain that can be burned without consequence.
-4. **37 addresses to verify**, ~2 minutes each. Montclair Rejuvenation Center is 1,398
-   reviews and sits at the top of that list.
+1. **Verify the list.** §4b. Nothing sends until this is done.
+2. **Pricing.** §2.2 of the reply playbook is a blank. The first person who replies
+   "how much?" gets a non-answer until you fill it in.
+3. **The BAA answer.** §2.6, same. Every serious medical buyer asks. "I'll check" costs the deal.
+4. **37 addresses to verify by hand** — the ones where the domain doesn't match the business
+   name, which a verifier will pass because the mailbox is real but wrong. ~2 minutes each.
+   Montclair Rejuvenation Center is 1,398 reviews and sits at the top of that list.
+5. **Google Postmaster Tools** registered, and SPF/DKIM/DMARC confirmed passing.
 
 ---
 
 ## 7 · Sequence
 
-1. Let the warm-up run its full 3–4 weeks. Don't cut it short because the copy is ready.
-2. Build the 8 campaigns. Steps and delays per §2, settings per §4.
-3. Import 5 test rows, check the line breaks, send yourself one. Read it in a real inbox.
-4. Week 1: load ~50 leads into `coverage` only, top of `microns_rank`. One campaign, one
-   week, so a deliverability problem shows up on 50 leads and not on 458.
-5. Check bounce rate at the end of week 1. **Above 4% — stop and re-verify the list.**
-   One spam complaint — stop.
-6. Week 2 onward: add the other campaigns, ramp per §3.
+1. **Let warm-up run its full 3–4 weeks.** Don't cut it short because the copy is ready.
+   On the main domain this is the part you least want to rush.
+2. **Verify all 739 through Snov.io's verifier.** Remove invalid and risky. Tell me the
+   survivor count if it drops more than ~10%.
+3. **Register Google Postmaster Tools**, confirm SPF/DKIM/DMARC pass.
+4. **Build the 8 campaigns.** Steps and delays per §2, settings per §4.
+5. **Import 5 test rows, check the line breaks**, send yourself one. Read it in a real inbox
+   before 739 people do.
+6. **Week 1: 25 emails a day, coverage campaign only**, top of `microns_rank`. One campaign,
+   one week, so a deliverability problem shows up on 25 leads and not on 458.
+7. **End of week 1, check three numbers:** bounce rate, Postmaster spam rate, complaints.
+   Bounces above 4%, spam rate above 0.10%, or one complaint — **stop.** Anything else,
+   continue to the daily load plan.
+8. **Weeks 2–17:** work `daily_load_plan.csv` top to bottom. Ten minutes each morning.
