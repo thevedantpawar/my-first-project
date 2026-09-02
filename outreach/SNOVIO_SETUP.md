@@ -158,12 +158,12 @@ Three options, and they are not close.
 
 | Option | Protects main domain | Inbox placement | Cost | Delay |
 |---|---|---|---|---|
-| Main domain (current) | ✗ no | good | £0 | none |
-| `micronsai.online` | ✓ yes | **poor** | £0 | ~4 wks restart |
-| **A `.com` variant** | ✓ yes | good | **~£10/yr** | ~4 wks restart |
+| Main domain (current) | ✗ no | good | $0 | none |
+| `micronsai.online` | ✓ yes | **poor** | $0 | ~4 wks restart |
+| **A `.com` variant** | ✓ yes | good | **~$12/yr** | ~4 wks restart |
 
-**Recommendation: buy the `.com`.** The delay is identical to using `.online`, and the ten
-pounds buys back everything `.online` costs you.
+**Decided: `micronsai.com`.** The delay is identical to using `.online`, and the twelve
+dollars buys back everything `.online` costs you.
 
 ### Why not `.online`
 
@@ -177,18 +177,14 @@ medical clinics. A vendor writing from `something.online` reads as less establis
 same vendor writing from `something.com` — and this campaign is already asking them to be
 somebody's first customer. Don't add a second reason to doubt you.
 
-Owning it already is not a reason to use it. Ten pounds is less than one hour of the time
+Owning it already is not a reason to use it. Twelve dollars is less than one hour of the time
 you'd spend recovering from a deliverability problem.
 
 ### What to buy
 
-A recognisable variant of your main domain in `.com`. In rough order of preference:
-`micronsai.com` · `getmicrons.com` · `trymicrons.com` · `microns-ai.com` · `micronshq.com`.
-Take the first that's available and reads like you, not like a landing page.
-
-Whichever you pick, it needs a real website. A cold email from a domain that resolves to
+`micronsai.com`. It needs a real website — a cold email from a domain that resolves to
 nothing is a spam signal, and a prospect who Googles you finds a parking page. A redirect to
-your main site is enough — a one-page site is better.
+your main site is enough; a one-page site is better.
 
 ### What switching actually costs
 
@@ -252,10 +248,16 @@ types. The four-hour rule in it is the part that matters most.
 
 ---
 
+> **Running in parallel:** `SPRINT_3_WEEKS.md` is a phone-and-manual-email sprint against
+> the top 60 leads, aimed at a client inside 21 days. It needs no warm-up and does not delay
+> anything here. This document is the machine; that one is the shortcut.
+
+---
+
 ## 6 · What is still blocking
 
-1. **The domain decision.** §4b. Buy the `.com` variant, put a site on it, point the five
-   mailboxes at it. Everything else waits on this because warm-up restarts with it.
+1. **`micronsai.com` live with a site on it**, five mailboxes pointed at it, warm-up
+   restarted. Everything else in this doc waits on that.
 2. **Verify the list.** §4b. Nothing sends until this is done.
 3. **Pricing.** §2.2 of the reply playbook is a blank. The first person who replies
    "how much?" gets a non-answer until you fill it in.
@@ -269,7 +271,7 @@ types. The four-hour rule in it is the part that matters most.
 
 ## 7 · Sequence
 
-1. **Buy the sending domain, put a site on it, create the five mailboxes there.** Then let
+1. **Set up `micronsai.com`, put a site on it, create the five mailboxes there.** Then let
    warm-up run its full 3–4 weeks. Don't cut it short because the copy is ready.
 2. **Verify all 739 through Snov.io's verifier.** Remove invalid and risky. Tell me the
    survivor count if it drops more than ~10%.
