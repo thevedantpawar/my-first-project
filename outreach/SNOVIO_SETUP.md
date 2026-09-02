@@ -152,45 +152,89 @@ that concentrates the reputation risk you bought five mailboxes to spread.
 
 ---
 
-## 4b · You are on the main domain — what that changes
+## 4b · Which domain you send from — decide this before warm-up finishes
 
-You said there's no option, so this is about damage control rather than argument. Sending
-cold from the domain the business runs on means a reputation problem doesn't stay in the
-campaign; it reaches your invoices, your client mail, your calendar invites.
+Three options, and they are not close.
 
-Three things follow. The first is not optional.
+| Option | Protects main domain | Inbox placement | Cost | Delay |
+|---|---|---|---|---|
+| Main domain (current) | ✗ no | good | £0 | none |
+| `micronsai.online` | ✓ yes | **poor** | £0 | ~4 wks restart |
+| **A `.com` variant** | ✓ yes | good | **~£10/yr** | ~4 wks restart |
+
+**Recommendation: buy the `.com`.** The delay is identical to using `.online`, and the ten
+pounds buys back everything `.online` costs you.
+
+### Why not `.online`
+
+`.online` is one of the cheap TLDs — alongside `.xyz`, `.top`, `.click`, `.icu` — that
+spam operations buy in bulk because they cost pennies. Filters know this. A brand-new
+`.online` domain starts from a worse baseline at Gmail and Outlook than a brand-new `.com`
+does, and no amount of warm-up fully closes that gap.
+
+There is also the human half. The recipients here are practice owners and office managers at
+medical clinics. A vendor writing from `something.online` reads as less established than the
+same vendor writing from `something.com` — and this campaign is already asking them to be
+somebody's first customer. Don't add a second reason to doubt you.
+
+Owning it already is not a reason to use it. Ten pounds is less than one hour of the time
+you'd spend recovering from a deliverability problem.
+
+### What to buy
+
+A recognisable variant of your main domain in `.com`. In rough order of preference:
+`micronsai.com` · `getmicrons.com` · `trymicrons.com` · `microns-ai.com` · `micronshq.com`.
+Take the first that's available and reads like you, not like a landing page.
+
+Whichever you pick, it needs a real website. A cold email from a domain that resolves to
+nothing is a spam signal, and a prospect who Googles you finds a parking page. A redirect to
+your main site is enough — a one-page site is better.
+
+### What switching actually costs
+
+The warm-up running on your five current mailboxes is per-mailbox and per-domain. Moving
+domains restarts it. Realistically: **buy and configure the domain this week, put a site on
+it, then 3–4 weeks of warm-up.** Roughly the same first-send date you already have, since
+warm-up is running anyway — you just switch which mailboxes are warming.
+
+On the Workspace side, a second domain can be added to the account you already have. Users
+on it consume licences, so check what five more seats costs you before committing; a domain
+alias is the cheaper route if you're willing to send from aliases rather than separate users.
+Confirm the billing in your own admin console rather than taking my word for it.
+
+### If you stay on the main domain anyway
+
+Everything below still applies — and applies harder, because a reputation problem there
+reaches your invoices and your client mail, not just this campaign.
 
 ### Verify all 739 addresses before a single send
 
-This is now the highest-value thing on the whole list. These addresses came out of a scraped
-workbook and **not one of them has been validated.** I already found 22 that are definitely
-dead — an image filename, a GIF filename, `john@doe.com`, two typo TLDs. Those were the ones
-visible by reading. There will be more among the other 717 that only a verifier catches.
+This is the highest-value item on the list regardless of which domain you choose.
 
-Bounce rate is the single fastest way to damage a domain, and on a main domain the damage is
-expensive. Snov.io includes an email verifier. **Run all 739 through it, remove everything
-that comes back invalid or risky, and only then start.** Budget an afternoon.
+These addresses came out of a scraped workbook and **not one has been validated.** I already
+found 22 that are definitely dead — an image filename, a GIF filename, `john@doe.com`, two
+typo TLDs. Those were the ones visible by reading. There will be more among the other 717
+that only a verifier catches.
 
-If the verifier kills more than ~10% of the list, tell me — that changes the timeline and I
+Bounce rate is the fastest way to damage a domain. Snov.io includes an email verifier. **Run
+all 739 through it, remove everything invalid or risky, and only then start.** Budget an
+afternoon. If it kills more than ~10% of the list, tell me — that changes the timeline and I
 will re-cut the daily plan.
 
-### Register the domain in Google Postmaster Tools
+### Register the sending domain in Google Postmaster Tools
 
-Free, takes ten minutes, and it is the only way to see your actual Gmail spam rate and domain
-reputation rather than guessing. Given where you're sending from, you want that dashboard
-open weekly. **Spam rate above 0.10% means stop immediately** — that is Google's own
-threshold and it is the number Postmaster Tools shows you directly.
+Free, ten minutes, and the only way to see your real Gmail spam rate rather than guessing.
+**Above 0.10% means stop immediately** — Google's own threshold, shown to you directly.
 
 ### One complaint is the stop signal, not a data point
 
-Across 739 addresses, 0.1% is less than one complaint. Whatever the standard would be on a
-throwaway domain, here it's zero tolerance: a complaint means suppress and pause, not "note
-it and continue."
+Across 739 addresses, 0.1% is less than one complaint. Suppress and pause, don't note it
+and continue.
 
-**What is already working in your favour:** Snov.io sends through the Google Workspace
-mailboxes themselves, not through a third-party relay. That means SPF, DKIM and DMARC stay
-aligned on your real domain — no alignment breakage, no "via" header in Gmail. Confirm all
-three are published and passing before wave 1, and keep your DMARC reports on.
+**What works in your favour either way:** Snov.io sends through the Google Workspace
+mailboxes themselves, not a third-party relay. SPF, DKIM and DMARC stay aligned on whichever
+domain you choose — no alignment breakage, no "via" header in Gmail. Confirm all three are
+published and passing before wave 1.
 
 ## 5 · Where replies actually land
 
@@ -210,21 +254,23 @@ types. The four-hour rule in it is the part that matters most.
 
 ## 6 · What is still blocking
 
-1. **Verify the list.** §4b. Nothing sends until this is done.
-2. **Pricing.** §2.2 of the reply playbook is a blank. The first person who replies
+1. **The domain decision.** §4b. Buy the `.com` variant, put a site on it, point the five
+   mailboxes at it. Everything else waits on this because warm-up restarts with it.
+2. **Verify the list.** §4b. Nothing sends until this is done.
+3. **Pricing.** §2.2 of the reply playbook is a blank. The first person who replies
    "how much?" gets a non-answer until you fill it in.
-3. **The BAA answer.** §2.6, same. Every serious medical buyer asks. "I'll check" costs the deal.
-4. **37 addresses to verify by hand** — the ones where the domain doesn't match the business
+4. **The BAA answer.** §2.6, same. Every serious medical buyer asks. "I'll check" costs the deal.
+5. **37 addresses to verify by hand** — the ones where the domain doesn't match the business
    name, which a verifier will pass because the mailbox is real but wrong. ~2 minutes each.
    Montclair Rejuvenation Center is 1,398 reviews and sits at the top of that list.
-5. **Google Postmaster Tools** registered, and SPF/DKIM/DMARC confirmed passing.
+6. **Google Postmaster Tools** registered, and SPF/DKIM/DMARC confirmed passing.
 
 ---
 
 ## 7 · Sequence
 
-1. **Let warm-up run its full 3–4 weeks.** Don't cut it short because the copy is ready.
-   On the main domain this is the part you least want to rush.
+1. **Buy the sending domain, put a site on it, create the five mailboxes there.** Then let
+   warm-up run its full 3–4 weeks. Don't cut it short because the copy is ready.
 2. **Verify all 739 through Snov.io's verifier.** Remove invalid and risky. Tell me the
    survivor count if it drops more than ~10%.
 3. **Register Google Postmaster Tools**, confirm SPF/DKIM/DMARC pass.
