@@ -43,6 +43,9 @@ export const icons = {
   inboxEmpty: (s) => wrap('<path d="M4 6h16v12H4z"/><path d="M4 12h4l1.5 2h5L16 12h4"/>', s),
   star: (s) => wrap('<path d="m12 4 2.4 5 5.6.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.6-.8L12 4z"/>', s),
   bell: (s) => wrap('<path d="M18 9a6 6 0 1 0-12 0c0 5-2 6-2 6h16s-2-1-2-6z"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>', s),
+  // The Microns mark: a measured aperture — three strokes narrowing to a
+  // point, for a product that measures and closes gaps.
+  micronsMark: (s) => wrap('<path d="M4 6.5h16"/><path d="M7 12h10"/><path d="M10.5 17.5h3"/>', s),
   building: (s) => wrap('<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 8h.01M15 8h.01M9 12h.01M15 12h.01M9 16h.01M15 16h.01"/>', s),
 };
 

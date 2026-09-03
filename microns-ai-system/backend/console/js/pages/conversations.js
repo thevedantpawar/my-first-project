@@ -267,7 +267,7 @@ function renderDetail(target, row) {
       el(
         "section.card",
         null,
-        sectionHeader({ title: "Message history" }),
+        sectionHeader({ ruled: true, title: "Message history" }),
         row.type === "call"
           ? note(
               row.transcript_available
@@ -284,7 +284,7 @@ function renderDetail(target, row) {
         ? el(
             "section.card",
             null,
-            sectionHeader({ title: "Why this needs you" }),
+            sectionHeader({ ruled: true, title: "Why this needs you" }),
             el("p.small.secondary", {
               text:
                 row.type === "call"

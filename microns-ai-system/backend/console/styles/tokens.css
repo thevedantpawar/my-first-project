@@ -4,90 +4,124 @@
    One source of truth for colour, type, space, radius, shadow and motion.
    Nothing below this file may hard-code a hex value or a pixel spacing.
 
-   The palette is deliberately narrow: a warm neutral ground, white surfaces,
-   one teal accent (the same #0F766E the chat widget already ships with), and
-   four semantic states. Colour carries meaning here — it is never decoration.
+   The V3 direction: a warm ivory ground rather than the sterile grey of an
+   admin console, teal used sparingly as a signal rather than a coat of paint,
+   and a single restrained champagne accent reserved for money. Surfaces are
+   separated by tone and space first, and by a border only where a border
+   actually communicates structure.
    ========================================================================== */
 
 :root {
-  /* --- Brand ------------------------------------------------------------ */
-  --accent-50: #EDF6F4;
-  --accent-100: #D6EAE6;
-  --accent-200: #A9D3CC;
-  --accent-400: #3E9186;
+  /* --- Brand -------------------------------------------------------------
+     The teal the chat widget already ships with, extended into a scale so
+     the accent can whisper as well as shout. */
+  --accent-subtle: #F1F7F5;
+  --accent-soft: #DFEDE9;
+  --accent-muted: #B4D5CD;
+  --accent-light: #4A9A8E;
   --accent: #0F766E;
-  --accent-strong: #0B5A54;
+  --accent-hover: #0C605A;
+  --accent-dark: #0A4B47;
   --accent-ink: #073F3B;
 
-  /* --- Neutrals (warm, so surfaces read as paper rather than plastic) ---- */
-  --ground: #F6F6F4;
-  --ground-sunken: #F0F0ED;
+  /* --- Champagne ---------------------------------------------------------
+     One supporting accent, reserved for money and for the rare premium
+     highlight. If it appears more than twice on a screen, it is wrong. */
+  --gold-subtle: #FAF6EE;
+  --gold-soft: #F0E6D2;
+  --gold: #A98240;
+  --gold-dark: #7C5D2A;
+
+  /* --- Ground and surfaces -----------------------------------------------
+     Warm neutrals. The page is ivory, cards are white, and sunken areas go
+     slightly darker than the page rather than lighter than the card. */
+  --bg: #F8F7F4;
+  --bg-tinted: #F5F4F0;
   --surface: #FFFFFF;
-  --surface-raised: #FFFFFF;
-  --surface-muted: #FAFAF9;
+  --surface-elevated: #FFFFFF;
+  --surface-muted: #FBFAF7;
+  --surface-sunken: #F1EFEA;
+  --surface-inverse: #1A1D1C;
 
-  /* Every one of these carries text, so every one clears WCAG AA (4.5:1)
-     against the lightest surface it can land on — #F0F0ED, the sunken grey.
-     Measured, not eyeballed: muted 4.95:1, faint 4.59:1. */
-  --ink: #16191C;
-  --ink-secondary: #4A5157;
-  --ink-muted: #61686F;
-  --ink-faint: #666D74;
-  --ink-inverse: #FFFFFF;
+  /* --- Ink ---------------------------------------------------------------
+     Every one carries text, so every one clears WCAG AA (4.5:1) against the
+     darkest ground it can land on — #F1EFEA, the sunken surface. Measured,
+     not eyeballed: muted 4.72:1, faint 4.71:1. */
+  --text: #14171A;
+  --text-secondary: #454B50;
+  --text-muted: #5E656B;
+  --text-faint: #646B71;
+  --text-inverse: #FFFFFF;
+  --text-on-accent: #FFFFFF;
 
-  --line: #E6E6E2;
-  --line-strong: #D6D6D1;
-  --line-faint: #EFEFEC;
+  /* --- Lines -------------------------------------------------------------
+     Deliberately few. Prefer tone and space; reach for a border only when it
+     separates two things that would otherwise be read as one. */
+  --border: #E4E1DA;
+  --border-subtle: #EDEBE5;
+  --border-strong: #D3CFC5;
+  --border-accent: var(--accent-muted);
 
-  /* --- Semantic states -------------------------------------------------- */
-  --positive: #2C7A5E;
-  --positive-bg: #EAF4EF;
-  --positive-line: #C3E0D3;
+  /* --- Semantic states ---------------------------------------------------
+     Red is reserved for things that have actually gone wrong. Intent and
+     priority use the accent and amber instead. */
+  --success: #2C7A5E;
+  --success-bg: #EDF5F1;
+  --success-line: #C6DFD4;
 
-  --attention: #96650F;
-  --attention-bg: #FBF3E3;
-  --attention-line: #EBD9B4;
+  --warning: #8A6412;
+  --warning-bg: #FAF3E4;
+  --warning-line: #E9DAB6;
 
-  --critical: #A93226;
-  --critical-bg: #FBEDEB;
-  --critical-line: #EFCFCA;
+  --danger: #A63428;
+  --danger-bg: #FBEEEC;
+  --danger-line: #EFD0CB;
 
-  --info: #2A5D8F;
-  --info-bg: #EDF3F9;
-  --info-line: #CBDCEC;
+  --info: #2A5A87;
+  --info-bg: #EDF2F8;
+  --info-line: #CBDAEA;
 
-  --neutral-bg: #F1F1EE;
-  --neutral-line: #E0E0DB;
+  --neutral-bg: #F2F0EB;
+  --neutral-line: #E2DFD8;
 
-  /* --- Typography ------------------------------------------------------- */
+  /* --- Typography --------------------------------------------------------
+     One family, used at real weights. Inter where the machine has it, a
+     genuinely good system stack where it does not — no webfont request from
+     a page served alongside a PHI API. */
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
-  --text-display: 2.75rem;   /* hero metric */
-  --text-3xl: 1.75rem;       /* page title */
-  --text-2xl: 1.375rem;      /* metric */
-  --text-xl: 1.125rem;       /* section heading */
-  --text-lg: 1rem;           /* card heading */
+  --text-display: 3rem;      /* the one number a page is about */
+  --text-hero: 2.25rem;
+  --text-3xl: 1.9375rem;     /* page title */
+  --text-2xl: 1.5rem;
+  --text-xl: 1.25rem;        /* section heading */
+  --text-lg: 1.0625rem;
+  --text-md: 0.9375rem;      /* card heading */
   --text-base: 0.9375rem;    /* body */
-  --text-sm: 0.875rem;       /* secondary */
-  --text-xs: 0.8125rem;      /* caption */
-  --text-2xs: 0.6875rem;     /* label / eyebrow */
+  --text-sm: 0.875rem;
+  --text-xs: 0.8125rem;      /* metadata */
+  --text-2xs: 0.75rem;
+  --text-3xs: 0.6875rem;     /* eyebrow / micro label */
 
-  --leading-tight: 1.15;
-  --leading-snug: 1.35;
+  --leading-none: 1;
+  --leading-tight: 1.14;
+  --leading-snug: 1.34;
   --leading-normal: 1.55;
+  --leading-relaxed: 1.65;
 
   --weight-regular: 400;
   --weight-medium: 500;
   --weight-semibold: 600;
-  --weight-bold: 680;
+  --weight-bold: 660;
 
-  --tracking-label: 0.07em;
-  --tracking-tight: -0.02em;
-  --tracking-display: -0.03em;
+  --tracking-display: -0.032em;
+  --tracking-tight: -0.018em;
+  --tracking-snug: -0.008em;
+  --tracking-label: 0.08em;
 
-  /* --- Space (4px base) -------------------------------------------------- */
+  /* --- Space (4px base) --------------------------------------------------- */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -98,34 +132,37 @@
   --space-8: 2.5rem;
   --space-9: 3rem;
   --space-10: 4rem;
+  --space-11: 5rem;
 
-  /* --- Radius ------------------------------------------------------------ */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
+  /* --- Radius ------------------------------------------------------------- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
   --radius-pill: 999px;
 
   /* --- Elevation ---------------------------------------------------------
-     Two soft layers rather than one hard shadow: quality comes from the
-     hairline, not from the blur. */
-  --shadow-sm: 0 1px 2px rgba(22, 25, 28, 0.04), 0 1px 1px rgba(22, 25, 28, 0.03);
-  --shadow-md: 0 2px 4px rgba(22, 25, 28, 0.04), 0 8px 20px rgba(22, 25, 28, 0.05);
-  --shadow-lg: 0 4px 8px rgba(22, 25, 28, 0.05), 0 20px 48px rgba(22, 25, 28, 0.10);
+     Almost invisible by design. Quality comes from the hairline and the
+     tone, not from the blur. */
+  --shadow-sm: 0 1px 2px rgba(20, 23, 26, 0.04);
+  --shadow-md: 0 1px 2px rgba(20, 23, 26, 0.04), 0 6px 16px -6px rgba(20, 23, 26, 0.08);
+  --shadow-lg: 0 2px 4px rgba(20, 23, 26, 0.04), 0 18px 40px -12px rgba(20, 23, 26, 0.14);
+  --shadow-hover: 0 2px 4px rgba(20, 23, 26, 0.05), 0 12px 28px -10px rgba(20, 23, 26, 0.14);
   --shadow-focus: 0 0 0 3px rgba(15, 118, 110, 0.18);
 
-  /* --- Motion ------------------------------------------------------------ */
+  /* --- Motion ------------------------------------------------------------- */
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
-  --duration-fast: 120ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
   --duration: 200ms;
-  --duration-slow: 320ms;
+  --duration-slow: 250ms;
 
-  /* --- Layout ------------------------------------------------------------ */
-  --sidebar-width: 264px;
-  --topbar-height: 64px;
-  --content-max: 1320px;
+  /* --- Layout ------------------------------------------------------------- */
+  --sidebar-width: 252px;
+  --topbar-height: 60px;
+  --content-max: 1360px;
 
-  /* --- Z-index ----------------------------------------------------------- */
+  /* --- Z-index ------------------------------------------------------------ */
   --z-sidebar: 40;
   --z-topbar: 30;
   --z-drawer: 60;

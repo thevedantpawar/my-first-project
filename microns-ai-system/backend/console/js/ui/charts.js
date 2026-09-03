@@ -251,3 +251,82 @@ export function columns({ points, height = 120, formatValue = fmt.number, ariaLa
     )
   );
 }
+
+/* -------------------------------------------------------------------------
+   Area sparkline — the micro-chart in the revenue hero.
+   ------------------------------------------------------------------------- */
+export function sparkline({ points, height = 76, ariaLabel, accent = "var(--accent)" }) {
+  const values = points.map((point) => point.value);
+  const total = values.reduce((sum, value) => sum + value, 0);
+
+  if (!points.length || total === 0) {
+    return el("p.xsmall.muted", { text: "No activity recorded in this period." });
+  }
+
+  const width = 320;
+  // Inset the plot so the stroke and the end marker are not sliced off by the
+  // viewBox edge — a chart clipped at its most interesting point is a bug.
+  const pad = 5;
+  const plot = width - pad * 2;
+  const max = Math.max(...values, 1);
+  const step = points.length > 1 ? plot / (points.length - 1) : plot;
+  const x = (index) => pad + index * step;
+  const y = (value) => height - pad - (value / max) * (height - pad * 3);
+
+  const line = points.map((point, index) => `${x(index)},${y(point.value)}`).join(" ");
+  const area = `${line} ${x(points.length - 1)},${height} ${x(0)},${height}`;
+
+  const gradientId = `spark-${Math.random().toString(36).slice(2, 9)}`;
+  const root = svg("svg", {
+    viewBox: `0 0 ${width} ${height}`,
+    width: "100%",
+    height,
+    preserveAspectRatio: "none",
+    role: "img",
+    "aria-label": ariaLabel || "Activity over the period",
+  });
+
+  const defs = svg("defs");
+  const gradient = svg("linearGradient", { id: gradientId, x1: "0", y1: "0", x2: "0", y2: "1" });
+  gradient.appendChild(svg("stop", { offset: "0%", "stop-color": accent, "stop-opacity": "0.20" }));
+  gradient.appendChild(svg("stop", { offset: "100%", "stop-color": accent, "stop-opacity": "0" }));
+  defs.appendChild(gradient);
+  root.appendChild(defs);
+
+  root.appendChild(svg("polygon", { points: area, fill: `url(#${gradientId})` }));
+  root.appendChild(
+    svg("polyline", {
+      points: line,
+      fill: "none",
+      stroke: accent,
+      "stroke-width": 1.75,
+      "stroke-linejoin": "round",
+      "stroke-linecap": "round",
+    })
+  );
+
+  // The final point is emphasised — it is the reading the eye is looking for.
+  const last = points[points.length - 1];
+  root.appendChild(
+    svg("circle", {
+      cx: x(points.length - 1),
+      cy: y(last.value),
+      r: 3,
+      fill: "var(--surface)",
+      stroke: accent,
+      "stroke-width": 2,
+    })
+  );
+
+  return el(
+    "figure",
+    { style: { margin: 0, minWidth: 0 } },
+    root,
+    el(
+      "figcaption.xsmall.muted",
+      { style: { display: "flex", justifyContent: "space-between", marginTop: "var(--space-2)" } },
+      el("span", { text: fmt.dateOnly(points[0].date) }),
+      el("span", { text: `${fmt.number(total)} total` })
+    )
+  );
+}

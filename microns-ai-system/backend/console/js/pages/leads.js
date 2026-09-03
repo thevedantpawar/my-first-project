@@ -162,10 +162,10 @@ export async function renderLeads(container) {
   );
 }
 
-function scoreTone(score) {
-  if (score >= 80) return "positive";
-  if (score >= 50) return "attention";
-  return "info";
+/* One data colour. The number beside the bar already carries the value, so a
+   three-colour bar adds a second encoding of the same thing. */
+function scoreTone() {
+  return "accent";
 }
 
 /* -------------------------------------------------------------------------
@@ -279,7 +279,7 @@ function journeyCard(lead) {
   return el(
     "section.card",
     null,
-    sectionHeader({ title: "Customer journey" }),
+    sectionHeader({ ruled: true, title: "Customer journey" }),
     timelineList(lead.journey || [])
   );
 }
@@ -290,6 +290,7 @@ function activityCard(lead) {
     "section.card",
     null,
     sectionHeader({
+      ruled: true,
       title: "Conversation",
       subtitle: conversation.currently_asking || "Qualification complete",
     }),
@@ -326,7 +327,7 @@ function profileCard(lead) {
   return el(
     "section.card",
     null,
-    sectionHeader({ title: "Client" }),
+    sectionHeader({ ruled: true, title: "Client" }),
     keyValues([
       ["Name", lead.display_name],
       ["Phone", lead.masked_phone || "Not provided"],
@@ -349,7 +350,7 @@ function answersCard(lead) {
   return el(
     "section.card",
     null,
-    sectionHeader({ title: "What they told us" }),
+    sectionHeader({ ruled: true, title: "What they told us" }),
     keyValues([
       ["Treatment", lead.treatment_label],
       ["Had it before", yesNo(answers.previous_experience)],

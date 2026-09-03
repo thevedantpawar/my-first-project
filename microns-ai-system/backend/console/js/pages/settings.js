@@ -120,7 +120,7 @@ function connectionsTab(system) {
       ? el(
           "section.card",
           null,
-          sectionHeader({ title: "Setup warnings", subtitle: "Reported by the engine at startup." }),
+          sectionHeader({ ruled: true, title: "Setup warnings", subtitle: "Reported by the engine at startup." }),
           el(
             "ul.stack.stack--tight",
             null,
@@ -185,7 +185,7 @@ function clinicTab(system) {
     el(
       "section.card",
       null,
-      sectionHeader({ title: "Business details" }),
+      sectionHeader({ ruled: true, title: "Business details" }),
       keyValues([
         ["Clinic name", system.clinic.name],
         ["Time zone", system.clinic.timezone],
@@ -213,7 +213,7 @@ function behaviourTab(system) {
     el(
       "section.card",
       null,
-      sectionHeader({ title: "When your team reaches out", subtitle: "The timings the automations follow." }),
+      sectionHeader({ ruled: true, title: "When your team reaches out", subtitle: "The timings the automations follow." }),
       keyValues([
         [
           "Dormant after",
@@ -241,7 +241,7 @@ function behaviourTab(system) {
     el(
       "section.card",
       null,
-      sectionHeader({ title: "Safety rules that cannot be turned off" }),
+      sectionHeader({ ruled: true, title: "Safety rules that cannot be turned off" }),
       el(
         "ul.stack.stack--tight",
         null,
@@ -276,7 +276,7 @@ function advancedTab(system, health) {
     el(
       "section.card",
       null,
-      sectionHeader({ title: "System", subtitle: "For whoever runs this deployment." }),
+      sectionHeader({ ruled: true, title: "System", subtitle: "For whoever runs this deployment." }),
       keyValues([
         ["Version", el("span.code", { text: health.version })],
         ["Environment", el("span.code", { text: system.environment })],
@@ -289,7 +289,7 @@ function advancedTab(system, health) {
     el(
       "section.card",
       null,
-      sectionHeader({ title: "Data protection" }),
+      sectionHeader({ ruled: true, title: "Data protection" }),
       keyValues([
         [
           "Encryption key",
@@ -325,7 +325,7 @@ function advancedTab(system, health) {
     el(
       "section.card",
       null,
-      sectionHeader({ title: "Developer interfaces" }),
+      sectionHeader({ ruled: true, title: "Developer interfaces" }),
       el(
         "div.row.row--wrap",
         { style: { gap: "var(--space-2)" } },

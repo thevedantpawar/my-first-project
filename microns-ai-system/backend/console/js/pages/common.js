@@ -61,45 +61,91 @@ export async function renderAsync(target, loader, render, { skeleton, context } 
    Opportunities page, so the two never drift apart.
    ------------------------------------------------------------------------- */
 const TONE_BADGE = { urgent: "critical", attention: "attention", info: "info" };
+const PRIORITY = {
+  urgent: { label: "High priority", tone: "critical" },
+  attention: { label: "Medium", tone: "attention" },
+  info: { label: "Low", tone: "neutral" },
+};
 
+const KIND_ICONS = {
+  high_intent_lead: "sparkle",
+  warm_lead: "leads",
+  no_show: "refresh",
+  dormant: "clock",
+  review: "star",
+  callback: "phone",
+  unconfirmed: "calendar",
+};
+
+/**
+ * The opportunity card, used on both the dashboard and the Opportunities
+ * page so the two never drift apart.
+ *
+ * Priority is carried by a word and an icon as well as a colour — a card that
+ * only signals urgency in red is unreadable to a good share of owners.
+ */
 export function opportunityCard(item, { onOpen, onAct, compact = false } = {}) {
-  const tone = TONE_BADGE[item.tone] || "neutral";
+  const priority = PRIORITY[item.tone] || PRIORITY.info;
   const waiting = item.waiting_hours ? fmt.relativeFromHours(item.waiting_hours) : null;
 
   return el(
     "article.card",
-    { style: { display: "flex", flexDirection: "column", gap: "var(--space-4)" } },
+    {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--space-4)",
+        padding: "var(--space-5)",
+      },
+    },
     el(
       "div.row.row--between",
       { style: { alignItems: "flex-start", gap: "var(--space-3)" } },
       el(
-        "div.stack.stack--tight",
-        { style: { minWidth: 0 } },
+        "div.row",
+        { style: { gap: "var(--space-3)", minWidth: 0, alignItems: "flex-start" } },
         el(
-          "div.row",
-          { style: { gap: "var(--space-2)", flexWrap: "wrap" } },
-          badge(item.kind_label, tone, { dot: true }),
-          ...(item.flags || []).map((flag) => badge(flag, "neutral"))
+          "span",
+          {
+            style: {
+              width: "34px",
+              height: "34px",
+              borderRadius: "var(--radius-sm)",
+              background: `var(--${priority.tone === "critical" ? "danger" : priority.tone === "attention" ? "warning" : "neutral"}-bg)`,
+              color: `var(--${priority.tone === "critical" ? "danger" : priority.tone === "attention" ? "warning" : "text-muted"})`,
+              display: "grid",
+              placeItems: "center",
+              flex: "none",
+            },
+          },
+          icon(KIND_ICONS[item.kind] || "opportunity", 17)
         ),
-        el("p.card-title", { style: { marginTop: "var(--space-2)" }, text: item.subject }),
-        el("p.small.secondary", { text: item.detail })
+        el(
+          "div.stack",
+          { style: { gap: "2px", minWidth: 0 } },
+          el("span.eyebrow", { text: item.kind_label }),
+          el("p.card-title", { text: item.subject }),
+          el("p.small.muted", { text: item.detail })
+        )
       ),
-      waiting
-        ? el(
-            "span.xsmall.muted.row",
-            { style: { gap: "var(--space-1)", whiteSpace: "nowrap" } },
-            icon("clock", 13),
-            el("span", { text: waiting })
-          )
-        : null
+      el(
+        "div.stack",
+        { style: { gap: "var(--space-2)", alignItems: "flex-end", flex: "none" } },
+        badge(priority.label, priority.tone),
+        waiting ? el("span.xsmall.muted", { style: { whiteSpace: "nowrap" }, text: waiting }) : null
+      )
     ),
     compact ? null : el("p.xsmall.muted", { text: item.why }),
+    (item.flags || []).length
+      ? el("div.row.row--wrap", { style: { gap: "var(--space-2)" } }, item.flags.map((flag) => badge(flag, "neutral")))
+      : null,
     el(
       "div",
       {
         style: {
-          borderTop: "1px solid var(--line-faint)",
+          borderTop: "1px solid var(--border-subtle)",
           paddingTop: "var(--space-4)",
+          marginTop: "auto",
           display: "flex",
           gap: "var(--space-3)",
           alignItems: "center",
@@ -116,9 +162,7 @@ export function opportunityCard(item, { onOpen, onAct, compact = false } = {}) {
       el(
         "div.row",
         { style: { gap: "var(--space-2)" } },
-        onOpen
-          ? button({ label: "View", variant: "secondary", size: "sm", onClick: () => onOpen(item) })
-          : null,
+        onOpen ? button({ label: "View", variant: "secondary", size: "sm", onClick: () => onOpen(item) }) : null,
         actionButton(item, onAct)
       )
     )

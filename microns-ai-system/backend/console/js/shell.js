@@ -133,7 +133,7 @@ export function renderSignIn(container, { onSuccess, reason }) {
         el(
           "div.stack.stack--tight",
           { style: { textAlign: "center", alignItems: "center" } },
-          el("div.brand-mark", { style: { width: "44px", height: "44px" } }, icon("sparkle", 22)),
+          el("div.brand-mark", { style: { width: "46px", height: "46px", borderRadius: "12px" } }, icon("micronsMark", 22)),
           el("p.eyebrow", { style: { marginTop: "var(--space-3)" }, text: "Microns" }),
           el("h1.page-title", { text: "Revenue Engine" }),
           el("p.page-subtitle", {
@@ -200,7 +200,7 @@ export function renderShell(container, { onSignOut }) {
     el(
       "div.sidebar__brand",
       null,
-      el("span.brand-mark", null, icon("sparkle", 18)),
+      el("span.brand-mark", null, icon("micronsMark", 17)),
       el(
         "span.brand-text",
         null,

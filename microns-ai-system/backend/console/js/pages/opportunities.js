@@ -13,10 +13,12 @@ import {
   keyValues,
   note,
   pageHeader,
+  sectionHeader,
   skeletonCards,
   timeline as timelineList,
   skeletonLines,
 } from "../ui/components.js";
+import { icon } from "../icons.js";
 import { openDrawer, setDrawerBody, closeDrawer } from "../ui/overlays.js";
 import { navigate } from "../router.js";
 import {
@@ -43,13 +45,15 @@ export async function renderOpportunities(container) {
   const body = el("div");
   const filterSlot = el("div", { style: { marginBottom: "var(--space-5)" } });
 
+  const summarySlot = el("div", { style: { marginBottom: "var(--space-6)" } });
+
   container.replaceChildren(
     pageHeader({
       eyebrow: "Revenue recovery",
-      title: "Opportunities",
-      subtitle:
-        "Every lead, missed visit and unanswered question your engine has surfaced — with the action it recommends.",
+      title: "Revenue opportunities",
+      subtitle: "Business your AI team can help recover or convert, ranked by what is most worth your minute.",
     }),
+    summarySlot,
     filterSlot,
     body
   );
@@ -75,6 +79,8 @@ export async function renderOpportunities(container) {
           },
         })
       );
+
+      summarySlot.replaceChildren(prioritySummary(items));
 
       const visible =
         activeFilter === "all" ? items : items.filter((item) => item.kind === activeFilter);
@@ -116,6 +122,65 @@ export async function renderOpportunities(container) {
       );
     },
     { skeleton: () => skeletonCards(3, { tall: true }), context: "Couldn't load your opportunities" }
+  );
+}
+
+/**
+ * A band above the list summarising what is waiting.
+ *
+ * Counts only. The engine records no monetary value against an opportunity,
+ * so this does not print one — a "potential value" figure would be invented.
+ */
+function prioritySummary(items) {
+  const urgent = items.filter((item) => item.tone === "urgent").length;
+  const attention = items.filter((item) => item.tone === "attention").length;
+  const rest = items.length - urgent - attention;
+
+  if (!items.length) return el("div");
+
+  const stat = (value, label, tone) =>
+    el(
+      "div.stack",
+      { style: { gap: "2px", minWidth: 0 } },
+      el(
+        "span.row",
+        { style: { gap: "var(--space-2)" } },
+        el("span", {
+          style: {
+            width: "7px",
+            height: "7px",
+            borderRadius: "50%",
+            background: `var(--${tone})`,
+            flex: "none",
+          },
+        }),
+        el("span.metric__value", { style: { fontSize: "var(--text-2xl)" }, text: fmt.number(value) })
+      ),
+      el("span.xsmall.muted", { text: label })
+    );
+
+  return el(
+    "div.panel",
+    {
+      style: {
+        display: "flex",
+        gap: "var(--space-8)",
+        alignItems: "center",
+        flexWrap: "wrap",
+        padding: "var(--space-5) var(--space-6)",
+      },
+    },
+    el(
+      "div.stack",
+      { style: { gap: "2px", flex: "1 1 240px", minWidth: 0 } },
+      el("span.eyebrow", { text: "Waiting on a person" }),
+      el("p.small.secondary", {
+        text: `${fmt.pluralise(items.length, "opportunity", "opportunities")} your engine has surfaced and not been able to close on its own.`,
+      })
+    ),
+    stat(urgent, "High priority", "danger"),
+    stat(attention, "Medium", "warning"),
+    stat(rest, "Low", "text-faint")
   );
 }
 

@@ -197,8 +197,81 @@ class ConsoleService:
                 "ai_share": _rate(ai_booked, booked_total),
             },
             "messages_sent": messages_sent,
+            "trend": {
+                "leads": self._movement(Lead, Lead.created_at, days),
+                "appointments": self._movement(Appointment, Appointment.created_at, days),
+                "calls": self._movement(VoiceCall, VoiceCall.created_at, days),
+            },
+            "activity": {
+                "leads": self._daily_series(Lead, Lead.created_at, min(days, 30)),
+                "appointments": self._daily_series(
+                    Appointment, Appointment.created_at, min(days, 30)
+                ),
+            },
             "generated_at": utcnow().isoformat() + "Z",
         }
+
+    # ------------------------------------------------------------------ #
+    # Trend and activity, both counted rather than modelled
+    # ------------------------------------------------------------------ #
+    def _movement(self, model, column, days: int) -> dict[str, Any]:
+        """This period against the one immediately before it.
+
+        Returned as ``None`` percentages rather than zeroes when there is
+        nothing to compare against: a clinic's first week has no "vs previous
+        period", and an arrow pointing at 0% would be an invented claim.
+        """
+        now = utcnow()
+        start = now - timedelta(days=days)
+        previous_start = now - timedelta(days=days * 2)
+
+        current = self._count(
+            select(func.count(model.id)).where(column >= start, column <= now)
+        )
+        previous = self._count(
+            select(func.count(model.id)).where(column >= previous_start, column < start)
+        )
+
+        if previous == 0:
+            # No baseline. The UI shows the count with no arrow.
+            change = None
+        else:
+            change = round(((current - previous) / previous) * 100, 1)
+
+        return {
+            "current": current,
+            "previous": previous,
+            "change_percent": change,
+            "direction": (
+                None if change is None else "up" if change > 0 else "down" if change < 0 else "flat"
+            ),
+            "comparable": previous > 0,
+        }
+
+    def _daily_series(self, model, column, days: int) -> list[dict[str, Any]]:
+        """One bucket per day across the window, zero-filled.
+
+        Zero-filled so a quiet Tuesday is a gap in the chart rather than a
+        missing point that would flatter the shape.
+        """
+        now = utcnow()
+        start = (now - timedelta(days=days - 1)).replace(hour=0, minute=0, second=0, microsecond=0)
+
+        rows = (
+            self.db.execute(select(column).where(column >= start, column <= now)).scalars().all()
+        )
+        buckets: dict[str, int] = {}
+        for index in range(days):
+            day = (start + timedelta(days=index)).date().isoformat()
+            buckets[day] = 0
+        for value in rows:
+            if value is None:
+                continue
+            key = value.date().isoformat()
+            if key in buckets:
+                buckets[key] += 1
+
+        return [{"date": day, "value": count} for day, count in buckets.items()]
 
     # ------------------------------------------------------------------ #
     # Opportunities

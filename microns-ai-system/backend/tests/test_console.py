@@ -358,3 +358,55 @@ def test_the_console_page_is_not_a_way_around_authentication(client):
     """Serving the shell is fine; serving data without a token is not."""
     assert client.get("/console").status_code == 200
     assert client.get("/console/api/overview").status_code == 401
+
+
+# --------------------------------------------------------------------- #
+# Trend and activity — the data behind the V3 hero modules
+# --------------------------------------------------------------------- #
+def test_a_trend_with_no_baseline_reports_no_change(client, staff_headers, db):
+    """A clinic's first week has no "vs previous period" to compare against."""
+    lead = Lead(session_id="t1", conversation_state={}, score_breakdown={})
+    db.add(lead)
+    db.commit()
+
+    trend = client.get("/console/api/overview", headers=staff_headers).json()["trend"]["leads"]
+
+    assert trend["current"] == 1
+    assert trend["previous"] == 0
+    # None, not 0 and not 100 — the console draws no arrow at all for this.
+    assert trend["change_percent"] is None
+    assert trend["direction"] is None
+    assert trend["comparable"] is False
+
+
+def test_a_trend_compares_against_the_preceding_window(client, staff_headers, db):
+    now = utcnow()
+    # Two leads in the current 30 days, one in the 30 before it.
+    for created in (now - timedelta(days=2), now - timedelta(days=5), now - timedelta(days=40)):
+        lead = Lead(session_id=f"t-{created.timestamp()}", conversation_state={}, score_breakdown={})
+        lead.created_at = created
+        db.add(lead)
+    db.commit()
+
+    trend = client.get("/console/api/overview", headers=staff_headers).json()["trend"]["leads"]
+
+    assert trend["current"] == 2
+    assert trend["previous"] == 1
+    assert trend["change_percent"] == 100.0
+    assert trend["direction"] == "up"
+    assert trend["comparable"] is True
+
+
+def test_activity_is_zero_filled_across_the_window(client, staff_headers, db):
+    """A quiet day must be a zero in the series, not a missing point."""
+    lead = Lead(session_id="a1", conversation_state={}, score_breakdown={})
+    db.add(lead)
+    db.commit()
+
+    activity = client.get("/console/api/overview", headers=staff_headers).json()["activity"]["leads"]
+
+    assert len(activity) == 30
+    assert sum(point["value"] for point in activity) == 1
+    assert all("date" in point and "value" in point for point in activity)
+    # Ordered oldest to newest, so a chart can plot it straight through.
+    assert [point["date"] for point in activity] == sorted(point["date"] for point in activity)

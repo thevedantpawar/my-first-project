@@ -138,7 +138,7 @@ function openWorkflow(workflow) {
       el(
         "section.stack",
         null,
-        sectionHeader({ title: "Steps" }),
+        sectionHeader({ ruled: true, title: "Steps" }),
         el(
           "ol.stack.stack--tight",
           null,
@@ -172,7 +172,7 @@ function openWorkflow(workflow) {
       el(
         "section.stack",
         null,
-        sectionHeader({ title: "Activity" }),
+        sectionHeader({ ruled: true, title: "Activity" }),
         keyValues([
           ["Actions in 30 days", fmt.number(workflow.actions_30d)],
           ["On/off state", el("span", null, modeBadge("unknown"))],

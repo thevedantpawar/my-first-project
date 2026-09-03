@@ -14,14 +14,14 @@ import * as fmt from "../format.js";
 import { load, state } from "../store.js";
 import {
   badge,
-  heroMetric,
+  revenueHero,
   metricCard,
   note,
   pageHeader,
   sectionHeader,
   skeletonCards,
 } from "../ui/components.js";
-import { barList, funnel } from "../ui/charts.js";
+import { barList, funnel, sparkline } from "../ui/charts.js";
 import { renderAsync, coverageNote } from "./common.js";
 
 const ATTRIBUTION_LABELS = {
@@ -53,7 +53,7 @@ export async function renderRevenue(container) {
       return el(
         "div.stack.stack--loose",
         null,
-        heroMetric({
+        revenueHero({
           eyebrow: "Completed appointment value",
           value: priced ? fmt.money(revenue.completed.cents) : "Not recorded",
           empty: !priced,
@@ -63,19 +63,36 @@ export async function renderRevenue(container) {
           note: priced
             ? undefined
             : "This engine does not require a price on an appointment, and none of yours carry one. Record prices — through your practice calendar or the appointment record — and this figure fills in. Everything else on this page is counted, not estimated.",
-          side: el(
-            "div.row",
-            { style: { gap: "var(--space-7)", flexWrap: "wrap" } },
-            sideMetric(
-              "Recovered appointments",
-              fmt.number(revenue.recovered_appointments),
-              "won back after a missed visit or a lapse"
-            ),
-            sideMetric(
-              "Booked by your AI",
-              fmt.number(revenue.attribution.ai_booked.count),
-              `of ${fmt.number(revenue.coverage.appointments)} created in this period`
-            )
+          stats: [
+            {
+              label: "Recovered",
+              value: fmt.number(revenue.recovered_appointments),
+              foot: "appointments won back",
+            },
+            {
+              label: "Booked by your AI",
+              value: fmt.number(revenue.attribution.ai_booked.count),
+              foot: `of ${fmt.number(revenue.coverage.appointments)} created`,
+            },
+            {
+              label: "Scheduled",
+              value: fmt.number(revenue.scheduled.count),
+              foot: "pending or confirmed",
+            },
+            {
+              label: "Completion rate",
+              value: fmt.percent(overview.engine.appointments.completion_rate, { digits: 1 }),
+              foot: `${fmt.number(overview.engine.appointments.completed)} completed`,
+            },
+          ],
+          aside: el(
+            "div.stack.stack--tight",
+            null,
+            el("span.eyebrow", { text: "Appointments created" }),
+            sparkline({
+              points: overview.activity?.appointments || [],
+              ariaLabel: "Appointments created per day over the period",
+            })
           ),
         }),
 
@@ -85,6 +102,7 @@ export async function renderRevenue(container) {
           "section.section",
           null,
           sectionHeader({
+            ruled: true,
             title: "Where the bookings came from",
             subtitle: "Counted from the source recorded on each appointment — not inferred.",
           }),
@@ -113,7 +131,7 @@ export async function renderRevenue(container) {
               null,
               ...Object.entries(revenue.attribution).map(([key, value]) =>
                 el(
-                  "div.card.card--quiet",
+                  "div.panel",
                   null,
                   el("p.small", { style: { fontWeight: "var(--weight-semibold)" }, text: ATTRIBUTION_LABELS[key][0] }),
                   el("p.xsmall.muted", { text: ATTRIBUTION_LABELS[key][1] }),
@@ -133,6 +151,7 @@ export async function renderRevenue(container) {
           "section.section",
           null,
           sectionHeader({
+            ruled: true,
             title: "Your funnel",
             subtitle: `Each stage counted from its own records over the last ${revenue.window_days} days.`,
           }),
@@ -184,7 +203,7 @@ export async function renderRevenue(container) {
         el(
           "section.section",
           null,
-          sectionHeader({ title: "Still on the books", subtitle: "Scheduled but not yet completed." }),
+          sectionHeader({ title: "Still on the books", subtitle: "Scheduled but not yet completed.", ruled: true }),
           el(
             "div.grid.grid--3",
             null,
@@ -233,12 +252,3 @@ function appointmentStages(rows) {
     }));
 }
 
-function sideMetric(label, value, foot) {
-  return el(
-    "div.stack",
-    { style: { gap: "2px" } },
-    el("span.eyebrow", { text: label }),
-    el("span.metric__value", { text: value }),
-    el("span.xsmall.muted", { style: { maxWidth: "22ch", display: "block" }, text: foot })
-  );
-}

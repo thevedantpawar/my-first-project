@@ -97,7 +97,7 @@ export async function renderTestCenter(container) {
       "These runs use your live engine. Each one creates a real lead record you will see on the Leads page, and a hot result triggers the same follow-up a real enquiry would. Nothing is faked, so nothing is free of consequence — use test names and test numbers.",
       "warn"
     ),
-    el("div.section", null, sectionHeader({ title: "Scenarios" }), scenarioSlot),
+    el("div.section", null, sectionHeader({ ruled: true, title: "Scenarios" }), scenarioSlot),
     el("div.section", null, output)
   );
 
@@ -295,9 +295,9 @@ function outcomeNode(result, sessionId) {
     "div",
     { style: { marginTop: "var(--space-5)" } },
     el(
-      "div.card.card--quiet",
+      "div.panel",
       null,
-      sectionHeader({ title: "What the engine decided" }),
+      sectionHeader({ ruled: true, title: "What the engine decided" }),
       keyValues([
         ["Outcome", badge(fmt.statusLabel(result.status), tone, { dot: true })],
         ["Score", result.score === null || result.score === undefined ? fmt.EMPTY : `${result.score}/100`],

@@ -126,6 +126,11 @@ export function pluralise(count, singular, plural) {
   return `${number(count)} ${count === 1 ? singular : plural || `${singular}s`}`;
 }
 
+/** "Thursday, 3 September" — the date an owner would say out loud. */
+export function today(date = new Date()) {
+  return date.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
+}
+
 /** "Good morning" / "Good afternoon" / "Good evening" for the local clock. */
 export function greeting(date = new Date()) {
   const hour = date.getHours();

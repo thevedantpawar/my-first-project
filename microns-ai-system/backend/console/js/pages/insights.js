@@ -61,6 +61,7 @@ export async function renderInsights(container) {
           "section.section",
           null,
           sectionHeader({
+            ruled: true,
             title: "Performance",
             subtitle: "The four numbers most worth watching week to week.",
           }),
@@ -100,9 +101,9 @@ export async function renderInsights(container) {
                 el(
                   "div.row.row--wrap",
                   { style: { gap: "var(--space-2)" } },
-                  badge(`${fmt.number(overview.leads.hot)} high intent`, "critical"),
+                  badge(`${fmt.number(overview.leads.hot)} high intent`, "accent"),
                   badge(`${fmt.number(overview.leads.warm)} medium`, "attention"),
-                  badge(`${fmt.number(overview.leads.cold)} low`, "info")
+                  badge(`${fmt.number(overview.leads.cold)} low`, "neutral")
                 )
               )
             )
@@ -112,7 +113,7 @@ export async function renderInsights(container) {
         el(
           "section.section",
           null,
-          sectionHeader({ title: "Messages your engine sent", subtitle: "Reminders, recovery, reviews and follow-ups." }),
+          sectionHeader({ ruled: true, title: "Messages your engine sent", subtitle: "Reminders, recovery, reviews and follow-ups." }),
           el(
             "div.grid.grid--4",
             null,

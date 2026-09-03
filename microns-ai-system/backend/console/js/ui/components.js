@@ -27,9 +27,9 @@ export function pageHeader({ eyebrow, title, subtitle, actions }) {
   );
 }
 
-export function sectionHeader({ title, subtitle, actions, id }) {
+export function sectionHeader({ title, subtitle, actions, id, ruled = false }) {
   return el(
-    "div.section-header",
+    ruled ? "div.section-header.section-header--ruled" : "div.section-header",
     null,
     el(
       "div.section-header__text",
@@ -152,57 +152,96 @@ export function card({ children, className = "", ...rest }) {
   return el("section", { class: `card ${className}`.trim(), ...rest }, children);
 }
 
-export function metricCard({ label, value, foot, tone, trend }) {
-  return el(
-    "div.card",
-    null,
-    el(
-      "div.metric",
-      null,
-      el("span.metric__label", { text: label }),
-      el(
-        "div.row",
-        { style: { gap: "var(--space-2)", alignItems: "baseline" } },
-        el("span.metric__value", { text: value }),
-        trend ? trendPill(trend) : null
-      ),
-      foot ? el("span.metric__foot", { text: foot }) : null,
-      tone ? badge(tone.label, tone.tone) : null
-    )
-  );
-}
+export function metricCard({ label, value, foot, trend, lead = false, quiet = false }) {
+  const classes = ["metric-block"];
+  if (lead) classes.push("metric-block--lead");
+  if (quiet) classes.push("metric-block--quiet");
 
-function trendPill({ direction, label }) {
-  const tone = direction === "up" ? "positive" : direction === "down" ? "critical" : "neutral";
   return el(
-    "span",
-    { class: `badge badge--${tone}` },
-    icon(direction === "down" ? "arrowDown" : "arrowUp", 12),
-    el("span", { text: label })
+    "div",
+    { class: classes.join(" ") },
+    el("span.metric__label", { text: label }),
+    el(
+      "div.row",
+      { style: { gap: "var(--space-2)", alignItems: "center", flexWrap: "wrap" } },
+      el("span.metric__value", { text: value }),
+      trend ? trendIndicator(trend) : null
+    ),
+    foot ? el("span.metric__foot", { text: foot }) : null
   );
 }
 
 /**
- * The one number a page is about. Used once per screen, never twice — its
- * whole job is to win the visual hierarchy.
+ * The revenue hero — the financial heartbeat of a page.
+ *
+ * Deliberately not a card: a tinted, elevated section with the figure set at
+ * display size, supporting stats on a rule beneath it, and room on the right
+ * for a chart or a secondary reading. Used once per page, never twice.
  */
-export function heroMetric({ eyebrow, value, label, note, side, empty = false }) {
+export function revenueHero({ eyebrow, value, label, note: noteText, empty = false, stats, aside }) {
   return el(
     "section.hero",
     null,
     el(
-      "div.row.row--between.row--wrap",
-      { style: { gap: "var(--space-6)", alignItems: "flex-start" } },
+      "div.hero__grid",
+      null,
       el(
         "div.stack.stack--tight",
-        null,
+        { style: { minWidth: 0 } },
         eyebrow && el("span.eyebrow", { text: eyebrow }),
-        el(empty ? "div.hero__value.hero__value--empty" : "div.hero__value.numeric", { text: value }),
-        el("div.hero__label", { text: label }),
-        note ? el("p.xsmall.muted", { style: { maxWidth: "44ch" }, text: note }) : null
+        el(empty ? "div.hero__value.hero__value--empty" : "div.hero__value.numeric", {
+          style: { marginTop: "var(--space-3)" },
+          text: value,
+        }),
+        el("div.hero__label", { style: { marginTop: "var(--space-2)" }, text: label }),
+        noteText
+          ? el("p.xsmall.muted", { style: { maxWidth: "46ch", marginTop: "var(--space-2)" }, text: noteText })
+          : null
       ),
-      side || null
-    )
+      aside ? el("div", { style: { minWidth: 0 } }, aside) : el("div")
+    ),
+    stats && stats.length
+      ? el(
+          "div.hero__stats",
+          null,
+          stats.map((stat) =>
+            el(
+              "div.hero__stat",
+              null,
+              el("span.eyebrow", { text: stat.label }),
+              el(
+                "span.row",
+                { style: { gap: "var(--space-2)", marginTop: "2px" } },
+                el("span.hero__stat-value", { text: stat.value }),
+                stat.trend ? trendIndicator(stat.trend) : null
+              ),
+              stat.foot ? el("span.xsmall.muted", { text: stat.foot }) : null
+            )
+          )
+        )
+      : null
+  );
+}
+
+/**
+ * A period-over-period movement.
+ *
+ * Renders nothing at all when the engine has no comparable previous period —
+ * an arrow with no baseline behind it is a decoration pretending to be a fact.
+ */
+export function trendIndicator(trend) {
+  if (!trend || !trend.comparable || trend.change_percent === null) return null;
+  const direction = trend.direction || "flat";
+  const arrow = direction === "down" ? "arrowDown" : direction === "up" ? "arrowUp" : "arrowRight";
+  const sign = trend.change_percent > 0 ? "+" : "";
+  return el(
+    "span",
+    {
+      class: `trend trend--${direction}`,
+      title: `${fmt.number(trend.previous)} in the previous period`,
+    },
+    icon(arrow, 11),
+    el("span", { text: `${sign}${trend.change_percent}%` })
   );
 }
 
