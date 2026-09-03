@@ -277,6 +277,13 @@ function turnNode({ role, text, meta }) {
   );
 }
 
+/** Names the vendor actually in use, rather than assuming one. */
+function languageModelLabel() {
+  const ai = state.system?.integrations?.find((integration) => integration.id === "ai");
+  if (!ai || !ai.connected) return "built-in rule engine";
+  return `${ai.provider} · ${state.system?.advanced?.llm_provider ?? ""}`.trim();
+}
+
 function outcomeNode(result, sessionId) {
   if (!result) return el("div");
 
@@ -331,11 +338,7 @@ function outcomeNode(result, sessionId) {
             ["Endpoint", el("span.code", { text: "POST /leads/chat" })],
             [
               "Language model",
-              el("span.code", {
-                text: state.system?.integrations?.find((i) => i.id === "ai")?.connected
-                  ? "OpenAI"
-                  : "built-in rule engine",
-              }),
+              el("span.code", { text: languageModelLabel() }),
             ],
           ])
         )

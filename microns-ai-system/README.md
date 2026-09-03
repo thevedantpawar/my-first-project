@@ -107,7 +107,7 @@ microns-ai-system/
 │   │   ├── index.html
 │   │   ├── styles/             # tokens · base · components · pages
 │   │   └── js/                  # api · router · store · ui/ · pages/
-│   ├── tests/                  # 178 tests
+│   ├── tests/                  # 198 tests
 │   ├── Dockerfile
 │   └── requirements.txt
 ├── n8n-workflows/              # 5 importable JSON workflows + README
@@ -386,7 +386,9 @@ names, phones, emails, SSNs, MRNs, dates and street addresses with tokens
 (`[PATIENT_1]`, `[PHONE_1]`) before any prompt leaves the process, and restores
 them in the response. `LLMService` re-scans every outbound prompt and, in
 production, **raises** rather than sending one that still contains an
-identifier.
+identifier. This guard is vendor-blind — it runs identically on the OpenAI and
+Gemini paths — and every `llm_request` audit row records the vendor that
+actually received the prompt.
 
 **4. No PHI in logs.** The access log records method, path and status — never
 query strings or bodies. Unhandled exceptions return an opaque error with a
@@ -401,11 +403,16 @@ validation, VAPI secret verification, and a rate limiter on the public chat.
 
 ### What you must do
 
-- [ ] **Sign BAAs** — OpenAI, Twilio, VAPI, your transcription/voice vendors,
-      and your hosting provider. Nothing here substitutes for one.
-- [ ] **Enable Zero Data Retention** on the OpenAI org (`support@openai.com`).
-      The client sends `store=false` on every call, but ZDR is an account
-      setting.
+- [ ] **Sign BAAs** — your model vendor, Twilio, VAPI, your transcription/voice
+      vendors, and your hosting provider. Nothing here substitutes for one.
+- [ ] **Pick a model vendor you can sign with.** `LLM_PROVIDER=openai` with ZDR
+      enabled on the org (`support@openai.com`) is BAA-coverable; the client
+      sends `store=false` on every call, but ZDR is an account setting.
+      `LLM_PROVIDER=gemini` uses the Gemini **Developer** API, which has no
+      zero-retention setting and is **not** covered by Google's BAA — that
+      covers Vertex AI. Prompts are de-identified either way, and `/health`
+      reports `llm.zero_retention` honestly, but do not treat a Gemini
+      Developer API deployment as BAA-covered.
 - [ ] **Terminate TLS.** Run behind HTTPS. The API refuses nothing on
       plain HTTP by itself — put nginx/ALB/Cloudflare in front.
 - [ ] **Encrypt the volumes.** Application-level encryption protects field
@@ -447,6 +454,8 @@ matter most:
 | `INTERNAL_API_TOKEN` | n8n → backend. Must match on both services |
 | `STAFF_API_TOKEN` | Staff dashboards (`X-Staff-Token`) |
 | `VAPI_WEBHOOK_SECRET` | Must equal the assistant's `serverUrlSecret` |
+| `LLM_PROVIDER` | `openai`, `gemini`, or `none`. Changes wording only — never flow, scoring or safety gates |
+| `GEMINI_API_KEY` | Required when `LLM_PROVIDER=gemini`. Not BAA-covered; see the compliance section |
 | `BOOKING_SYSTEM_TYPE` | `generic` (built-in), `acuity`, `square`, `mindbody` |
 | `SMS_INCLUDE_TREATMENT_DETAILS` | `false` keeps treatment names off lock screens |
 | `ENVIRONMENT` | `production` enables the strict checks and disables `/docs` |
@@ -462,12 +471,14 @@ or a default `FINGERPRINT_SECRET` / `INTERNAL_API_TOKEN`.
 docker compose exec backend pytest -q          # or: cd backend && pytest -q
 ```
 
-178 tests covering encryption at rest and key rotation, de-identification
+198 tests covering encryption at rest and key rotation, de-identification
 round-trips, audit-trail completeness and PHI rejection, the scoring matrix and
 both safety gates, reminder idempotency, no-show recovery, the review flow,
 voice tool handling and transcript encryption, authentication, rate limiting,
-and the console's read API — including that it never returns an unmasked
-identifier and never reports revenue it cannot account for.
+the console's read API — including that it never returns an unmasked
+identifier and never reports revenue it cannot account for — and provider
+selection, including that the PHI guard holds on the Gemini path and that
+Gemini is never reported as zero-retention.
 
 They run on SQLite with no external services, so `pytest` works on a laptop with
 nothing installed but the requirements.
@@ -495,6 +506,14 @@ about:
   later" branches are timestamp queries so a container restart cannot strand
   half the queue. The review workflow keeps a `Wait 5 Days` node as specified,
   with the polling endpoint available as the robust alternative.
+- **The model vendor is swappable, the decisions are not.** `LLM_PROVIDER`
+  selects OpenAI or Gemini behind one wrapper. Both paths go through the same
+  de-identification guard and the same audit row; both degrade to the
+  deterministic rule engine on any error, rate limit, safety block or
+  unparseable reply. The Gemini path is plain `httpx` against the REST
+  endpoint rather than another SDK, and it adds token headroom because Gemini
+  3.x spends "thinking" tokens against `maxOutputTokens` — a budget sized for
+  a non-thinking model comes back truncated.
 - **Mindbody is not implemented.** Its Public API needs a per-site OAuth
   exchange that cannot be written blind. Selecting it logs a warning and uses
   the internal scheduler rather than silently dropping bookings. Acuity and

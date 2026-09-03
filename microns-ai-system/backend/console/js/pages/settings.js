@@ -297,11 +297,20 @@ function advancedTab(system, health) {
             ? badge("Configured", "positive", { dot: true })
             : badge("Not configured", "critical", { dot: true }),
         ],
+        ["AI provider", el("span.code", { text: advanced.llm_provider })],
         [
           "AI zero data retention",
-          advanced.zero_data_retention ? badge("Requested on every call", "positive") : badge("Off", "attention"),
+          advanced.zero_data_retention
+            ? badge("Requested on every call", "positive")
+            : badge("Not available", "attention"),
         ],
       ]),
+      advanced.llm_provider === "gemini" && !advanced.zero_data_retention
+        ? note(
+            "Prompts are de-identified before they leave this system, but the Gemini Developer API has no zero-retention setting and Google's BAA covers Vertex AI rather than this endpoint. Treat this configuration as not BAA-covered.",
+            "warn"
+          )
+        : null,
       note(
         "Client names, phone numbers, call transcripts and notes are encrypted in the database. This console only ever receives masked values, and every read is written to the audit trail.",
         "neutral"

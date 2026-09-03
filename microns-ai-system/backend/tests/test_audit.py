@@ -73,8 +73,10 @@ def test_llm_request_records_the_deidentification_claim(db, patient):
     row = db.execute(select(AuditLog)).scalars().one()
     assert row.action == "llm_request"
     assert row.details["deidentified"] is True
-    assert row.details["vendor"] == "openai"
     assert row.details["model"] == "gpt-4o-mini"
+    # The vendor recorded is the one that actually received the prompt. No
+    # model is configured in the test environment, so nothing left the process.
+    assert row.details["vendor"] == "rule-engine"
 
 
 def test_denied_access_is_recorded(db):

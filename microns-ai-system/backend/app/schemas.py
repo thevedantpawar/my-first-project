@@ -29,7 +29,11 @@ class HealthResponse(BaseModel):
     environment: str
     version: str
     database: str
+    #: Booleans only, so existing consumers can keep treating it as a flag map.
     integrations: dict[str, bool]
+    #: Which language model is in use and what its retention terms are. Its own
+    #: field rather than a string smuggled into ``integrations``.
+    llm: dict[str, Any] = Field(default_factory=dict)
     warnings: list[str] = Field(default_factory=list)
 
 

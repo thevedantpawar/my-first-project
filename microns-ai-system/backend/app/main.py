@@ -43,7 +43,7 @@ async def lifespan(app: FastAPI):
         __version__,
         settings.environment,
         settings.booking_system_type,
-        "openai" if settings.openai_enabled else "rule-engine",
+        f"{settings.llm_provider}:{settings.llm_model_fast}" if settings.llm_enabled else "rule-engine",
         "twilio" if settings.twilio_enabled else "dry-run",
     )
     yield
@@ -194,11 +194,22 @@ def health() -> HealthResponse:
         version=__version__,
         database=database,
         integrations={
+            # Kept for existing consumers of this payload; it still means
+            # exactly what it always did — OpenAI specifically.
             "openai": settings.openai_enabled,
+            "gemini": settings.gemini_enabled,
             "twilio": settings.twilio_enabled,
             "vapi": bool(settings.vapi_webhook_secret),
             "calendly": settings.calendly_enabled,
             "encryption_key_configured": bool(settings.encryption_key),
+        },
+        llm={
+            "provider": settings.llm_provider,
+            "enabled": settings.llm_enabled,
+            "model_fast": settings.llm_model_fast,
+            "model_smart": settings.llm_model_smart,
+            # False for Gemini: that endpoint has no zero-retention setting.
+            "zero_retention": settings.llm_zero_retention,
         },
         warnings=settings.startup_warnings(),
     )

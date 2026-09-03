@@ -831,7 +831,7 @@ class ConsoleService:
                         "answer_faq",
                         "request_callback",
                     ],
-                    "model": settings.openai_model_smart if settings.openai_enabled else "rule engine",
+                    "model": settings.llm_model_smart if settings.llm_enabled else "rule engine",
                     "guardrails": [
                         "Never answers a clinical question — routes to a provider callback",
                         "Bookings are created pending, never auto-confirmed",
@@ -849,8 +849,8 @@ class ConsoleService:
                 ),
                 "status": "live",
                 "status_detail": (
-                    "Running on the AI model"
-                    if settings.openai_enabled
+                    f"Running on {_PROVIDER_LABELS.get(settings.llm_provider, settings.llm_provider)}"
+                    if settings.llm_enabled
                     else "Running on the built-in rule engine (no AI model connected)"
                 ),
                 "metrics": [
@@ -862,7 +862,7 @@ class ConsoleService:
                 "advanced": {
                     "module": "app/routers/leads.py · app/services/lead_service.py",
                     "tools": ["qualify", "score", "auto_book", "nurture"],
-                    "model": settings.openai_model_fast if settings.openai_enabled else "rule engine",
+                    "model": settings.llm_model_fast if settings.llm_enabled else "rule engine",
                     "guardrails": [
                         "Pregnancy or breastfeeding disqualifies and books a medical callback",
                         "Blood thinners flag for provider approval without changing the score",
@@ -952,7 +952,7 @@ class ConsoleService:
                 "advanced": {
                     "module": "app/services/retention_service.py",
                     "tools": ["request_review", "draft_review_response"],
-                    "model": settings.openai_model_fast if settings.openai_enabled else "template",
+                    "model": settings.llm_model_fast if settings.llm_enabled else "template",
                     "guardrails": [
                         "Review replies are drafted for a human to send, never posted automatically",
                     ],
@@ -1163,12 +1163,12 @@ class ConsoleService:
             {
                 "id": "ai",
                 "name": "AI model",
-                "provider": "OpenAI",
+                "provider": _PROVIDER_LABELS.get(settings.llm_provider, settings.llm_provider),
                 "purpose": "Writes the language your agents use.",
-                "connected": settings.openai_enabled,
+                "connected": settings.llm_enabled,
                 "detail": (
-                    f"Using {settings.openai_model_fast} / {settings.openai_model_smart}"
-                    if settings.openai_enabled
+                    f"Using {settings.llm_model_fast} / {settings.llm_model_smart}"
+                    if settings.llm_enabled
                     else "Running on the built-in rule engine — qualification and routing are unaffected"
                 ),
             },
@@ -1220,7 +1220,8 @@ class ConsoleService:
                 "app_version_source": "app/__init__.py",
                 "database": "PostgreSQL" if not settings.is_sqlite else "SQLite",
                 "encryption_configured": bool(settings.encryption_key),
-                "zero_data_retention": settings.openai_zero_retention,
+                "llm_provider": settings.llm_provider,
+                "zero_data_retention": settings.llm_zero_retention,
                 "booking_system_type": settings.booking_system_type,
                 "slot_minutes": settings.appointment_slot_minutes,
             },
@@ -1392,6 +1393,10 @@ def _question_label(asking: Optional[str]) -> Optional[str]:
     if not asking:
         return None
     return _QUESTION_LABELS.get(asking, f"Waiting on {asking.replace('_', ' ')}")
+
+
+#: Vendor names as an owner would recognise them.
+_PROVIDER_LABELS = {"openai": "OpenAI", "gemini": "Google Gemini", "none": "Rule engine"}
 
 
 _TREATMENTS = {
