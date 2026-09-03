@@ -105,6 +105,7 @@ class Settings(BaseSettings):
 
     # --- Filesystem --------------------------------------------------------
     widget_dir: Optional[str] = None
+    console_dir: Optional[str] = None
     voice_prompt_dir: Optional[str] = None
 
     # ------------------------------------------------------------------ #

@@ -1,0 +1,143 @@
+/* ==========================================================================
+   Microns Revenue Engine — design tokens
+   --------------------------------------------------------------------------
+   One source of truth for colour, type, space, radius, shadow and motion.
+   Nothing below this file may hard-code a hex value or a pixel spacing.
+
+   The palette is deliberately narrow: a warm neutral ground, white surfaces,
+   one teal accent (the same #0F766E the chat widget already ships with), and
+   four semantic states. Colour carries meaning here — it is never decoration.
+   ========================================================================== */
+
+:root {
+  /* --- Brand ------------------------------------------------------------ */
+  --accent-50: #EDF6F4;
+  --accent-100: #D6EAE6;
+  --accent-200: #A9D3CC;
+  --accent-400: #3E9186;
+  --accent: #0F766E;
+  --accent-strong: #0B5A54;
+  --accent-ink: #073F3B;
+
+  /* --- Neutrals (warm, so surfaces read as paper rather than plastic) ---- */
+  --ground: #F6F6F4;
+  --ground-sunken: #F0F0ED;
+  --surface: #FFFFFF;
+  --surface-raised: #FFFFFF;
+  --surface-muted: #FAFAF9;
+
+  /* Every one of these carries text, so every one clears WCAG AA (4.5:1)
+     against the lightest surface it can land on — #F0F0ED, the sunken grey.
+     Measured, not eyeballed: muted 4.95:1, faint 4.59:1. */
+  --ink: #16191C;
+  --ink-secondary: #4A5157;
+  --ink-muted: #61686F;
+  --ink-faint: #666D74;
+  --ink-inverse: #FFFFFF;
+
+  --line: #E6E6E2;
+  --line-strong: #D6D6D1;
+  --line-faint: #EFEFEC;
+
+  /* --- Semantic states -------------------------------------------------- */
+  --positive: #2C7A5E;
+  --positive-bg: #EAF4EF;
+  --positive-line: #C3E0D3;
+
+  --attention: #96650F;
+  --attention-bg: #FBF3E3;
+  --attention-line: #EBD9B4;
+
+  --critical: #A93226;
+  --critical-bg: #FBEDEB;
+  --critical-line: #EFCFCA;
+
+  --info: #2A5D8F;
+  --info-bg: #EDF3F9;
+  --info-line: #CBDCEC;
+
+  --neutral-bg: #F1F1EE;
+  --neutral-line: #E0E0DB;
+
+  /* --- Typography ------------------------------------------------------- */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  --text-display: 2.75rem;   /* hero metric */
+  --text-3xl: 1.75rem;       /* page title */
+  --text-2xl: 1.375rem;      /* metric */
+  --text-xl: 1.125rem;       /* section heading */
+  --text-lg: 1rem;           /* card heading */
+  --text-base: 0.9375rem;    /* body */
+  --text-sm: 0.875rem;       /* secondary */
+  --text-xs: 0.8125rem;      /* caption */
+  --text-2xs: 0.6875rem;     /* label / eyebrow */
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-normal: 1.55;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 680;
+
+  --tracking-label: 0.07em;
+  --tracking-tight: -0.02em;
+  --tracking-display: -0.03em;
+
+  /* --- Space (4px base) -------------------------------------------------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 2rem;
+  --space-8: 2.5rem;
+  --space-9: 3rem;
+  --space-10: 4rem;
+
+  /* --- Radius ------------------------------------------------------------ */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-pill: 999px;
+
+  /* --- Elevation ---------------------------------------------------------
+     Two soft layers rather than one hard shadow: quality comes from the
+     hairline, not from the blur. */
+  --shadow-sm: 0 1px 2px rgba(22, 25, 28, 0.04), 0 1px 1px rgba(22, 25, 28, 0.03);
+  --shadow-md: 0 2px 4px rgba(22, 25, 28, 0.04), 0 8px 20px rgba(22, 25, 28, 0.05);
+  --shadow-lg: 0 4px 8px rgba(22, 25, 28, 0.05), 0 20px 48px rgba(22, 25, 28, 0.10);
+  --shadow-focus: 0 0 0 3px rgba(15, 118, 110, 0.18);
+
+  /* --- Motion ------------------------------------------------------------ */
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --duration-fast: 120ms;
+  --duration: 200ms;
+  --duration-slow: 320ms;
+
+  /* --- Layout ------------------------------------------------------------ */
+  --sidebar-width: 264px;
+  --topbar-height: 64px;
+  --content-max: 1320px;
+
+  /* --- Z-index ----------------------------------------------------------- */
+  --z-sidebar: 40;
+  --z-topbar: 30;
+  --z-drawer: 60;
+  --z-modal: 70;
+  --z-toast: 80;
+  --z-palette: 90;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration: 0ms;
+    --duration-slow: 0ms;
+  }
+}

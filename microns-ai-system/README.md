@@ -1,13 +1,14 @@
 # Microns AI System
 
-Production-ready AI automation for med spas and aesthetic clinics. Three agents,
-one HIPAA-aware backend:
+Production-ready AI automation for med spas and aesthetic clinics. Three agents
+and one owner-facing console, on a single HIPAA-aware backend:
 
 | Module | What it does |
 |---|---|
 | **AI Voice Agent** | Answers the phone 24/7 via VAPI — books, reschedules, cancels, quotes prices, escalates anything clinical |
 | **Patient Retention** | 24h/2h reminders, no-show recovery, review requests with AI-drafted replies, dormant-patient reactivation |
 | **Lead Qualification** | Website chat widget + inbound SMS, six-question qualification, scored 0-100 and routed hot / warm / cold |
+| **Owner Console** | The clinic-facing interface at `/console` — what needs attention, what the AI handled, and where revenue is being recovered |
 
 Everything runs with one command. No third-party account is required to see it
 work end to end — without an OpenAI key the system falls back to a deterministic
@@ -30,6 +31,7 @@ docker compose up
 
 | Service | URL |
 |---|---|
+| Owner console | http://localhost:8000/console |
 | API | http://localhost:8000 |
 | API docs | http://localhost:8000/docs |
 | Health | http://localhost:8000/health |
@@ -74,7 +76,8 @@ uvicorn app.main:app --reload
                     │   backend    │──▶ OpenAI         (de-identified prompts only)
    SMS ───Twilio───▶│              │──▶ Twilio         (SMS, consent-checked)
                     │              │──▶ Acuity/Square  (booking, optional)
-                    └──────┬───────┘
+   Owner ──console─▶│              │
+        (staff token)└──────┬───────┘
                            │  UUIDs and booleans only — never PHI
                     ┌──────▼───────┐
                     │     n8n      │  5 workflows: cron + webhook orchestration
@@ -96,10 +99,15 @@ microns-ai-system/
 │   │   ├── utils.py            # UTC time policy, masking helpers
 │   │   ├── cli.py              # gen-key · seed-demo · rotate-phi · audit-report
 │   │   ├── models/             # encrypted column types + 6 tables
-│   │   ├── routers/            # voice · retention · leads · webhooks · appointments · internal
+│   │   ├── routers/            # voice · retention · leads · webhooks · appointments ·
+│   │   │                       #   internal · console
 │   │   └── services/           # encryption · hipaa_audit · deidentify · llm · sms ·
 │   │                           #   booking · voice · retention · lead · patient · notifier
-│   ├── tests/                  # 131 tests
+│   ├── console/                # owner console (static SPA, no build step)
+│   │   ├── index.html
+│   │   ├── styles/             # tokens · base · components · pages
+│   │   └── js/                  # api · router · store · ui/ · pages/
+│   ├── tests/                  # 178 tests
 │   ├── Dockerfile
 │   └── requirements.txt
 ├── n8n-workflows/              # 5 importable JSON workflows + README
@@ -276,6 +284,77 @@ in a shadow root so the clinic's CSS cannot break it. Add the site's origin to
 
 ---
 
+## Module 4 — Owner Console
+
+The interface a clinic owner actually opens: `http://localhost:8000/console`.
+
+Sign in with `STAFF_API_TOKEN`. It is held in `sessionStorage` for that tab
+only and sent as `X-Staff-Token` — the same header every staff endpoint has
+always required, so console access lands on the same audit trail as any other
+client. There is no separate console session and no cookie.
+
+| Page | What it answers |
+|---|---|
+| Overview | What did my AI team handle, and what needs me now? |
+| Opportunities | Every recoverable moment — leads, missed visits, dormant clients, callbacks — with the recommended action |
+| Conversations | Every enquiry across chat, text and phone, and who is handling it |
+| Leads | The pipeline, with intent, score, journey and next best action |
+| Appointments | Today, this week, what needs confirming, who booked it |
+| Revenue | Where bookings came from, what was recovered, and the funnel |
+| AI Team | The engine's modules as five specialists, with configuration behind a disclosure |
+| Automations | The five n8n workflows drawn as sequences |
+| Insights | Plain-language observations, each with the count behind it |
+| AI Test Center | Run a scenario through the live qualification engine |
+| Settings | What is connected, the retention timings, and the advanced view |
+
+### What it reads
+
+`GET /console/api/*` — staff-authenticated, read-only projections over rows the
+engine already writes (`app/services/console_service.py`). Actions go through
+the endpoints that already existed: `/retention/trigger-review`,
+`/retention/reactivate/{uuid}`, `/api/appointments/{id}/status`. There is one
+implementation of every side effect in this system, and the console does not
+add a second.
+
+The internal feeds under `/internal/*` stay internal. They authenticate with
+n8n's machine token, which a browser has no business holding; where the console
+needs the same information it reads it through `/console/api/*` under a staff
+token instead.
+
+### Three rules it will not break
+
+**Nothing is invented.** Every number traces to a column. `price_cents` is
+optional on an appointment, so revenue totals ship with the count of rows that
+actually carried a price and the UI says "0 of 7 appointments have a recorded
+price" rather than implying it knows the rest. Recovered *appointments* are
+counted exactly and shown whether or not anyone recorded a dollar figure.
+
+**Nothing claims a connection it does not have.** Twilio unconfigured means the
+console says "composed and audited but not delivered", on the agent card, in
+the confirmation dialog before you send, and in the toast afterwards. Whether a
+workflow is switched on inside n8n is not observable from here, so the state
+reads "Not observable" rather than "Active".
+
+**Nothing identifies a patient.** Names arrive masked (`Jane D.`), phones as
+last four digits, everything else as a UUID. Call transcripts are never
+returned — the console reports that one exists and leaves it encrypted. Chat
+and SMS keep no message text at all, so the conversation view says so instead
+of rendering an empty thread.
+
+### Front-end shape
+
+Static ES modules and CSS, no build step and no third-party requests — the same
+constraint the chat widget ships under, for the same reason: this page is
+served from the same origin as the PHI API. Design tokens live in
+`console/styles/tokens.css`; every page composes the primitives in
+`console/js/ui/`. Charts are hand-drawn SVG rather than a charting dependency.
+
+The Test Center runs against the live `/leads/chat` endpoint, so a run creates
+a real lead record and a hot result triggers real follow-up. The page says so
+before you run anything.
+
+---
+
 ## HIPAA compliance
 
 This system is built to be deployable under a BAA. Deploying it does not by
@@ -383,11 +462,12 @@ or a default `FINGERPRINT_SECRET` / `INTERNAL_API_TOKEN`.
 docker compose exec backend pytest -q          # or: cd backend && pytest -q
 ```
 
-131 tests covering encryption at rest and key rotation, de-identification
+178 tests covering encryption at rest and key rotation, de-identification
 round-trips, audit-trail completeness and PHI rejection, the scoring matrix and
 both safety gates, reminder idempotency, no-show recovery, the review flow,
-voice tool handling and transcript encryption, authentication, and rate
-limiting.
+voice tool handling and transcript encryption, authentication, rate limiting,
+and the console's read API — including that it never returns an unmasked
+identifier and never reports revenue it cannot account for.
 
 They run on SQLite with no external services, so `pytest` works on a laptop with
 nothing installed but the requirements.

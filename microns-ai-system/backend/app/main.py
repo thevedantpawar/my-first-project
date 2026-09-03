@@ -11,7 +11,7 @@ from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from starlette.middleware.trustedhost import TrustedHostMiddleware
@@ -19,7 +19,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from app import __version__
 from app.config import settings
 from app.database import engine, init_db
-from app.routers import appointments, internal, leads, retention, voice, webhooks
+from app.routers import appointments, console, internal, leads, retention, voice, webhooks
 from app.schemas import HealthResponse
 
 logging.basicConfig(
@@ -132,6 +132,19 @@ app.include_router(leads.router)
 app.include_router(webhooks.router)
 app.include_router(appointments.router)
 app.include_router(internal.router)
+app.include_router(console.router)
+
+
+def _console_dir() -> Path:
+    """Where the owner console's static files live.
+
+    Shipped inside ``backend/`` so it is present in the Docker image without
+    changing the build context. ``CONSOLE_DIR`` overrides it for a deployment
+    that serves the console from somewhere else.
+    """
+    if settings.console_dir:
+        return Path(settings.console_dir)
+    return Path(__file__).resolve().parents[1] / "console"
 
 
 def _widget_dir() -> Path:
@@ -147,6 +160,22 @@ if _widget_path.is_dir():
     logger.info("Chat widget served from %s at /widget", _widget_path)
 else:
     logger.warning("Chat widget directory not found at %s — /widget is not mounted", _widget_path)
+
+
+_console_path = _console_dir()
+if _console_path.is_dir():
+    # The console is a static single-page app. It talks to the same API as
+    # every other client, with a staff token the operator supplies at sign-in.
+    app.mount("/console/static", StaticFiles(directory=str(_console_path)), name="console")
+    logger.info("Owner console served from %s at /console", _console_path)
+
+    @app.get("/console", include_in_schema=False)
+    @app.get("/console/", include_in_schema=False)
+    def console_index():
+        return FileResponse(_console_path / "index.html")
+
+else:  # pragma: no cover - only when the console is deliberately not deployed
+    logger.warning("Console directory not found at %s — /console is not mounted", _console_path)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["health"])
@@ -188,6 +217,7 @@ def root() -> dict[str, Any]:
             "webhooks": "/webhooks",
             "internal": "/internal",
         },
+        "console": "/console",
         "docs": None if settings.is_production else "/docs",
         "widget": "/widget/microns-chat.js",
     }
