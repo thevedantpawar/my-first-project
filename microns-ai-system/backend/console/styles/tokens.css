@@ -92,7 +92,7 @@
     "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
-  --text-display: 3rem;      /* the one number a page is about */
+  --text-display: 3.375rem;  /* the one number a page is about */
   --text-hero: 2.25rem;
   --text-3xl: 1.9375rem;     /* page title */
   --text-2xl: 1.5rem;

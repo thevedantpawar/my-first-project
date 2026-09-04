@@ -189,10 +189,12 @@ export function revenueHero({ eyebrow, value, label, note: noteText, empty = fal
         "div.stack.stack--tight",
         { style: { minWidth: 0 } },
         eyebrow && el("span.eyebrow", { text: eyebrow }),
-        el(empty ? "div.hero__value.hero__value--empty" : "div.hero__value.numeric", {
-          style: { marginTop: "var(--space-3)" },
-          text: value,
-        }),
+        empty
+          ? el("div.hero__value.hero__value--empty", {
+              style: { marginTop: "var(--space-3)" },
+              text: value,
+            })
+          : heroFigure(value),
         el("div.hero__label", { style: { marginTop: "var(--space-2)" }, text: label }),
         noteText
           ? el("p.xsmall.muted", { style: { maxWidth: "46ch", marginTop: "var(--space-2)" }, text: noteText })
@@ -220,6 +222,29 @@ export function revenueHero({ eyebrow, value, label, note: noteText, empty = fal
           )
         )
       : null
+  );
+}
+
+/**
+ * Split a money string into its currency mark and its amount.
+ *
+ * "$14,210" is one string but two typographic jobs: the mark is a unit and
+ * belongs smaller and lifted, the amount is the reading and carries the
+ * weight. Setting both at display size makes the symbol compete with the
+ * number it is labelling.
+ *
+ * Anything that is not a leading symbol followed by digits — a localised
+ * format, a plain count — is rendered whole and untouched.
+ */
+function heroFigure(value) {
+  const text = String(value);
+  const match = text.match(/^(\D+)(.+)$/);
+
+  return el(
+    "div.hero__value",
+    { style: { marginTop: "var(--space-3)" } },
+    match ? el("span.hero__currency", { text: match[1] }) : null,
+    el("span.hero__amount", { text: match ? match[2] : text })
   );
 }
 

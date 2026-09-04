@@ -205,20 +205,44 @@
   overflow: hidden;
 }
 
+/* Both columns start at the top so the two eyebrows sit on one line. With
+   `align-items: end` the shorter left column was pushed to the bottom of the
+   taller right one, which read as a hole above the figure. */
 .hero__grid {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
   gap: var(--space-8);
-  align-items: end;
+  align-items: start;
 }
 
+/* The one number the page is about.
+   Proportional figures, not tabular. Tabular digits exist so columns line up,
+   and they pad every 1 out to the width of a 0 — which in "$14,210" leaves two
+   visible gaps and makes the figure look loose. Nothing is aligning under this
+   number, so it gets the properly fitted figures instead. */
 .hero__value {
   font-size: var(--text-display);
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-display);
   line-height: var(--leading-none);
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: proportional-nums;
+  display: flex;
+  align-items: baseline;
+  gap: 0.015em;
 }
+
+/* The currency mark is a unit, not a digit: set smaller, lighter and lifted
+   off the baseline so the amount itself carries the weight. */
+.hero__currency {
+  font-size: 0.52em;
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+  letter-spacing: 0;
+  align-self: flex-start;
+  padding-top: 0.1em;
+}
+
+.hero__amount { letter-spacing: var(--tracking-display); }
 
 /* When the engine has no figure, the placeholder must not shout. */
 .hero__value--empty {
@@ -243,6 +267,8 @@
 
 .hero__stat-value {
   font-size: var(--text-xl);
+  /* These sit in a row of three and are read against each other, so here
+     tabular figures are the right choice. */
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-tight);
   font-variant-numeric: tabular-nums;
