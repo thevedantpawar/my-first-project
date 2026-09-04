@@ -910,7 +910,10 @@ class ConsoleService:
                 "status_detail": (
                     "Connected to the phone system"
                     if settings.vapi_webhook_secret
-                    else "Phone system not connected — set VAPI_WEBHOOK_SECRET to go live"
+                    # Owner-facing text: the environment variable that turns
+                    # this on belongs in Settings, not on the home screen of
+                    # someone who runs a med spa.
+                    else "Your phone system isn't connected yet"
                 ),
                 "metrics": [
                     {"label": "Calls handled", "value": calls},
@@ -1321,7 +1324,9 @@ class ConsoleService:
                     ("front_desk", "Booked by your front desk"),
                 )
             ],
-            "activity": self.activity(limit=8, user=user)["items"],
+            # Asked for generously: the interface collapses consecutive
+            # identical events, so a batch of eight reminders becomes one row.
+            "activity": self.activity(limit=24, user=user)["items"],
             "generated_at": utcnow().isoformat() + "Z",
         }
 

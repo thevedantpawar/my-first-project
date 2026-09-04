@@ -20,6 +20,7 @@ export const NAV = [
       { path: "/leads", label: "Leads", icon: "leads" },
       { path: "/appointments", label: "Appointments", icon: "calendar" },
       { path: "/revenue", label: "Revenue", icon: "revenue" },
+      { path: "/recovery", label: "Recovery", icon: "refresh" },
     ],
   },
   {
@@ -157,6 +158,7 @@ export function renderSignIn(container, { onSuccess, reason }) {
    ------------------------------------------------------------------------- */
 let pageContainer;
 let navLinks = new Map();
+let demoBannerNode;
 let breadcrumbNode;
 let sidebarNode;
 let scrimNode;
@@ -294,19 +296,57 @@ export function renderShell(container, { onSignOut }) {
     })
   );
 
+  // Demonstration data must be impossible to mistake for a clinic's own
+  // records, so the notice sits above the content on every single page rather
+  // than in a settings screen nobody opens.
+  demoBannerNode = el("div", { id: "demo-banner", hidden: true });
+
   pageContainer = el("main", { id: "main", tabindex: "-1" });
   scrimNode = el("div.scrim", { dataset: { visible: "false" }, onClick: closeSidebar });
 
   mount(
     container,
     el("a.skip-link", { href: "#main", text: "Skip to content" }),
-    el("div.app", null, sidebarNode, el("div.content", null, topbar, pageContainer)),
+    el("div.app", null, sidebarNode, el("div.content", null, topbar, demoBannerNode, pageContainer)),
     scrimNode
   );
 
   subscribe(refreshChrome);
   refreshChrome();
   return pageContainer;
+}
+
+/**
+ * The demonstration notice.
+ *
+ * Two states, and the difference matters. Demo mode *configured* with nothing
+ * seeded is an empty demo — the console would otherwise look like a clinic
+ * having a very quiet month, which is the more damaging misreading of the
+ * two. Demo mode with data says whose data it is and that none of it is real.
+ */
+function renderDemoBanner(demo) {
+  if (!demoBannerNode) return;
+
+  if (!demo || !demo.active) {
+    demoBannerNode.hidden = true;
+    clear(demoBannerNode);
+    return;
+  }
+
+  demoBannerNode.hidden = false;
+  mount(
+    demoBannerNode,
+    el(
+      "div",
+      { class: `demo-banner demo-banner--${demo.seeded ? "seeded" : "empty"}`, role: "status" },
+      el("span.demo-banner__tag", { text: "Demonstration" }),
+      el("span.demo-banner__text", {
+        text: demo.seeded
+          ? `You are looking at ${demo.clinic}, a fictional clinic. Every patient, appointment and figure here is demonstration data — no real patient information is present.`
+          : "Demo mode is on, but no demonstration data has been loaded, so every figure below is genuinely zero. Run `python -m app.cli demo seed` to load the example clinic.",
+      })
+    )
+  );
 }
 
 function modifierKey() {
@@ -319,7 +359,9 @@ export function getPageContainer() {
 
 export function setBreadcrumb(label, parent) {
   if (!breadcrumbNode) return;
-  const clinic = state.system?.clinic?.name || "Clinic";
+  const demo = state.system?.demo;
+  const clinic =
+    demo?.active && demo?.seeded ? demo.clinic : state.system?.clinic?.name || "Clinic";
   mount(
     breadcrumbNode,
     el("span", { text: clinic }),
@@ -347,8 +389,15 @@ export function highlightNav(path) {
 
 function refreshChrome() {
   const system = state.system;
+  renderDemoBanner(system?.demo);
   if (system) {
-    const name = system.clinic?.name || "Clinic";
+    // A seeded demo shows the demo clinic's name. Leaving the configured
+    // name up while every record belongs to Glow Aesthetics reads as a bug,
+    // and the banner immediately above says the clinic is fictional.
+    const name =
+      system.demo?.active && system.demo?.seeded
+        ? system.demo.clinic
+        : system.clinic?.name || "Clinic";
     setText("tenant-name", name);
     setText("tenant-initials", name.slice(0, 2).toUpperCase());
     setText(

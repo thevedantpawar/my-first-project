@@ -68,6 +68,12 @@ export const load = {
   appointments: (params) =>
     cached(`appointments:${JSON.stringify(params || {})}`, () => api.appointments(params)),
   upcoming: () => cached("upcoming", () => api.appointmentsUpcoming(24 * 14)),
+  commandCenter: () =>
+    cached(`command-center:${state.windowDays}`, () => api.commandCenter(state.windowDays)),
+  // Recovery is a slower loop than the rest of the console, so it keeps its
+  // own ninety-day window rather than following the global one.
+  recovery: () => cached("recovery", () => api.recovery(90)),
+  activity: (limit = 40) => cached(`activity:${limit}`, () => api.activity(limit)),
   system: () =>
     cached("system", () => api.system()).then((value) => {
       state.system = value;

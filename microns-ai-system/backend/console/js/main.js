@@ -23,6 +23,7 @@ import { renderConversations } from "./pages/conversations.js";
 import { renderLeads, renderLeadDetail } from "./pages/leads.js";
 import { renderAppointments } from "./pages/appointments.js";
 import { renderRevenue } from "./pages/revenue.js";
+import { renderRecovery } from "./pages/recovery.js";
 import { renderTeam } from "./pages/team.js";
 import { renderAutomations } from "./pages/automations.js";
 import { renderInsights } from "./pages/insights.js";
@@ -108,6 +109,7 @@ function registerRoutes() {
     ["/leads/:id", renderLeadDetail],
     ["/appointments", renderAppointments],
     ["/revenue", renderRevenue],
+    ["/recovery", renderRecovery],
     ["/team", renderTeam],
     ["/automations", renderAutomations],
     ["/insights", renderInsights],

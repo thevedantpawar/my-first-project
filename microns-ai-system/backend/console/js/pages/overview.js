@@ -1,9 +1,26 @@
 /**
- * Overview — the page a med spa owner opens in the morning.
+ * The Revenue Command Center — the page a med spa owner opens in the morning.
  *
- * The composition answers four questions in order, and the layout is
- * deliberately asymmetric rather than a grid of equal cards: money first at
- * display size, then what needs a person, then what the team did.
+ * It has ten seconds to answer four questions, in this order:
+ *
+ *   1. How much business did Microns bring in?
+ *   2. What happened today?
+ *   3. What needs me?
+ *   4. Is my AI team actually working?
+ *
+ * The layout follows that order literally and refuses to be a grid of equal
+ * cards, because a grid of equal cards says everything matters the same
+ * amount. Money is set at display size. Attention is a working queue with the
+ * action on each row. The team is a strip, not a table.
+ *
+ * One request feeds the whole page. It is opened first thing on a front-desk
+ * laptop, and six parallel round trips is six chances to look slow.
+ *
+ * The honesty rules that govern the rest of the console apply here hardest,
+ * because this is the screen people quote in meetings: the headline says
+ * *influenced*, never *earned*; it captions itself as projected or collected
+ * depending on where the prices came from; and no arrow appears without a
+ * real previous period behind it.
  */
 
 import { el } from "../dom.js";
@@ -13,241 +30,384 @@ import { load, state } from "../store.js";
 import {
   badge,
   button,
-  metricCard,
-  note,
   pageHeader,
   revenueHero,
   sectionHeader,
   skeletonCards,
-  trendIndicator,
 } from "../ui/components.js";
-import { sparkline } from "../ui/charts.js";
-import { renderAsync, opportunityCard, runOpportunityAction, emptyOpportunities } from "./common.js";
+import { barList } from "../ui/charts.js";
+import { renderAsync, opportunityCard } from "./common.js";
 import { openOpportunity } from "./opportunities.js";
-import { agentStrip } from "./team.js";
 
 export async function renderOverview(container) {
-  const clinic = state.system?.clinic?.name || "your clinic";
-
-  const heroSlot = el("section");
-  const attentionSlot = el("section", { "aria-labelledby": "attention-heading" });
-  const teamSlot = el("section", { "aria-labelledby": "team-heading" });
+  const demo = state.system?.demo;
+  const clinic =
+    demo?.active && demo?.seeded ? demo.clinic : state.system?.clinic?.name;
 
   container.replaceChildren(
     pageHeader({
       eyebrow: `${fmt.greeting()} · ${fmt.today()}`,
-      title: clinic === "your clinic" ? "Your revenue engine" : clinic,
-      subtitle: "Here's what your AI Revenue Team handled, and what still needs you.",
+      title: clinic || "Your revenue engine",
+      subtitle: "Your AI team has been working while you run the clinic.",
       actions: [
-        button({ label: "Opportunities", variant: "secondary", iconName: "opportunity", href: "#/opportunities" }),
-        button({ label: "Revenue", variant: "primary", trailingIcon: "arrowRight", href: "#/revenue" }),
+        button({
+          label: "Recovery",
+          variant: "secondary",
+          iconName: "refresh",
+          href: "#/recovery",
+        }),
+        button({
+          label: "Revenue",
+          variant: "primary",
+          trailingIcon: "arrowRight",
+          href: "#/revenue",
+        }),
       ],
     }),
-    heroSlot,
-    el("div.section", null, attentionSlot),
-    el("div.section", null, teamSlot)
+    el("div", { id: "command-center" })
   );
 
-  renderHero(heroSlot);
-  renderAttention(attentionSlot);
-  renderTeam(teamSlot);
+  return renderAsync(
+    container.querySelector("#command-center"),
+    () => load.commandCenter(),
+    (data) =>
+      el(
+        "div",
+        null,
+        heroSection(data),
+        todayStrip(data.today),
+        el("div.section", null, attentionSection(data)),
+        el(
+          "div.section",
+          null,
+          el("div.grid.grid--feature", null, activitySection(data.activity), teamSection(data))
+        )
+      ),
+    {
+      skeleton: () => el("div.stack.stack--loose", null, skeletonCards(4)),
+      context: "Couldn't load your command center",
+    }
+  );
 }
 
 /* -------------------------------------------------------------------------
-   Hero: revenue, its supporting stats, and real activity beside it
+   Hero — revenue influenced
    ------------------------------------------------------------------------- */
-function renderHero(target) {
-  return renderAsync(
-    target,
-    () => Promise.all([load.overview(), load.revenue()]),
-    ([overview, revenue]) => {
-      const completed = revenue.completed;
-      const priced = completed.priced_count > 0;
-      const engine = overview.engine;
-
-      const hero = revenueHero({
-        eyebrow: `AI-influenced revenue · last ${revenue.window_days} days`,
-        value: priced ? fmt.money(completed.cents) : "Not recorded",
-        empty: !priced,
-        label: priced
-          ? `From ${fmt.pluralise(completed.priced_count, "completed appointment")} with a recorded price`
-          : "No completed appointment carries a recorded price",
-        note: priced
-          ? `${fmt.number(completed.count - completed.priced_count)} further completed appointments have no price recorded, so they are not counted here.`
-          : "Your engine tracks bookings and recovery today. Record a price on an appointment and this fills in. Everything else on this page is counted, not estimated.",
-        stats: [
-          {
-            label: "Recovered",
-            value: fmt.number(revenue.recovered_appointments),
-            foot: "appointments won back",
-          },
-          {
-            label: "Booked by your AI",
-            value: fmt.number(overview.bookings.ai_assisted),
-            foot: `of ${fmt.number(overview.bookings.created)} created`,
-          },
-          {
-            label: "New leads",
-            value: fmt.number(overview.leads.total),
-            trend: overview.trend?.leads,
-            foot: `${fmt.number(overview.leads.hot)} high intent`,
-          },
-          {
-            label: "Missed visits",
-            value: fmt.percent(engine.appointments.no_show_rate, { digits: 1 }),
-            foot: `${fmt.number(engine.appointments.no_shows)} of ${fmt.number(engine.appointments.total)}`,
-          },
-        ],
-        aside: activityAside(overview),
-      });
-
-      return el(
-        "div.stack.stack--loose",
-        null,
-        hero,
-        supportingRow(overview),
-        phoneNotice()
-      );
-    },
-    { skeleton: heroSkeleton, context: "Couldn't load your headline numbers" }
-  );
-}
-
-function activityAside(overview) {
-  const series = overview.activity?.leads || [];
-  return el(
-    "div.stack.stack--tight",
-    null,
-    el(
-      "div.row.row--between",
-      null,
-      el("span.eyebrow", { text: "Lead activity" }),
-      trendIndicator(overview.trend?.leads)
-    ),
-    sparkline({
-      points: series,
-      ariaLabel: "New leads per day over the period",
-    })
-  );
-}
 
 /**
- * The supporting row. Not four identical tiles: the first two carry the
- * numbers an owner acts on, the last two are quieter readings.
+ * How the headline figure describes itself.
+ *
+ * An owner is entitled to know whether they are looking at money that has
+ * been collected or a forecast built from their own price list, and the
+ * difference is not a footnote — it changes what the number means.
  */
-function supportingRow(overview) {
-  const engine = overview.engine;
+const BASIS_NOTES = {
+  recorded:
+    "Based on prices recorded against each appointment by your booking system.",
+  expected:
+    "Projected from your service price list. These appointments are booked, not yet paid.",
+  mixed:
+    "Part recorded by your booking system, part projected from your service price list.",
+  none: "No appointment in this period carries a price yet.",
+};
+
+function heroSection(data) {
+  const headline = data.headline;
+  const empty = headline.cents === 0;
+
+  const stats = data.revenue_split
+    .filter((row) => row.key !== "front_desk")
+    .map((row) => ({
+      label: row.label,
+      value: row.cents ? fmt.money(row.cents) : fmt.pluralise(row.count, "appointment"),
+      foot:
+        row.complimentary > 0
+          ? `${row.count} booked · ${row.complimentary} complimentary`
+          : fmt.pluralise(row.count, "appointment"),
+    }));
+
+  return revenueHero({
+    eyebrow: `Revenue influenced · last ${data.window_days} days`,
+    value: empty ? "Not yet recorded" : fmt.money(headline.cents),
+    label: empty
+      ? "Once appointments carry a price, this is where the number appears."
+      : `across ${fmt.pluralise(headline.appointments, "appointment")} your AI team booked or brought back`,
+    note: BASIS_NOTES[headline.basis],
+    empty,
+    stats,
+    aside: heroAside(data),
+  });
+}
+
+function heroAside(data) {
+  const frontDesk = data.revenue_split.find((row) => row.key === "front_desk");
+  const influenced = data.headline.cents;
+  const total = influenced + (frontDesk ? frontDesk.cents : 0);
+
+  if (!total) return null;
+
   return el(
-    "div.grid.grid--4",
-    null,
-    metricCard({
-      label: "Appointments booked",
-      value: fmt.number(overview.bookings.created),
-      trend: overview.trend?.appointments,
-      foot: `${fmt.number(overview.bookings.today)} scheduled today`,
-      lead: true,
-    }),
-    metricCard({
-      label: "Lead booking rate",
-      value: fmt.percent(overview.leads.book_rate, { digits: 1 }),
-      foot: `${fmt.number(overview.leads.booked)} of ${fmt.number(overview.leads.total)} leads booked`,
-      lead: true,
-    }),
-    metricCard({
-      label: "Messages sent",
-      value: fmt.number(overview.messages_sent),
-      foot: "reminders, recovery and follow-ups",
-      quiet: true,
-    }),
-    metricCard({
-      label: "Clients at risk",
-      value: fmt.number(engine.reactivation.patients_at_risk),
-      foot: "no recent visit, nothing booked",
-      quiet: true,
+    "div.stack",
+    { style: { gap: "var(--space-4)" } },
+    el("span.eyebrow", { text: "Where the bookings came from" }),
+    barList({
+      items: data.revenue_split.map((row) => ({
+        label: row.label,
+        value: row.cents,
+        hint: fmt.pluralise(row.count, "appt", "appts"),
+        colour: row.key === "front_desk" ? "neutral-line" : null,
+      })),
+      formatValue: (cents) => fmt.money(cents),
     })
   );
 }
 
-function phoneNotice() {
-  const phone = state.system?.integrations?.find((integration) => integration.id === "phone");
-  if (!phone || phone.connected) return null;
-  return note(
-    "Your phone system is not connected, so call figures are empty rather than zero. Connect it in Settings to let the AI Receptionist answer.",
-    "warn"
-  );
-}
+/* -------------------------------------------------------------------------
+   Today
+   ------------------------------------------------------------------------- */
+function todayStrip(counters) {
+  const quiet = counters.every((counter) => counter.value === 0);
 
-function heroSkeleton() {
   return el(
-    "div.stack.stack--loose",
-    { "aria-hidden": "true" },
-    el("div.skeleton.skeleton--hero"),
-    skeletonCards(4)
+    "section.today",
+    { "aria-label": "Today so far" },
+    el(
+      "div.today__row",
+      null,
+      counters.map((counter) =>
+        el(
+          "div.today__cell",
+          null,
+          el("span.today__value.numeric", { text: fmt.number(counter.value) }),
+          el("span.today__label", { text: counter.label })
+        )
+      )
+    ),
+    quiet
+      ? el("p.xsmall.muted", {
+          style: { marginTop: "var(--space-3)" },
+          text: "Nothing yet today. These count from midnight.",
+        })
+      : null
   );
 }
 
 /* -------------------------------------------------------------------------
    Needs your attention
    ------------------------------------------------------------------------- */
-function renderAttention(target) {
-  const body = el("div");
-  target.replaceChildren(
+function attentionSection(data) {
+  const items = data.attention || [];
+  const remaining = Math.max(data.attention_total - items.length, 0);
+
+  return el(
+    "section",
+    { "aria-labelledby": "attention-heading" },
     sectionHeader({
       id: "attention-heading",
       title: "Needs your attention",
-      subtitle: "Ranked by urgency, then by how long it has been waiting.",
-      ruled: true,
-      actions: [
-        button({ label: "See all", variant: "ghost", size: "sm", trailingIcon: "arrowRight", href: "#/opportunities" }),
-      ],
+      subtitle: items.length
+        ? "Ranked by urgency. Clinical callbacks always come first."
+        : null,
+      actions: items.length
+        ? [
+            button({
+              label: remaining ? `See all ${data.attention_total}` : "Open queue",
+              variant: "ghost",
+              trailingIcon: "arrowRight",
+              href: "#/opportunities",
+            }),
+          ]
+        : [],
     }),
-    body
-  );
-
-  return renderAsync(
-    body,
-    () => load.opportunities(),
-    (items) => {
-      if (!items.length) return el("div.panel", null, emptyOpportunities());
-      return el(
-        "div.grid.grid--3",
-        null,
-        items.slice(0, 3).map((item) =>
-          opportunityCard(item, {
-            compact: true,
-            onOpen: openOpportunity,
-            onAct: (opportunity, action) =>
-              runOpportunityAction(opportunity, action, { onDone: () => renderAttention(target) }),
-          })
+    items.length
+      ? el(
+          "div.grid.grid--cards",
+          null,
+          items.map((item) =>
+            opportunityCard(item, { onOpen: () => openOpportunity(item), compact: true })
+          )
         )
-      );
-    },
-    { skeleton: () => skeletonCards(3, { tall: true }), context: "Couldn't load what needs your attention" }
+      : el(
+          "div.card",
+          null,
+          el(
+            "div.stack.stack--tight",
+            null,
+            el("p.card-title", { text: "Nothing is waiting on you" }),
+            el("p.small.secondary", {
+              text: "Your AI team is handling everything currently in the pipeline. New enquiries, missed appointments and clinical callbacks appear here the moment they need a person.",
+            })
+          )
+        )
   );
 }
 
 /* -------------------------------------------------------------------------
    Your AI team
    ------------------------------------------------------------------------- */
-function renderTeam(target) {
-  const body = el("div");
-  target.replaceChildren(
+const TEAM_TONES = {
+  live: "success",
+  degraded: "warning",
+  not_connected: "neutral",
+  disabled: "neutral",
+};
+
+const TEAM_LABELS = {
+  live: "Working",
+  degraded: "Needs attention",
+  not_connected: "Not connected",
+  disabled: "Off",
+};
+
+function teamSection(data) {
+  return el(
+    "section.card",
+    { "aria-labelledby": "team-heading" },
     sectionHeader({
       id: "team-heading",
-      title: "Your AI team",
-      subtitle: "Working behind the scenes, around the clock.",
       ruled: true,
+      title: "Your AI team",
       actions: [
-        button({ label: "View team", variant: "ghost", size: "sm", trailingIcon: "arrowRight", href: "#/team" }),
+        button({
+          label: "View team",
+          variant: "ghost",
+          trailingIcon: "arrowRight",
+          href: "#/team",
+        }),
       ],
     }),
-    body
+    el(
+      "ul.team-list",
+      null,
+      data.team.map((agent) =>
+        el(
+          "li.team-list__row",
+          null,
+          el(
+            "div.team-list__head",
+            null,
+            el("span.team-list__name", { text: agent.name }),
+            badge(TEAM_LABELS[agent.status] || agent.status, TEAM_TONES[agent.status] || "neutral", {
+              dot: true,
+            })
+          ),
+          el(
+            "div.team-list__body",
+            null,
+            el("span.team-list__detail", { text: agent.status_detail || agent.role }),
+            agent.headline
+              ? el(
+                  "div.team-list__figure",
+                  null,
+                  el("span.team-list__metric.numeric", {
+                    text: `${fmt.number(agent.headline.value)}${agent.headline.unit || ""}`,
+                  }),
+                  el("span.xsmall.muted", { text: agent.headline.label })
+                )
+              : null
+          )
+        )
+      )
+    )
   );
+}
 
-  return renderAsync(
-    body,
-    () => load.agents(),
-    (agents) => agentStrip(agents),
-    { skeleton: () => skeletonCards(3, { tall: true }), context: "Couldn't load your AI team" }
+/* -------------------------------------------------------------------------
+   Recent activity
+   ------------------------------------------------------------------------- */
+const ACTOR_ICONS = {
+  "AI Receptionist": "phone",
+  "Lead Concierge": "leads",
+  Booking: "calendar",
+  Recovery: "refresh",
+  Reactivation: "refresh",
+  Reviews: "star",
+  Retention: "workflow",
+};
+
+/**
+ * Collapse consecutive identical entries into one row with a count.
+ *
+ * Reminders go out in batches, so an honest feed of real events is often
+ * eight rows of "Reminder sent" in a row — accurate, and useless. Grouping
+ * only ever merges *adjacent* rows with the same actor and text, so nothing
+ * is hidden and the ordering still reflects what happened; the timestamp
+ * shown is the most recent of the group.
+ */
+function groupRuns(items) {
+  const grouped = [];
+  for (const item of items) {
+    const previous = grouped[grouped.length - 1];
+    if (previous && previous.actor === item.actor && previous.text === item.text) {
+      previous.count += 1;
+      previous.details.push(item.detail);
+      continue;
+    }
+    grouped.push({ ...item, count: 1, details: [item.detail] });
+  }
+  return grouped;
+}
+
+function activitySection(items) {
+  // Grouped first, then capped: ten rows of distinct work reads better than
+  // ten rows of the same reminder, and better than thirty rows of anything.
+  const rows = groupRuns(items).slice(0, 10);
+  return el(
+    "section",
+    { "aria-labelledby": "activity-heading" },
+    sectionHeader({
+      id: "activity-heading",
+      title: "What your AI team just did",
+      subtitle: items.length ? null : "Real events only — nothing here is simulated.",
+    }),
+    el(
+      "div.card.card--flush",
+      null,
+      rows.length
+        ? el(
+            "ul.feed",
+            null,
+            rows.map((item) => {
+              const named = item.details.filter(Boolean);
+              const subtitle =
+                item.count > 1
+                  ? [item.actor, `${named.slice(0, 2).join(", ")}${named.length > 2 ? ` and ${named.length - 2} more` : ""}`]
+                      .filter(Boolean)
+                      .join(" · ")
+                  : [item.actor, item.detail].filter(Boolean).join(" · ");
+
+              return el(
+                "li.feed__row",
+                null,
+                el(
+                  "span",
+                  { class: `feed__icon feed__icon--${item.tone || "neutral"}` },
+                  icon(ACTOR_ICONS[item.actor] || "sparkle", 15)
+                ),
+                el(
+                  "div.stack",
+                  { style: { gap: "1px", minWidth: 0 } },
+                  el(
+                    "span.row",
+                    { style: { gap: "var(--space-2)", alignItems: "baseline" } },
+                    el("span.small", { text: item.text }),
+                    item.count > 1
+                      ? el("span.feed__count.numeric", { text: `×${item.count}` })
+                      : null
+                  ),
+                  el("span.xsmall.muted", { text: subtitle })
+                ),
+                el("span.xsmall.muted.feed__time", { text: fmt.relative(item.at) })
+              );
+            })
+          )
+        : el(
+            "div",
+            { style: { padding: "var(--space-6)" } },
+            el("p.small.secondary", {
+              text: "Nothing has happened yet. When your AI team answers an enquiry, books a visit or chases a missed appointment, it appears here.",
+            })
+          )
+    )
   );
 }

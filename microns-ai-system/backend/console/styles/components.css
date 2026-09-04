@@ -880,3 +880,230 @@
 .note--warn { background: var(--warning-bg); color: var(--warning); }
 .note--neutral { background: var(--surface-sunken); color: var(--text-secondary); }
 .note__icon { flex: none; margin-top: 1px; }
+
+/* ==========================================================================
+   V4 — Revenue Command Center and Recovery
+   --------------------------------------------------------------------------
+   These are the four repeated objects the owner screens are built from. Each
+   is composed once here rather than styled per page, and each earns its
+   separation by tone and rule rather than by another card outline — the
+   command centre already carries a hero, and stacking bordered boxes inside
+   bordered boxes is what made V3 read as an admin panel.
+   ========================================================================== */
+
+/* --- Today: a single band of counters, not five cards -------------------- */
+.today {
+  margin-top: var(--space-6);
+  padding: var(--space-5) var(--space-6);
+  background: var(--surface-muted);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.today__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-5);
+}
+
+.today__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.today__value {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-none);
+  color: var(--text);
+}
+
+.today__label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* --- Team list: a roster, not a table ------------------------------------ */
+.team-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Two lines, not one: the status sentence and the headline figure were
+   fighting for the same row in the narrow rail, and the sentence lost. */
+.team-list__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.team-list__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.team-list__body {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.team-list__detail {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  line-height: var(--leading-snug);
+  min-width: 0;
+  max-width: 40ch;
+}
+
+.team-list__figure {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex: none;
+  line-height: var(--leading-tight);
+}
+
+.team-list__row:last-child { border-bottom: 0; }
+.team-list__row:first-child { padding-top: var(--space-3); }
+
+.team-list__name {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--text);
+}
+
+.team-list__metric {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Activity feed ------------------------------------------------------- */
+.feed {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.feed__row {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.feed__row:last-child { border-bottom: 0; }
+
+.feed__icon {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  flex: none;
+  background: var(--neutral-bg);
+  color: var(--text-muted);
+}
+
+.feed__icon--good { background: var(--success-bg); color: var(--success); }
+.feed__icon--warn { background: var(--warning-bg); color: var(--warning); }
+.feed__icon--urgent { background: var(--danger-bg); color: var(--danger); }
+
+.feed__time {
+  white-space: nowrap;
+  flex: none;
+}
+
+/* --- Stat row: four readings on one rule --------------------------------- */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: var(--space-4);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.stat-row__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+@media (max-width: 720px) {
+  .today { padding: var(--space-4); }
+  .today__row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+  .feed__row { grid-template-columns: 26px minmax(0, 1fr); padding: var(--space-4); }
+  .feed__time { grid-column: 2; }
+  .team-list__row { flex-wrap: wrap; }
+}
+
+/* --- Demonstration notice ------------------------------------------------
+   Deliberately not dismissible and deliberately not subtle. It sits above the
+   content on every page because the failure it prevents — a prospect or an
+   owner reading fictional figures as their own — is expensive and silent. */
+.demo-banner {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-6);
+  border-bottom: 1px solid var(--warning-line);
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.demo-banner--empty {
+  background: var(--neutral-bg);
+  border-bottom-color: var(--neutral-line);
+  color: var(--text-secondary);
+}
+
+.demo-banner__tag {
+  flex: none;
+  font-size: var(--text-3xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--warning);
+  color: var(--surface);
+}
+
+.demo-banner--empty .demo-banner__tag {
+  background: var(--text-muted);
+}
+
+.demo-banner__text {
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+  min-width: 0;
+}
+
+@media (max-width: 720px) {
+  .demo-banner { padding: var(--space-3) var(--space-4); }
+}
+
+.feed__count {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+  background: var(--neutral-bg);
+  border-radius: var(--radius-pill);
+  padding: 1px var(--space-2);
+  flex: none;
+}

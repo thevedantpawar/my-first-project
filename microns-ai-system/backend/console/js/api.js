@@ -122,6 +122,11 @@ export const api = {
   insights: (days = 30) => request(`/console/api/insights${qs({ days })}`),
   system: () => request("/console/api/system"),
 
+  // --- V4 owner projections --------------------------------------------- //
+  commandCenter: (days = 30) => request(`/console/api/command-center${qs({ days })}`),
+  recovery: (days = 90) => request(`/console/api/recovery${qs({ days })}`),
+  activity: (limit = 40) => request(`/console/api/activity${qs({ limit })}`),
+
   // --- Existing engine endpoints, unchanged ----------------------------- //
   appointments: (params) => request(`/api/appointments${qs(params)}`),
   appointmentsUpcoming: (withinHours = 168) =>
