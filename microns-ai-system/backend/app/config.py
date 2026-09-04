@@ -130,6 +130,12 @@ class Settings(BaseSettings):
     #: demonstration. Refused in production; see ``demo_service``.
     demo_mode: bool = False
 
+    #: Seed the demonstration clinic at startup when demo mode is on and
+    #: nothing is seeded yet. Exists for hosted demos, where there is no shell
+    #: to run ``python -m app.cli demo seed`` in. Inherits every guard the CLI
+    #: has: it is a no-op in production, and a no-op when data already exists.
+    demo_seed_on_boot: bool = False
+
     # --- Retention tuning --------------------------------------------------
     reactivation_days: int = 45
     review_request_delay_days: int = 5

@@ -280,3 +280,39 @@ def test_the_day_is_not_absurdly_overbooked(seeded):
     """Guards the seeding artefact where every auto-booking landed today."""
     today = ConsoleService(seeded).overview(days=30)["bookings"]["today"]
     assert today <= 6, f"{today} appointments in one demo day reads as broken"
+
+
+# --------------------------------------------------------------------- #
+# Boot-time seeding (hosted demos)
+# --------------------------------------------------------------------- #
+def test_boot_seeding_is_off_by_default(db, monkeypatch):
+    from app.main import _seed_demo_if_requested
+
+    monkeypatch.setattr("app.config.settings.demo_seed_on_boot", False)
+    _seed_demo_if_requested()
+    assert db.execute(select(func.count(Patient.id))).scalar_one() == 0
+
+
+def test_boot_seeding_never_stacks_a_second_clinic(db, monkeypatch):
+    """A restart must not double the data or reset a demo in progress."""
+    from app.main import _seed_demo_if_requested
+
+    monkeypatch.setattr("app.config.settings.demo_seed_on_boot", True)
+    demo_service.seed(db)
+    before = db.execute(select(func.count(Patient.id))).scalar_one()
+
+    _seed_demo_if_requested()
+
+    assert db.execute(select(func.count(Patient.id))).scalar_one() == before
+
+
+def test_boot_seeding_is_refused_in_production_without_crashing(db, monkeypatch):
+    """The guard holds, and a refused seed must not stop the app booting."""
+    from app.main import _seed_demo_if_requested
+
+    monkeypatch.setattr("app.config.settings.demo_seed_on_boot", True)
+    monkeypatch.setattr("app.config.settings.environment", "production")
+
+    _seed_demo_if_requested()  # must not raise
+
+    assert db.execute(select(func.count(Patient.id))).scalar_one() == 0

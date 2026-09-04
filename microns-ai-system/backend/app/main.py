@@ -29,6 +29,41 @@ logging.basicConfig(
 logger = logging.getLogger("microns")
 
 
+def _seed_demo_if_requested() -> None:
+    """Load the demonstration clinic on boot, for hosted demos.
+
+    A demo deployed to a platform has no shell to run the seeding command in,
+    so the flag exists to do it at startup instead. It changes nothing about
+    the safety model — ``demo_service.seed`` still refuses outright in
+    production — and it will not run twice: an already-seeded database is left
+    exactly as it is, so a restart never stacks a second clinic on the first
+    or resets whatever a prospect did during a demo.
+
+    Failures are logged and swallowed. A demo that fails to seed should serve
+    an empty console, which the banner explains, rather than refuse to boot.
+    """
+    if not settings.demo_seed_on_boot:
+        return
+
+    from app.database import SessionLocal
+    from app.services import demo_service
+
+    db = SessionLocal()
+    try:
+        state = demo_service.demo_state(db)
+        if state["seeded"]:
+            logger.info("DEMO_SEED_ON_BOOT: %s already seeded, leaving it alone", state["clinic"])
+            return
+        counts = demo_service.seed(db)
+        logger.info("DEMO_SEED_ON_BOOT: seeded %s", counts)
+    except demo_service.DemoModeRefused as exc:
+        logger.warning("DEMO_SEED_ON_BOOT ignored: %s", exc)
+    except Exception:
+        logger.exception("DEMO_SEED_ON_BOOT failed; the console will show an empty demo")
+    finally:
+        db.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Refuses to boot in production with default or missing secrets.
@@ -38,6 +73,7 @@ async def lifespan(app: FastAPI):
         logger.warning("STARTUP: %s", warning)
 
     init_db()
+    _seed_demo_if_requested()
     logger.info(
         "Microns AI System v%s ready (env=%s, booking=%s, llm=%s, sms=%s)",
         __version__,
