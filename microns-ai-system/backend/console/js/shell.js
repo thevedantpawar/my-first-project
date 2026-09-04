@@ -9,6 +9,7 @@ import { state, subscribe, setWindow, invalidate } from "./store.js";
 import { navigate} from "./router.js";
 import { button, iconButton, badge, note } from "./ui/components.js";
 import { openPalette, toast } from "./ui/overlays.js";
+import { initTour, tourLaunchButton } from "./ui/tour.js";
 
 export const NAV = [
   {
@@ -159,6 +160,7 @@ export function renderSignIn(container, { onSuccess, reason }) {
 let pageContainer;
 let navLinks = new Map();
 let demoBannerNode;
+let tourNode;
 let breadcrumbNode;
 let sidebarNode;
 let scrimNode;
@@ -300,6 +302,7 @@ export function renderShell(container, { onSignOut }) {
   // records, so the notice sits above the content on every single page rather
   // than in a settings screen nobody opens.
   demoBannerNode = el("div", { id: "demo-banner", hidden: true });
+  tourNode = el("div", { id: "tour-root" });
 
   pageContainer = el("main", { id: "main", tabindex: "-1" });
   scrimNode = el("div.scrim", { dataset: { visible: "false" }, onClick: closeSidebar });
@@ -308,11 +311,13 @@ export function renderShell(container, { onSignOut }) {
     container,
     el("a.skip-link", { href: "#main", text: "Skip to content" }),
     el("div.app", null, sidebarNode, el("div.content", null, topbar, demoBannerNode, pageContainer)),
+    tourNode,
     scrimNode
   );
 
   subscribe(refreshChrome);
   refreshChrome();
+  initTour(tourNode);
   return pageContainer;
 }
 
@@ -344,7 +349,8 @@ function renderDemoBanner(demo) {
         text: demo.seeded
           ? `You are looking at ${demo.clinic}, a fictional clinic. Every patient, appointment and figure here is demonstration data — no real patient information is present.`
           : "Demo mode is on, but no demonstration data has been loaded, so every figure below is genuinely zero. Run `python -m app.cli demo seed` to load the example clinic.",
-      })
+      }),
+      demo.seeded ? el("span.demo-banner__action", null, tourLaunchButton()) : null
     )
   );
 }

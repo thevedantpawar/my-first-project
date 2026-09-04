@@ -7,6 +7,7 @@ import { api, auth, ApiError } from "./api.js";
 import { load, invalidate } from "./store.js";
 import { defineRoute, setNotFound, onRouteChange, startRouter, navigate } from "./router.js";
 import { renderShell, renderSignIn, highlightNav, setBreadcrumb, NAV } from "./shell.js";
+import { refreshTour } from "./ui/tour.js";
 import {
   initOverlays,
   openPalette,
@@ -142,6 +143,9 @@ function registerRoutes() {
   onRouteChange(({ path }) => {
     closeDrawer();
     highlightNav(path);
+    // The walkthrough panel is outside the page container, so it survives the
+    // re-render but needs repainting to advance its own state.
+    refreshTour();
     window.scrollTo({ top: 0 });
     page.focus({ preventScroll: true });
   });

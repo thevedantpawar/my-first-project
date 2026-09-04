@@ -295,7 +295,8 @@ client. There is no separate console session and no cookie.
 
 | Page | What it answers |
 |---|---|
-| Overview | What did my AI team handle, and what needs me now? |
+| Overview | The Revenue Command Center — what came in, what needs me, what the team did |
+| Recovery | No-shows, cancellations and dormant clients: attempted, and won back |
 | Opportunities | Every recoverable moment — leads, missed visits, dormant clients, callbacks — with the recommended action |
 | Conversations | Every enquiry across chat, text and phone, and who is handling it |
 | Leads | The pipeline, with intent, score, journey and next best action |
@@ -438,6 +439,27 @@ validation, VAPI secret verification, and a rate limiter on the public chat.
 ```bash
 docker compose exec backend python -m app.cli audit-report --days 30
 ```
+
+---
+
+## Demo mode
+
+```bash
+python -m app.cli demo seed     # load the Glow Aesthetics example clinic
+python -m app.cli demo status   # what is loaded
+python -m app.cli demo clear    # remove it, and only it
+```
+
+Set `DEMO_MODE=true` and `CLINIC_NAME=Glow Aesthetics`. The console then shows
+a demonstration banner on every page and offers a ten-step guided walkthrough
+through the whole revenue loop.
+
+Seeding is **refused when `ENVIRONMENT=production`**, with no override flag.
+Every demo phone number is in the 555-0100 block reserved for fiction, and
+every row is tagged so teardown can never touch a real record.
+
+Full details, including the pricing model V4 introduced and the production
+checklist, are in [`docs/V4.md`](docs/V4.md).
 
 ---
 

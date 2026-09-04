@@ -1107,3 +1107,97 @@
   padding: 1px var(--space-2);
   flex: none;
 }
+
+/* --- Guided walkthrough --------------------------------------------------
+   A fixed panel rather than a modal: the point of the tour is that the
+   prospect can click around the real console while it is open, so it must
+   never trap focus or block the page. */
+.tour {
+  position: fixed;
+  right: var(--space-6);
+  bottom: var(--space-6);
+  z-index: var(--z-drawer);
+  width: min(400px, calc(100vw - var(--space-8)));
+  padding: var(--space-5);
+  background: var(--surface-inverse);
+  color: var(--text-inverse);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.tour__head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2) var(--space-3);
+  align-items: start;
+}
+
+.tour__count {
+  grid-column: 1;
+  font-family: var(--font-mono, monospace);
+  font-size: var(--text-3xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  opacity: 0.62;
+}
+
+.tour__title {
+  grid-column: 1;
+  grid-row: 2;
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-snug);
+  line-height: var(--leading-tight);
+}
+
+.tour__head .icon-btn {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  color: var(--text-inverse);
+  opacity: 0.7;
+}
+
+.tour__head .icon-btn:hover { opacity: 1; background: rgba(255, 255, 255, 0.12); }
+
+.tour__body {
+  margin: var(--space-3) 0 var(--space-5);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  opacity: 0.86;
+}
+
+.tour__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.tour__dots { display: flex; gap: 5px; }
+
+.tour__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.tour__dot--done { background: rgba(255, 255, 255, 0.5); }
+.tour__dot--on { background: var(--text-inverse); width: 16px; border-radius: var(--radius-pill); }
+
+.tour .btn--ghost { color: var(--text-inverse); opacity: 0.78; }
+.tour .btn--ghost:hover { opacity: 1; background: rgba(255, 255, 255, 0.12); }
+
+.demo-banner__action { flex: none; margin-left: auto; }
+.demo-banner__action .btn { height: 28px; padding: 0 var(--space-3); font-size: var(--text-2xs); }
+
+@media (max-width: 720px) {
+  .tour {
+    right: var(--space-3);
+    left: var(--space-3);
+    bottom: var(--space-3);
+    width: auto;
+  }
+  .demo-banner__action { margin-left: 0; }
+}
