@@ -103,6 +103,18 @@ class Settings(BaseSettings):
     booking_api_base_url: Optional[str] = None
     booking_calendar_id: Optional[str] = None
 
+    # --- Google Calendar ---------------------------------------------------
+    #: Set BOOKING_SYSTEM_TYPE=google to book into a Google Calendar.
+    #:
+    #: A refresh token rather than a service account, so the same setup works
+    #: for a Workspace clinic calendar and for an owner's ordinary Google
+    #: account. Obtain it once through the OAuth consent flow for the scope
+    #: https://www.googleapis.com/auth/calendar — see docs/V4.md.
+    google_calendar_id: Optional[str] = None          # "primary", or a calendar address
+    google_oauth_client_id: Optional[str] = None
+    google_oauth_client_secret: Optional[str] = None
+    google_oauth_refresh_token: Optional[str] = None
+
     # --- Calendly ----------------------------------------------------------
     calendly_api_key: Optional[str] = None
     calendly_event_type_uri: Optional[str] = None
@@ -258,6 +270,15 @@ class Settings(BaseSettings):
     @property
     def calendly_enabled(self) -> bool:
         return bool(self.calendly_api_key and self.calendly_event_type_uri)
+
+    @property
+    def google_calendar_enabled(self) -> bool:
+        """All three OAuth values present. Two out of three is not connected."""
+        return bool(
+            self.google_oauth_client_id
+            and self.google_oauth_client_secret
+            and self.google_oauth_refresh_token
+        )
 
     def startup_warnings(self) -> List[str]:
         """Deployment problems worth shouting about at boot.

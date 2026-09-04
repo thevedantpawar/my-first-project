@@ -1739,19 +1739,7 @@ class ConsoleService:
                     else "Not connected — this system books into its own calendar instead"
                 ),
             },
-            {
-                "id": "booking",
-                "name": "Practice calendar",
-                "provider": settings.booking_system_type,
-                "connected": settings.booking_system_type != "generic"
-                and bool(settings.booking_api_key),
-                "purpose": "Keeps appointments in step with your practice software.",
-                "detail": (
-                    f"Connected to {settings.booking_system_type}"
-                    if settings.booking_system_type != "generic" and settings.booking_api_key
-                    else "Using the built-in calendar"
-                ),
-            },
+            _booking_integration(),
         ]
 
         return {
@@ -2029,6 +2017,66 @@ def _outcome_label(value: Optional[str]) -> str:
     if not value:
         return "Call"
     return _OUTCOMES.get(value, value.replace("_", " ").capitalize())
+
+
+def _booking_integration() -> dict[str, Any]:
+    """Whether the practice calendar is genuinely wired up.
+
+    Each backend proves it differently — the vendor adapters need an API key,
+    Google needs three OAuth values — so "connected" is answered per provider
+    rather than by looking for a key that Google never uses. Two out of three
+    OAuth values is not connected, and the detail line says which is missing
+    without printing any of them.
+    """
+    kind = (settings.booking_system_type or "generic").lower()
+
+    if kind in ("google", "google_calendar"):
+        connected = settings.google_calendar_enabled
+        missing = [
+            name
+            for name, value in (
+                ("client ID", settings.google_oauth_client_id),
+                ("client secret", settings.google_oauth_client_secret),
+                ("refresh token", settings.google_oauth_refresh_token),
+            )
+            if not value
+        ]
+        return {
+            "id": "booking",
+            "name": "Practice calendar",
+            "provider": "Google Calendar",
+            "connected": connected,
+            "purpose": "Books appointments straight into the clinic's calendar.",
+            "detail": (
+                f"Writing to {settings.google_calendar_id or 'primary'}"
+                if connected
+                else "Not connected — still missing the " + ", ".join(missing)
+            ),
+        }
+
+    if kind in ("generic", "internal"):
+        return {
+            "id": "booking",
+            "name": "Practice calendar",
+            "provider": "Built-in scheduler",
+            "connected": False,
+            "purpose": "Keeps appointments in step with your practice software.",
+            "detail": "Using the built-in calendar — no external system connected",
+        }
+
+    connected = bool(settings.booking_api_key)
+    return {
+        "id": "booking",
+        "name": "Practice calendar",
+        "provider": settings.booking_system_type,
+        "connected": connected,
+        "purpose": "Keeps appointments in step with your practice software.",
+        "detail": (
+            f"Connected to {settings.booking_system_type}"
+            if connected
+            else f"{settings.booking_system_type} selected but no API key is set"
+        ),
+    }
 
 
 def _event_row(event: RetentionEvent) -> dict[str, Any]:

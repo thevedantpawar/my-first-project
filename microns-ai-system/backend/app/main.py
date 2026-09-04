@@ -237,6 +237,7 @@ def health() -> HealthResponse:
             "twilio": settings.twilio_enabled,
             "vapi": bool(settings.vapi_webhook_secret),
             "calendly": settings.calendly_enabled,
+            "google_calendar": settings.google_calendar_enabled,
             "encryption_key_configured": bool(settings.encryption_key),
         },
         llm={
