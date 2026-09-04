@@ -152,16 +152,48 @@ svg {
 /* --------------------------------------------------------------------------
    Shell
    -------------------------------------------------------------------------- */
+/* The rail's ground runs behind everything, and the working area sits on top
+   of it as its own surface. That is what puts space between the two instead
+   of butting them together along a hairline. */
 .app {
   display: grid;
   grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
   min-height: 100vh;
+  background: var(--bg-tinted);
+  transition: grid-template-columns var(--duration-slow) var(--ease);
 }
 
 .content {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  background: var(--bg);
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  border-left: 1px solid var(--border-subtle);
+  border-top-left-radius: var(--radius-xl);
+}
+
+/* --- Collapsed navigation -------------------------------------------------
+   Full-width working area. The rail is taken out of the grid rather than
+   merely hidden, so nothing keeps a column reserved for it, and the working
+   surface drops its inset and corner because there is no longer anything to
+   sit beside. */
+.app[data-nav="collapsed"] {
+  grid-template-columns: 0 minmax(0, 1fr);
+}
+
+.app[data-nav="collapsed"] .sidebar {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.app[data-nav="collapsed"] .content {
+  margin-top: 0;
+  border-top: 0;
+  border-left: 0;
+  border-top-left-radius: 0;
 }
 
 .page {
@@ -251,8 +283,9 @@ svg {
   z-index: var(--z-sidebar);
   display: flex;
   flex-direction: column;
-  background: var(--bg-tinted);
-  border-right: 1px solid var(--border-subtle);
+  background: transparent;
+  overflow: hidden;
+  transition: opacity var(--duration) var(--ease);
 }
 
 .sidebar__brand {
@@ -513,9 +546,14 @@ svg {
   background: rgba(248, 247, 244, 0.82);
   backdrop-filter: saturate(180%) blur(14px);
   border-bottom: 1px solid var(--border-subtle);
+  border-top-left-radius: var(--radius-xl);
 }
 
-.topbar__menu { display: none; }
+.app[data-nav="collapsed"] .topbar { border-top-left-radius: 0; }
+
+/* Shown at every width. On a wide screen it collapses the rail for a
+   full-width dashboard; on a narrow one it opens the rail as a drawer. */
+.topbar__menu { flex: none; }
 
 .breadcrumb {
   display: flex;
@@ -585,9 +623,25 @@ svg {
 }
 
 @media (max-width: 900px) {
-  .app { grid-template-columns: minmax(0, 1fr); }
+  /* Below this width the rail is a drawer, so the collapsed state does not
+     apply — the working surface is already full width and the same button
+     opens the drawer instead. */
+  .app,
+  .app[data-nav="collapsed"] { grid-template-columns: minmax(0, 1fr); }
 
-  .sidebar {
+  .content,
+  .app[data-nav="collapsed"] .content {
+    margin-top: 0;
+    border-top: 0;
+    border-left: 0;
+    border-top-left-radius: 0;
+  }
+
+  .topbar,
+  .app[data-nav="collapsed"] .topbar { border-top-left-radius: 0; }
+
+  .sidebar,
+  .app[data-nav="collapsed"] .sidebar {
     position: fixed;
     inset: 0 auto 0 0;
     width: min(292px, 86vw);
@@ -595,6 +649,9 @@ svg {
     transition: transform var(--duration-slow) var(--ease);
     box-shadow: var(--shadow-lg);
     background: var(--surface);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 
   .sidebar[data-open="true"] { transform: translateX(0); }

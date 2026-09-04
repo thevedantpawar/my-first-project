@@ -159,6 +159,8 @@ export function renderSignIn(container, { onSuccess, reason }) {
    ------------------------------------------------------------------------- */
 let pageContainer;
 let navLinks = new Map();
+let appNode;
+let menuButton;
 let demoBannerNode;
 let tourNode;
 let breadcrumbNode;
@@ -200,7 +202,7 @@ export function renderShell(container, { onSignOut }) {
 
   sidebarNode = el(
     "aside.sidebar",
-    { dataset: { open: "false" }, "aria-label": "Main" },
+    { id: "sidebar", dataset: { open: "false" }, "aria-label": "Main" },
     el(
       "div.sidebar__brand",
       null,
@@ -271,11 +273,17 @@ export function renderShell(container, { onSignOut }) {
   const topbar = el(
     "header.topbar",
     null,
-    el(
+    (menuButton = el(
       "button.icon-btn.topbar__menu",
-      { type: "button", "aria-label": "Open navigation", onClick: toggleSidebar },
+      {
+        type: "button",
+        "aria-label": "Hide navigation",
+        "aria-expanded": "true",
+        "aria-controls": "sidebar",
+        onClick: toggleSidebar,
+      },
       icon("menu", 20)
-    ),
+    )),
     breadcrumbNode,
     el("div.topbar__spacer"),
     el(
@@ -304,16 +312,30 @@ export function renderShell(container, { onSignOut }) {
   demoBannerNode = el("div", { id: "demo-banner", hidden: true });
   tourNode = el("div", { id: "tour-root" });
 
-  pageContainer = el("main", { id: "main", tabindex: "-1" });
+  // .page carries the working area's padding, max width and centring. It has
+  // been in the stylesheet since V3 and was never applied to anything, so the
+  // content ran flush to the edge of its container; collapsing the rail made
+  // that obvious by putting the first character at x=0.
+  pageContainer = el("main.page", { id: "main", tabindex: "-1" });
   scrimNode = el("div.scrim", { dataset: { visible: "false" }, onClick: closeSidebar });
+
+  appNode = el(
+    "div.app",
+    { dataset: { nav: "expanded" } },
+    sidebarNode,
+    el("div.content", null, topbar, demoBannerNode, pageContainer)
+  );
 
   mount(
     container,
     el("a.skip-link", { href: "#main", text: "Skip to content" }),
-    el("div.app", null, sidebarNode, el("div.content", null, topbar, demoBannerNode, pageContainer)),
+    appNode,
     tourNode,
     scrimNode
   );
+
+  restoreNavState();
+  watchBreakpoint();
 
   subscribe(refreshChrome);
   refreshChrome();
@@ -456,17 +478,104 @@ function setText(id, value) {
 /* -------------------------------------------------------------------------
    Mobile navigation
    ------------------------------------------------------------------------- */
+const NAV_KEY = "microns.console.navCollapsed";
+
+/** Below this width the rail is a drawer; above it, a column that collapses. */
+function isNarrow() {
+  return window.matchMedia("(max-width: 900px)").matches;
+}
+
+/**
+ * One button, two jobs.
+ *
+ * On a narrow screen the rail is an overlay drawer, so this opens and closes
+ * it over a scrim. On a wide screen the rail is a grid column, so this
+ * collapses it and gives the dashboard the full width — no scrim, because
+ * nothing is covering anything.
+ *
+ * Before V4 this ran the drawer logic at every width, which on a desktop meant
+ * dimming the whole page behind a sidebar that never moved.
+ */
 function toggleSidebar() {
-  const open = sidebarNode.dataset.open === "true";
-  sidebarNode.dataset.open = String(!open);
-  scrimNode.dataset.visible = String(!open);
+  if (isNarrow()) {
+    const open = sidebarNode.dataset.open === "true";
+    sidebarNode.dataset.open = String(!open);
+    scrimNode.dataset.visible = String(!open);
+    syncMenuButton();
+    return;
+  }
+  setNavCollapsed(appNode.dataset.nav !== "collapsed");
+}
+
+function setNavCollapsed(collapsed, { persist = true } = {}) {
+  appNode.dataset.nav = collapsed ? "collapsed" : "expanded";
+  // A collapsed rail is off-screen furniture: keep it out of the tab order
+  // rather than leaving invisible links for a keyboard to walk into.
+  sidebarNode.inert = collapsed;
+  sidebarNode.setAttribute("aria-hidden", collapsed ? "true" : "false");
+
+  if (persist) {
+    try {
+      if (collapsed) localStorage.setItem(NAV_KEY, "1");
+      else localStorage.removeItem(NAV_KEY);
+    } catch {
+      /* A private window still gets a working toggle, just not a remembered one. */
+    }
+  }
+  syncMenuButton();
+}
+
+/**
+ * Re-apply the right state when the viewport crosses the breakpoint.
+ *
+ * Without this, collapsing on a wide screen and then narrowing leaves the rail
+ * marked inert — so the drawer opens visually and refuses every click.
+ */
+function watchBreakpoint() {
+  const query = window.matchMedia("(max-width: 900px)");
+  const apply = () => {
+    if (query.matches) {
+      // Drawer territory: the rail must be reachable again, and shut.
+      sidebarNode.inert = false;
+      sidebarNode.setAttribute("aria-hidden", "false");
+      appNode.dataset.nav = "expanded";
+      closeSidebar();
+    } else {
+      closeSidebar();
+      restoreNavState();
+    }
+  };
+  if (query.addEventListener) query.addEventListener("change", apply);
+  else query.addListener(apply);
+}
+
+function restoreNavState() {
+  let collapsed = false;
+  try {
+    collapsed = localStorage.getItem(NAV_KEY) === "1";
+  } catch {
+    collapsed = false;
+  }
+  // The stored preference is a wide-screen one. A narrow viewport always
+  // starts with the drawer shut, which is the same thing by a different route.
+  setNavCollapsed(collapsed && !isNarrow(), { persist: false });
+}
+
+function syncMenuButton() {
+  if (!menuButton) return;
+  const shown = isNarrow()
+    ? sidebarNode.dataset.open === "true"
+    : appNode.dataset.nav !== "collapsed";
+  menuButton.setAttribute("aria-expanded", String(shown));
+  menuButton.setAttribute("aria-label", shown ? "Hide navigation" : "Show navigation");
 }
 
 function closeSidebar() {
   sidebarNode.dataset.open = "false";
   scrimNode.dataset.visible = "false";
+  syncMenuButton();
 }
 
 function closeSidebarOnMobile() {
-  if (window.matchMedia("(max-width: 900px)").matches) closeSidebar();
+  if (isNarrow()) closeSidebar();
 }
