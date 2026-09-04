@@ -39,6 +39,7 @@ from app.services.encryption import get_encryption_service, normalise_identifier
 from app.services.hipaa_audit import AuditAction, DataCategory, HIPAAAuditLogger
 from app.services.llm import get_llm
 from app.services.notifier import notify_voice_handoff
+from app.services import pricing_service
 from app.services.patient_service import find_by_phone, get_or_create_patient
 from app.services.sms_service import SMSService
 from app.utils import format_appointment_time, parse_datetime, utcnow
@@ -266,6 +267,7 @@ class VoiceService:
             external_id=reference.external_id,
             extra={"booked_by": "voice_agent", "vapi_call_id": call_id},
         )
+        pricing_service.apply_expected_price(appointment)
         self.db.add(appointment)
         self.db.flush()
 

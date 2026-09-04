@@ -22,6 +22,7 @@ from typing import Any, Optional
 
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.models.audit_log import AuditAction, AuditLog, DataCategory
 from app.services.encryption import get_encryption_service
 from app.utils import utcnow
@@ -154,7 +155,10 @@ class HIPAAAuditLogger:
                 "model": model,
                 "deidentified": deidentified,
                 "token_count": token_count,
-                "vendor": "openai",
+                # The vendor that actually received the prompt. An auditor
+                # asking "where did this text go" needs the real answer, not
+                # whichever vendor the code was first written against.
+                "vendor": settings.llm_vendor,
             },
         )
 

@@ -453,7 +453,7 @@ class RetentionService:
             system=system,
             user=user,
             purpose="review_response_draft",
-            model=settings.openai_model_smart,
+            model=settings.llm_model_smart,
             temperature=0.6,
             max_tokens=200,
             audit=self.audit,

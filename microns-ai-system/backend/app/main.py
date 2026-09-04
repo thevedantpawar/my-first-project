@@ -11,7 +11,7 @@ from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from starlette.middleware.trustedhost import TrustedHostMiddleware
@@ -19,7 +19,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from app import __version__
 from app.config import settings
 from app.database import engine, init_db
-from app.routers import appointments, internal, leads, retention, voice, webhooks
+from app.routers import appointments, console, internal, leads, retention, voice, webhooks
 from app.schemas import HealthResponse
 
 logging.basicConfig(
@@ -27,6 +27,41 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
 )
 logger = logging.getLogger("microns")
+
+
+def _seed_demo_if_requested() -> None:
+    """Load the demonstration clinic on boot, for hosted demos.
+
+    A demo deployed to a platform has no shell to run the seeding command in,
+    so the flag exists to do it at startup instead. It changes nothing about
+    the safety model — ``demo_service.seed`` still refuses outright in
+    production — and it will not run twice: an already-seeded database is left
+    exactly as it is, so a restart never stacks a second clinic on the first
+    or resets whatever a prospect did during a demo.
+
+    Failures are logged and swallowed. A demo that fails to seed should serve
+    an empty console, which the banner explains, rather than refuse to boot.
+    """
+    if not settings.demo_seed_on_boot:
+        return
+
+    from app.database import SessionLocal
+    from app.services import demo_service
+
+    db = SessionLocal()
+    try:
+        state = demo_service.demo_state(db)
+        if state["seeded"]:
+            logger.info("DEMO_SEED_ON_BOOT: %s already seeded, leaving it alone", state["clinic"])
+            return
+        counts = demo_service.seed(db)
+        logger.info("DEMO_SEED_ON_BOOT: seeded %s", counts)
+    except demo_service.DemoModeRefused as exc:
+        logger.warning("DEMO_SEED_ON_BOOT ignored: %s", exc)
+    except Exception:
+        logger.exception("DEMO_SEED_ON_BOOT failed; the console will show an empty demo")
+    finally:
+        db.close()
 
 
 @asynccontextmanager
@@ -38,12 +73,13 @@ async def lifespan(app: FastAPI):
         logger.warning("STARTUP: %s", warning)
 
     init_db()
+    _seed_demo_if_requested()
     logger.info(
         "Microns AI System v%s ready (env=%s, booking=%s, llm=%s, sms=%s)",
         __version__,
         settings.environment,
         settings.booking_system_type,
-        "openai" if settings.openai_enabled else "rule-engine",
+        f"{settings.llm_provider}:{settings.llm_model_fast}" if settings.llm_enabled else "rule-engine",
         "twilio" if settings.twilio_enabled else "dry-run",
     )
     yield
@@ -132,6 +168,19 @@ app.include_router(leads.router)
 app.include_router(webhooks.router)
 app.include_router(appointments.router)
 app.include_router(internal.router)
+app.include_router(console.router)
+
+
+def _console_dir() -> Path:
+    """Where the owner console's static files live.
+
+    Shipped inside ``backend/`` so it is present in the Docker image without
+    changing the build context. ``CONSOLE_DIR`` overrides it for a deployment
+    that serves the console from somewhere else.
+    """
+    if settings.console_dir:
+        return Path(settings.console_dir)
+    return Path(__file__).resolve().parents[1] / "console"
 
 
 def _widget_dir() -> Path:
@@ -147,6 +196,22 @@ if _widget_path.is_dir():
     logger.info("Chat widget served from %s at /widget", _widget_path)
 else:
     logger.warning("Chat widget directory not found at %s — /widget is not mounted", _widget_path)
+
+
+_console_path = _console_dir()
+if _console_path.is_dir():
+    # The console is a static single-page app. It talks to the same API as
+    # every other client, with a staff token the operator supplies at sign-in.
+    app.mount("/console/static", StaticFiles(directory=str(_console_path)), name="console")
+    logger.info("Owner console served from %s at /console", _console_path)
+
+    @app.get("/console", include_in_schema=False)
+    @app.get("/console/", include_in_schema=False)
+    def console_index():
+        return FileResponse(_console_path / "index.html")
+
+else:  # pragma: no cover - only when the console is deliberately not deployed
+    logger.warning("Console directory not found at %s — /console is not mounted", _console_path)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["health"])
@@ -165,11 +230,23 @@ def health() -> HealthResponse:
         version=__version__,
         database=database,
         integrations={
+            # Kept for existing consumers of this payload; it still means
+            # exactly what it always did — OpenAI specifically.
             "openai": settings.openai_enabled,
+            "gemini": settings.gemini_enabled,
             "twilio": settings.twilio_enabled,
             "vapi": bool(settings.vapi_webhook_secret),
             "calendly": settings.calendly_enabled,
+            "google_calendar": settings.google_calendar_enabled,
             "encryption_key_configured": bool(settings.encryption_key),
+        },
+        llm={
+            "provider": settings.llm_provider,
+            "enabled": settings.llm_enabled,
+            "model_fast": settings.llm_model_fast,
+            "model_smart": settings.llm_model_smart,
+            # False for Gemini: that endpoint has no zero-retention setting.
+            "zero_retention": settings.llm_zero_retention,
         },
         warnings=settings.startup_warnings(),
     )
@@ -188,6 +265,7 @@ def root() -> dict[str, Any]:
             "webhooks": "/webhooks",
             "internal": "/internal",
         },
+        "console": "/console",
         "docs": None if settings.is_production else "/docs",
         "widget": "/widget/microns-chat.js",
     }

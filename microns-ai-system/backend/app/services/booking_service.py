@@ -24,6 +24,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Optional
+from urllib.parse import quote
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -414,12 +415,291 @@ class MindbodyBookingAdapter(InternalBookingAdapter):
         )
 
 
+class GoogleCalendarBookingAdapter(BookingAdapter):
+    """Google Calendar (OAuth 2.0 refresh token).
+
+    Availability is the clinic's own opening hours minus everything already on
+    the calendar. The engine asks Google what is busy — via ``freeBusy.query``,
+    which returns opaque busy blocks and never event titles or attendees — and
+    removes those windows from the slots the internal scheduler would have
+    offered. Booking writes a real event, so the appointment shows up wherever
+    the clinic already looks.
+
+    **Why a refresh token rather than a service account.** A service account is
+    the tidier answer for a Workspace domain, but a med spa owner's calendar is
+    very often an ordinary consumer Google account, where sharing a calendar
+    with a service account is fiddly and domain-wide delegation does not exist
+    at all. A refresh token works identically for both, and the clinic can
+    revoke it from their Google account page without involving anyone.
+
+    Access tokens are exchanged on demand and cached until shortly before they
+    expire, so a busy clinic is not re-authenticating on every call.
+
+    Degrades to the internal scheduler whenever credentials are missing or
+    Google is unreachable — the phone line staying up matters more than a
+    booking landing in the right calendar on the first attempt, and the
+    appointment is still recorded locally for staff to reconcile.
+    """
+
+    name = "google_calendar"
+    base_url = "https://www.googleapis.com/calendar/v3"
+    token_url = "https://oauth2.googleapis.com/token"
+
+    def __init__(self, db: Session) -> None:
+        super().__init__(db)
+        self._fallback = InternalBookingAdapter(db)
+        self._access_token: Optional[str] = None
+        self._token_expires_at: Optional[datetime] = None
+
+    # ---------------------------------------------------------------- #
+    # Auth
+    # ---------------------------------------------------------------- #
+    @property
+    def configured(self) -> bool:
+        return bool(
+            settings.google_oauth_client_id
+            and settings.google_oauth_client_secret
+            and settings.google_oauth_refresh_token
+            and httpx is not None
+        )
+
+    def _token(self) -> Optional[str]:
+        """A valid access token, exchanged from the refresh token if needed."""
+        if not self.configured:
+            return None
+
+        now = utcnow()
+        if self._access_token and self._token_expires_at and now < self._token_expires_at:
+            return self._access_token
+
+        try:
+            response = httpx.post(
+                self.token_url,
+                data={
+                    "client_id": settings.google_oauth_client_id,
+                    "client_secret": settings.google_oauth_client_secret,
+                    "refresh_token": settings.google_oauth_refresh_token,
+                    "grant_type": "refresh_token",
+                },
+                timeout=10.0,
+            )
+            response.raise_for_status()
+            payload = response.json()
+        except Exception as exc:  # pragma: no cover - network
+            # Never log the body: a token endpoint's error response can echo
+            # the client id back, and the exception type is enough to debug.
+            logger.error("Google token exchange failed: %s", type(exc).__name__)
+            return None
+
+        token = payload.get("access_token")
+        if not token:
+            logger.error("Google token exchange returned no access_token")
+            return None
+
+        # Expire a minute early so a request never starts on a token that
+        # dies mid-flight.
+        lifetime = int(payload.get("expires_in", 3600))
+        self._access_token = token
+        self._token_expires_at = now + timedelta(seconds=max(lifetime - 60, 30))
+        return token
+
+    @property
+    def _calendar_id(self) -> str:
+        return settings.google_calendar_id or "primary"
+
+    def _headers(self, token: str) -> dict[str, str]:
+        return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+
+    # ---------------------------------------------------------------- #
+    # Availability
+    # ---------------------------------------------------------------- #
+    def get_available_slots(self, *, service: str, days_ahead: int = 7, limit: int = 12) -> list[Slot]:
+        # The clinic's hours are the starting point either way; Google only
+        # ever removes slots, never adds them.
+        candidates = self._fallback.get_available_slots(
+            service=service, days_ahead=days_ahead, limit=limit * 3
+        )
+        token = self._token()
+        if not token or not candidates:
+            return candidates[:limit]
+
+        busy = self._busy_windows(token, days_ahead)
+        if busy is None:
+            # Could not ask. Offering the internal slots is the safe failure:
+            # a double booking is visible and fixable, a phone agent with no
+            # times to offer is not.
+            logger.warning("Google freeBusy unavailable; offering internal slots")
+            return candidates[:limit]
+
+        free = [slot for slot in candidates if not _overlaps(slot.start, slot.end, busy)]
+        return free[:limit]
+
+    def _busy_windows(self, token: str, days_ahead: int) -> Optional[list[tuple[datetime, datetime]]]:
+        """Ask Google what is already booked.
+
+        ``freeBusy.query`` returns time ranges only — no titles, no attendees,
+        no descriptions. That is deliberately the endpoint used here: the
+        engine needs to know when the clinic is busy, and has no business
+        reading what the appointments are.
+        """
+        now = utcnow()
+        try:
+            response = httpx.post(
+                f"{self.base_url}/freeBusy",
+                headers=self._headers(token),
+                json={
+                    "timeMin": now.isoformat() + "Z",
+                    "timeMax": (now + timedelta(days=days_ahead + 1)).isoformat() + "Z",
+                    "items": [{"id": self._calendar_id}],
+                },
+                timeout=10.0,
+            )
+            response.raise_for_status()
+            payload = response.json()
+        except Exception as exc:  # pragma: no cover - network
+            logger.error("Google freeBusy failed: %s", type(exc).__name__)
+            return None
+
+        calendar = (payload.get("calendars") or {}).get(self._calendar_id, {})
+        if calendar.get("errors"):
+            logger.error(
+                "Google freeBusy rejected calendar %r — check the id and that the "
+                "authorising account can see it",
+                self._calendar_id,
+            )
+            return None
+
+        windows: list[tuple[datetime, datetime]] = []
+        for block in calendar.get("busy", []):
+            start = parse_datetime(block.get("start"))
+            end = parse_datetime(block.get("end"))
+            if start and end:
+                windows.append((start, end))
+        return windows
+
+    # ---------------------------------------------------------------- #
+    # Writes
+    # ---------------------------------------------------------------- #
+    def create_booking(
+        self,
+        *,
+        service: str,
+        start: datetime,
+        patient_name: Optional[str],
+        patient_phone: Optional[str],
+        patient_email: Optional[str] = None,
+        duration_minutes: int = 30,
+    ) -> BookingRef:
+        token = self._token()
+        if not token:
+            return self._fallback.create_booking(
+                service=service,
+                start=start,
+                patient_name=patient_name,
+                patient_phone=patient_phone,
+                patient_email=patient_email,
+                duration_minutes=duration_minutes,
+            )
+
+        end = start + timedelta(minutes=duration_minutes)
+        # A calendar entry is not a medical record and must not become one.
+        # The title carries a first name and the service; the phone number
+        # goes in the description because staff need to call people, and
+        # nothing clinical is written at all.
+        summary = f"{_first_name_only(patient_name) or 'Client'} — {service.replace('_', ' ').title()}"
+        body: dict[str, Any] = {
+            "summary": summary,
+            "description": "Booked by Microns.\n"
+            + (f"Contact: {patient_phone}\n" if patient_phone else ""),
+            "start": {"dateTime": start.isoformat() + "Z"},
+            "end": {"dateTime": end.isoformat() + "Z"},
+            "extendedProperties": {"private": {"microns": "1"}},
+        }
+
+        try:
+            response = httpx.post(
+                f"{self.base_url}/calendars/{quote(self._calendar_id, safe='')}/events",
+                headers=self._headers(token),
+                json=body,
+                timeout=10.0,
+            )
+            response.raise_for_status()
+            event = response.json()
+        except Exception as exc:  # pragma: no cover - network
+            logger.error(
+                "Google Calendar booking failed: %s — recorded locally instead", type(exc).__name__
+            )
+            return self._fallback.create_booking(
+                service=service,
+                start=start,
+                patient_name=patient_name,
+                patient_phone=patient_phone,
+                patient_email=patient_email,
+                duration_minutes=duration_minutes,
+            )
+
+        return BookingRef(
+            external_id=event.get("id"),
+            confirmed=True,
+            provider_name=self.name,
+            raw={"htmlLink": event.get("htmlLink")},
+        )
+
+    def cancel_booking(self, external_id: str) -> bool:
+        token = self._token()
+        if not token or not external_id:
+            return False
+        try:
+            response = httpx.delete(
+                f"{self.base_url}/calendars/{quote(self._calendar_id, safe='')}/events/{quote(external_id, safe='')}",
+                headers=self._headers(token),
+                timeout=10.0,
+            )
+            # 410 means it is already gone, which is the outcome we wanted.
+            return response.status_code in (200, 204, 404, 410)
+        except Exception as exc:  # pragma: no cover - network
+            logger.error("Google Calendar cancel failed: %s", type(exc).__name__)
+            return False
+
+    def reschedule_booking(self, external_id: str, new_start: datetime) -> BookingRef:
+        token = self._token()
+        if not token or not external_id:
+            return BookingRef(external_id=external_id, confirmed=False, provider_name=self.name, raw={})
+
+        end = new_start + timedelta(minutes=settings.appointment_slot_minutes)
+        try:
+            response = httpx.patch(
+                f"{self.base_url}/calendars/{quote(self._calendar_id, safe='')}/events/{quote(external_id, safe='')}",
+                headers=self._headers(token),
+                json={
+                    "start": {"dateTime": new_start.isoformat() + "Z"},
+                    "end": {"dateTime": end.isoformat() + "Z"},
+                },
+                timeout=10.0,
+            )
+            response.raise_for_status()
+        except Exception as exc:  # pragma: no cover - network
+            logger.error("Google Calendar reschedule failed: %s", type(exc).__name__)
+            return BookingRef(external_id=external_id, confirmed=False, provider_name=self.name, raw={})
+
+        return BookingRef(external_id=external_id, confirmed=True, provider_name=self.name, raw={})
+
+
+def _first_name_only(name: Optional[str]) -> Optional[str]:
+    """A calendar is shared and glanceable; a surname on it is a disclosure."""
+    if not name:
+        return None
+    return name.strip().split(" ")[0]
+
+
 _ADAPTERS = {
     "generic": InternalBookingAdapter,
     "internal": InternalBookingAdapter,
     "acuity": AcuityBookingAdapter,
     "square": SquareBookingAdapter,
     "mindbody": MindbodyBookingAdapter,
+    "google": GoogleCalendarBookingAdapter,
+    "google_calendar": GoogleCalendarBookingAdapter,
 }
 
 

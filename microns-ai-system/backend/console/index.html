@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta
+      name="description"
+      content="Microns Revenue Engine — the owner console for your clinic's AI revenue team."
+    />
+    <title>Microns Revenue Engine</title>
+
+    <!--
+      No third-party requests. Fonts, icons and charts are all local or
+      inline: this console is served from the same origin as the PHI API, and
+      every external request it made would be one more place a URL could leak.
+    -->
+    <link rel="stylesheet" href="/console/static/styles/tokens.css" />
+    <link rel="stylesheet" href="/console/static/styles/base.css" />
+    <link rel="stylesheet" href="/console/static/styles/components.css" />
+    <link rel="stylesheet" href="/console/static/styles/pages.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230F766E'/%3E%3Cpath d='M16 7v18M7 16h18' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M16 11a5 5 0 0 0 5 5 5 5 0 0 0-5 5 5 5 0 0 0-5-5 5 5 0 0 0 5-5z' fill='white'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <div id="root">
+      <!-- Replaced on boot. Shown while the module graph loads. -->
+      <div style="min-height: 100vh; display: grid; place-items: center">
+        <p class="small muted" role="status">Opening your console…</p>
+      </div>
+    </div>
+    <div id="overlays"></div>
+
+    <noscript>
+      <div style="padding: 2rem; max-width: 40rem; margin: 0 auto">
+        <h1>JavaScript is required</h1>
+        <p>
+          The Microns console needs JavaScript to reach the Revenue Engine API. Enable it, or use
+          the API directly.
+        </p>
+      </div>
+    </noscript>
+
+    <script type="module" src="/console/static/js/main.js"></script>
+  </body>
+</html>

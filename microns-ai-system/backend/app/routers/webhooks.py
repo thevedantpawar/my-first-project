@@ -14,7 +14,7 @@ from typing import Any, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -26,6 +26,7 @@ from app.routers.voice import _parse_end_payload, verify_vapi_secret
 from app.schemas import ActionResult
 from app.services.hipaa_audit import DataCategory, HIPAAAuditLogger
 from app.services.notifier import notify_treatment_completed
+from app.services import pricing_service
 from app.services.patient_service import get_or_create_patient
 from app.services.retention_service import RetentionService
 from app.services.voice_service import VoiceService, extract_action
@@ -52,6 +53,10 @@ class BookingSystemEvent(BaseModel):
     service: Optional[str] = None
     scheduled_for: Optional[str] = None
     duration_minutes: int = 30
+    #: What the booking platform actually charged, when it tells us. This is
+    #: stronger evidence than the clinic's price list and is stored as a
+    #: recorded price rather than an expected one.
+    price_cents: Optional[int] = Field(default=None, ge=0)
 
 
 # --------------------------------------------------------------------- #
@@ -231,6 +236,12 @@ def booking_system_event(
         status=AppointmentStatus.CONFIRMED,
         source=AppointmentSource.BOOKING_SYSTEM,
     )
+    # The booking platform is the authority on what it charged. Fall back to
+    # the clinic's list value only when it tells us nothing.
+    if payload.price_cents is not None:
+        pricing_service.mark_recorded_price(appointment, payload.price_cents)
+    else:
+        pricing_service.apply_expected_price(appointment)
     db.add(appointment)
     audit.log_write(str(patient.id), DataCategory.APPOINTMENT, "booking-system")
     db.commit()
