@@ -254,9 +254,9 @@ def seed(db: Session, *, replace: bool = True) -> dict[str, Any]:
     # --- Cohorts ------------------------------------------------------ #
     # Sliced rather than sampled so the shape of the demo is fixed and the
     # numbers a salesperson quotes on Monday still hold on Thursday.
-    dormant = patients[0:8]
-    no_show_cohort = patients[8:14]
-    regulars = patients[14:]
+    dormant = patients[0:20]
+    no_show_cohort = patients[20:32]
+    regulars = patients[32:]
 
     counts["appointments"] += _seed_regular_history(db, rng, regulars, now)
     counts["appointments"] += _seed_upcoming(db, rng, regulars, now)
@@ -269,8 +269,13 @@ def seed(db: Session, *, replace: bool = True) -> dict[str, Any]:
     counts["appointments"] += reactivated
     counts["retention_events"] += events
 
+    cancelled, events = _seed_cancellations(db, rng, regulars, now)
+    counts["appointments"] += cancelled
+    counts["retention_events"] += events
+
     counts["retention_events"] += _seed_reminders_and_reviews(db, rng, regulars, now)
     counts["voice_calls"] += _seed_voice_calls(db, rng, patients, now)
+    counts["voice_calls"] += _seed_today(db, rng, regulars, now)
 
     db.commit()
 
@@ -312,7 +317,10 @@ def _tag_patients_created_by_the_engine(db: Session, known: set) -> int:
 
 def _make_people(rng: random.Random) -> list[tuple[str, str]]:
     people = []
-    for index in range(32):
+    # Sized to look like the clinic being sold to: a mid-size med spa with a
+    # real book, not a pilot with a dozen patients. The cast repeats with
+    # different surnames, which is what keeps the names obviously fictional.
+    for index in range(88):
         first = FIRST_NAMES[index % len(FIRST_NAMES)]
         last = LAST_NAMES[(index * 7 + 3) % len(LAST_NAMES)]
         people.append((first, last))
@@ -387,7 +395,7 @@ def _seed_regular_history(db, rng, patients, now) -> int:
     """Completed visits over the last six weeks — the clinic's baseline."""
     created = 0
     for patient in patients:
-        for _ in range(rng.randint(1, 2)):
+        for _ in range(rng.randint(1, 3)):
             days_ago = rng.randint(3, 88)
             when = now - timedelta(days=days_ago, hours=rng.randint(0, 8))
             source = rng.choice(
@@ -461,23 +469,44 @@ def _seed_no_show_and_recovery(db, rng, patients, now) -> tuple[int, int]:
         )
         events += 1
 
-        # Two of the six are still open — a demo where every recovery
-        # succeeds is not a demo anyone believes.
-        if index >= len(patients) - 2:
+        # Roughly a third are never contacted and a third of those contacted
+        # never come back. Expressed as fractions of the cohort so the rates
+        # hold whatever size the demo clinic is set to — a demo where every
+        # recovery succeeds is not a demo anyone believes.
+        contacted_cutoff = int(len(patients) * 0.67)
+        rebooked_cutoff = int(len(patients) * 0.42)
+
+        if index >= contacted_cutoff:
             continue
 
+        # Two steps, in the order RetentionService actually sends them: a
+        # recovery message within hours, then a rebooking credit a few days
+        # later if nothing has happened.
         offer_at = missed_when + timedelta(hours=2)
         missed.reactivation_sent_at = offer_at
-        missed.credit_offer_sent_at = offer_at
+        _event(
+            db,
+            event_type=RetentionEventType.REACTIVATION_SENT,
+            patient=patient,
+            appointment=missed,
+            created_at=offer_at,
+        )
+        events += 1
+
+        credit_at = offer_at + timedelta(days=3)
+        missed.credit_offer_sent_at = credit_at
         _event(
             db,
             event_type=RetentionEventType.CREDIT_OFFER_SENT,
             patient=patient,
             appointment=missed,
-            created_at=offer_at,
+            created_at=credit_at,
             metadata={"credit_amount": settings.no_show_credit_amount},
         )
         events += 1
+
+        if index >= rebooked_cutoff:
+            continue
 
         rebooked_created = offer_at + timedelta(days=1)
         rebooked_when = missed_when + timedelta(days=rng.randint(6, 11))
@@ -503,6 +532,64 @@ def _seed_no_show_and_recovery(db, rng, patients, now) -> tuple[int, int]:
             patient=patient,
             created_at=rebooked_created,
         )
+        events += 1
+
+    return appointments, events
+
+
+def _seed_cancellations(db, rng, patients, now) -> tuple[int, int]:
+    """Late cancellations, and the one that was refilled.
+
+    A cancellation is a different problem from a no-show — the slot is known
+    to be empty in advance — and the console reports the two separately, so
+    the demo has to contain both.
+    """
+    appointments = 0
+    events = 0
+
+    for index, patient in enumerate(patients[:4]):
+        when = now - timedelta(days=rng.randint(4, 40))
+        cancelled = _appointment(
+            db,
+            patient,
+            service=rng.choice(SERVICES),
+            when=when,
+            status=AppointmentStatus.CANCELLED,
+            source=AppointmentSource.STAFF,
+            provider=patient.preferred_provider,
+        )
+        appointments += 1
+
+        if index >= 2:
+            continue
+
+        offer_at = when + timedelta(hours=3)
+        cancelled.reactivation_sent_at = offer_at
+        _event(
+            db,
+            event_type=RetentionEventType.REACTIVATION_SENT,
+            patient=patient,
+            appointment=cancelled,
+            created_at=offer_at,
+        )
+        events += 1
+
+        if index >= 1:
+            continue
+
+        _appointment(
+            db,
+            patient,
+            service=cancelled.service,
+            when=when + timedelta(days=rng.randint(5, 12)),
+            status=AppointmentStatus.COMPLETED,
+            source=AppointmentSource.SMS,
+            created_at=offer_at + timedelta(days=1),
+            provider=patient.preferred_provider,
+        )
+        appointments += 1
+        _event(db, event_type=RetentionEventType.REBOOKED, patient=patient,
+               created_at=offer_at + timedelta(days=1))
         events += 1
 
     return appointments, events
@@ -545,7 +632,9 @@ def _seed_dormant_and_reactivation(db, rng, patients, now) -> tuple[int, int]:
             event_type=RetentionEventType.REACTIVATION_SENT,
             patient=patient,
             created_at=sent_at,
-            metadata={"days_since_visit": (now - last_visit).days},
+            # trigger="dormant" is how RetentionService distinguishes a
+            # dormant-client campaign from an appointment recovery.
+            metadata={"trigger": "dormant", "days_since_visit": (now - last_visit).days},
         )
         events += 1
 
@@ -653,6 +742,73 @@ def _seed_voice_calls(db, rng, patients, now) -> int:
     return created
 
 
+def _since_midnight(rng: random.Random, now: datetime) -> datetime:
+    """A moment earlier today.
+
+    Subtracting a few hours from 'now' quietly lands yesterday when the demo
+    is seeded in the early morning, and the Command Center's day counters read
+    zero on a clinic that has plainly been busy.
+    """
+    midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    elapsed = int((now - midnight).total_seconds())
+    return midnight + timedelta(seconds=rng.randint(0, max(elapsed - 60, 60)))
+
+
+def _seed_today(db, rng, patients, now) -> int:
+    """A few hours of work in the last few hours.
+
+    Without this the demo clinic is statistically quiet today — 64 enquiries
+    spread across eight weeks averages about one a day — and the Command
+    Center opens on a row of zeros. These are ordinary rows placed in the last
+    few hours rather than special ones: the same calls and reminders the
+    seeder writes everywhere else, positioned so a demo opened at 9am shows a
+    clinic that is already awake.
+    """
+    created = 0
+    for index, outcome in enumerate(
+        [VoiceCallOutcome.BOOKED, VoiceCallOutcome.FAQ, VoiceCallOutcome.CALLBACK_REQUESTED]
+    ):
+        patient = patients[index % len(patients)]
+        started = _since_midnight(rng, now)
+        call = VoiceCall(
+            patient_id=patient.id,
+            vapi_call_id=f"demo-call-today-{index}",
+            call_duration=rng.randint(60, 240),
+            outcome=outcome,
+            ended_reason="customer-ended-call",
+            summary={DEMO_FLAG: True, "intent": rng.choice(SERVICES)},
+        )
+        db.add(call)
+        db.flush()
+        call.created_at = started
+        call.ended_at = started + timedelta(seconds=call.call_duration)
+        created += 1
+
+    # Today's diary. A clinic with nothing booked today reads as closed.
+    midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    for index, patient in enumerate(patients[9:14]):
+        _appointment(
+            db,
+            patient,
+            service=rng.choice(SERVICES),
+            when=midnight + timedelta(hours=settings.clinic_open_hour + index, minutes=30),
+            status=AppointmentStatus.CONFIRMED,
+            source=rng.choice([AppointmentSource.VOICE, AppointmentSource.WEB, AppointmentSource.STAFF]),
+            created_at=now - timedelta(days=rng.randint(2, 11)),
+            provider=patient.preferred_provider,
+        )
+
+    for index, patient in enumerate(patients[:9]):
+        _event(
+            db,
+            event_type=RetentionEventType.REMINDER_SENT,
+            patient=patient,
+            created_at=_since_midnight(rng, now),
+        )
+
+    return created
+
+
 def _seed_leads(db, rng, now) -> int:
     """Website and SMS enquiries, scored by the real qualification engine.
 
@@ -712,7 +868,13 @@ def _seed_leads(db, rng, now) -> int:
         else:
             service.qualify(lead, notify=False)
 
-        lead.created_at = now - timedelta(days=rng.randint(0, 56), hours=rng.randint(0, 23))
+        if index % 16 == 3:
+            # Four of the sixty-four arrived earlier today.
+            lead.created_at = _since_midnight(rng, now)
+        else:
+            lead.created_at = now - timedelta(
+                days=rng.randint(1, 56), hours=rng.randint(0, 23)
+            )
         if lead.qualified_at:
             lead.qualified_at = lead.created_at + timedelta(minutes=rng.randint(1, 9))
         created += 1

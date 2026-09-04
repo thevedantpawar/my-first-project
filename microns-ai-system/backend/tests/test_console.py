@@ -30,6 +30,10 @@ CONSOLE_ROUTES = [
     "/console/api/workflows",
     "/console/api/insights",
     "/console/api/system",
+    # V4
+    "/console/api/command-center",
+    "/console/api/recovery",
+    "/console/api/activity",
 ]
 
 

@@ -138,6 +138,48 @@ def insights(
     return _service(db, audit).insights(days=days, user=user)
 
 
+@router.get("/command-center")
+def command_center(
+    days: int = Query(default=30, ge=1, le=365),
+    db: Session = Depends(get_db),
+    audit: HIPAAAuditLogger = Depends(get_audit),
+    user: str = Depends(require_staff),
+) -> dict:
+    """The owner's first screen, in one request.
+
+    Six projections' worth of data in a single round trip, because this page
+    is opened first thing in the morning on a front-desk laptop and six
+    parallel requests is six chances to look slow.
+    """
+    return _service(db, audit).command_center(days=days, user=user)
+
+
+@router.get("/recovery")
+def recovery(
+    days: int = Query(default=90, ge=1, le=365),
+    db: Session = Depends(get_db),
+    audit: HIPAAAuditLogger = Depends(get_audit),
+    user: str = Depends(require_staff),
+) -> dict:
+    """No-shows, cancellations and dormant clients — attempted and won back.
+
+    Ninety days by default: recovery is a slow loop and a thirty-day window
+    understates it.
+    """
+    return _service(db, audit).recovery(days=days, user=user)
+
+
+@router.get("/activity")
+def activity(
+    limit: int = Query(default=40, ge=1, le=200),
+    db: Session = Depends(get_db),
+    audit: HIPAAAuditLogger = Depends(get_audit),
+    user: str = Depends(require_staff),
+) -> dict:
+    """What the engine did, newest first. Real events only."""
+    return _service(db, audit).activity(limit=limit, user=user)
+
+
 @router.get("/system")
 def system(
     db: Session = Depends(get_db),

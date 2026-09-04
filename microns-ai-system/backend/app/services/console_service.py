@@ -1228,6 +1228,457 @@ class ConsoleService:
         return out
 
     # ------------------------------------------------------------------ #
+    # Revenue Command Center — the owner's first screen
+    # ------------------------------------------------------------------ #
+    def command_center(self, days: int = 30, user: str = "staff") -> dict[str, Any]:
+        """One request, everything an owner needs in the first ten seconds.
+
+        Composed entirely from the projections that already exist. Nothing is
+        recalculated here and nothing new is claimed: this method decides what
+        an owner should see first and in what order, and delegates every
+        number to the projection that owns it. If :meth:`revenue` changes its
+        mind about what counts as recovered, this screen changes with it.
+
+        The headline is deliberately called *influenced* rather than *earned*.
+        It is the value of appointments the engine created or brought back,
+        priced from whatever evidence exists, and it travels with the basis on
+        which it was computed so the interface can caption it truthfully.
+        """
+        revenue = self.revenue(days=days, user=user)
+        overview = self.overview(days=days, user=user)
+        opportunities = self.opportunities(limit=80, user=user)
+        team = self.agents(days=days, user=user)
+
+        attribution = revenue["attribution"]
+        influenced_keys = ("ai_booked", "recovered_no_show", "reactivated")
+        influenced_cents = sum(attribution[key]["cents"] for key in influenced_keys)
+        influenced_count = sum(attribution[key]["count"] for key in influenced_keys)
+        recorded_cents = sum(attribution[key]["recorded_cents"] for key in influenced_keys)
+        expected_cents = sum(attribution[key]["expected_cents"] for key in influenced_keys)
+
+        coverage = revenue["coverage"]
+        unpriced = coverage["appointments"] - coverage["with_recorded_price"]
+
+        # How the total should be described. An owner is entitled to know
+        # whether they are looking at money that has been collected or a
+        # forecast built from their own price list.
+        if influenced_cents == 0:
+            basis = "none"
+        elif recorded_cents and expected_cents:
+            basis = "mixed"
+        elif recorded_cents:
+            basis = "recorded"
+        else:
+            basis = "expected"
+
+        attention = self._attention_queue(opportunities)
+
+        self.audit.log_read(
+            None, DataCategory.DASHBOARD, user, details={"view": "command_center"}
+        )
+
+        return {
+            "window_days": days,
+            "clinic": overview["clinic"],
+            "headline": {
+                "label": "Revenue influenced",
+                "cents": influenced_cents,
+                "appointments": influenced_count,
+                "recorded_cents": recorded_cents,
+                "expected_cents": expected_cents,
+                "basis": basis,
+                "unpriced_appointments": unpriced,
+                "trend": overview["trend"]["appointments"],
+            },
+            "today": self._today_counters(),
+            "attention": attention,
+            "attention_total": len(
+                [item for item in opportunities if item["urgency"] <= 2]
+            ),
+            "team": [
+                {
+                    "id": agent["id"],
+                    "name": agent["name"],
+                    "role": agent["role"],
+                    "status": agent["status"],
+                    "status_detail": agent["status_detail"],
+                    "headline": agent["metrics"][0] if agent["metrics"] else None,
+                }
+                for agent in team
+            ],
+            "revenue_split": [
+                {
+                    "key": key,
+                    "label": label,
+                    "cents": attribution[key]["cents"],
+                    "count": attribution[key]["count"],
+                    "complimentary": attribution[key]["complimentary_count"],
+                }
+                for key, label in (
+                    ("ai_booked", "Booked by your AI team"),
+                    ("recovered_no_show", "Recovered no-shows"),
+                    ("reactivated", "Reactivated clients"),
+                    ("front_desk", "Booked by your front desk"),
+                )
+            ],
+            "activity": self.activity(limit=8, user=user)["items"],
+            "generated_at": utcnow().isoformat() + "Z",
+        }
+
+    def _today_counters(self) -> list[dict[str, Any]]:
+        """What has happened since midnight, clinic time."""
+        now = utcnow()
+        midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        new_leads = self._count(
+            select(func.count(Lead.id)).where(Lead.created_at >= midnight)
+        )
+        qualified = self._count(
+            select(func.count(Lead.id)).where(
+                Lead.qualified_at >= midnight,
+                Lead.status.in_((LeadStatus.QUALIFIED, LeadStatus.BOOKED)),
+            )
+        )
+        booked = self._count(
+            select(func.count(Appointment.id)).where(Appointment.created_at >= midnight)
+        )
+        recovered = self._count(
+            select(func.count(RetentionEvent.id)).where(
+                RetentionEvent.created_at >= midnight,
+                RetentionEvent.event_type == RetentionEventType.REBOOKED,
+            )
+        )
+        messages = self._count(
+            select(func.count(RetentionEvent.id)).where(
+                RetentionEvent.created_at >= midnight,
+                RetentionEvent.channel == "sms",
+            )
+        )
+
+        return [
+            {"key": "leads", "label": "New enquiries", "value": new_leads},
+            {"key": "qualified", "label": "Qualified", "value": qualified},
+            {"key": "booked", "label": "Appointments booked", "value": booked},
+            {"key": "recovered", "label": "Recovered", "value": recovered},
+            {"key": "messages", "label": "Messages sent", "value": messages},
+        ]
+
+    def _attention_queue(self, opportunities: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """The handful of things only a human can settle.
+
+        Ordered by urgency, then by how long the person has been waiting.
+        Clinical callbacks sort to the top regardless: a patient waiting on a
+        provider is never below a warm lead.
+        """
+        def sort_key(item: dict[str, Any]) -> tuple:
+            clinical = 0 if "clinical" in (item.get("flags") or []) else 1
+            return (clinical, item["urgency"], -(item.get("waiting_hours") or 0))
+
+        ranked = sorted(opportunities, key=sort_key)
+        return ranked[:6]
+
+    # ------------------------------------------------------------------ #
+    # Recovery — no-shows, cancellations and dormant clients
+    # ------------------------------------------------------------------ #
+    def recovery(self, days: int = 90, user: str = "staff") -> dict[str, Any]:
+        """What the engine won back, and what it tried and did not.
+
+        Every rate here reports its denominator. "60% recovery rate" is close
+        to meaningless on its own — three out of five and six hundred out of a
+        thousand are different clinics — so the counts travel with it and the
+        interface shows both.
+
+        A wider default window than the rest of the console: recovery is a
+        slow loop, and a thirty-day view of a ninety-day process understates
+        it.
+        """
+        since = days_ago(days)
+
+        missed = (
+            self.db.execute(
+                select(Appointment).where(
+                    Appointment.scheduled_for >= since,
+                    Appointment.status.in_(
+                        (AppointmentStatus.NO_SHOW, AppointmentStatus.CANCELLED)
+                    ),
+                )
+            )
+            .scalars()
+            .all()
+        )
+
+        no_shows = [row for row in missed if row.status == AppointmentStatus.NO_SHOW]
+        cancellations = [row for row in missed if row.status == AppointmentStatus.CANCELLED]
+        contacted = [row for row in missed if row.reactivation_sent_at is not None]
+
+        stories: list[dict[str, Any]] = []
+        recovered_rows: list[Appointment] = []
+
+        for row in contacted:
+            follow_up = (
+                self.db.execute(
+                    select(Appointment)
+                    .where(
+                        Appointment.patient_id == row.patient_id,
+                        Appointment.id != row.id,
+                        Appointment.created_at >= row.reactivation_sent_at,
+                        Appointment.status.in_(
+                            AppointmentStatus.ACTIVE + (AppointmentStatus.COMPLETED,)
+                        ),
+                    )
+                    .order_by(Appointment.created_at)
+                )
+                .scalars()
+                .first()
+            )
+            if follow_up is not None:
+                recovered_rows.append(follow_up)
+
+            stories.append(
+                {
+                    "id": str(row.id),
+                    "subject": self._patient_label(row.patient),
+                    "service": _treatment_label(row.service),
+                    "missed_status": row.status,
+                    "missed_at": _iso(row.scheduled_for),
+                    "contacted_at": _iso(row.reactivation_sent_at),
+                    "recovered": follow_up is not None,
+                    "rebooked_for": _iso(follow_up.scheduled_for) if follow_up else None,
+                    "value_cents": follow_up.price_cents if follow_up else None,
+                    "record": {"type": "appointment", "id": str(row.id)},
+                }
+            )
+
+        stories.sort(key=lambda item: (not item["recovered"], item["missed_at"] or ""), reverse=False)
+
+        recovered_value = sum(
+            row.price_cents for row in recovered_rows if row.price_cents is not None
+        )
+
+        # --- Dormant clients ------------------------------------------- #
+        dormant_cutoff = days_ago(settings.reactivation_days)
+        dormant = (
+            self.db.execute(
+                select(Patient).where(
+                    Patient.last_visit_at.is_not(None),
+                    Patient.last_visit_at < dormant_cutoff,
+                )
+            )
+            .scalars()
+            .all()
+        )
+        dormant_contacted = [
+            patient
+            for patient in dormant
+            if patient.reactivation_sent_at is not None
+            and patient.reactivation_sent_at >= since
+        ]
+        dormant_returned = [
+            patient
+            for patient in dormant_contacted
+            if any(
+                appointment.created_at >= patient.reactivation_sent_at
+                for appointment in patient.appointments
+            )
+        ]
+        dormant_value = sum(
+            appointment.price_cents
+            for patient in dormant_returned
+            for appointment in patient.appointments
+            if appointment.created_at >= patient.reactivation_sent_at
+            and appointment.price_cents is not None
+        )
+
+        self.audit.log_read(None, DataCategory.DASHBOARD, user, details={"view": "recovery"})
+
+        return {
+            "window_days": days,
+            "missed": {
+                "no_shows": len(no_shows),
+                "cancellations": len(cancellations),
+                "total": len(missed),
+                "contacted": len(contacted),
+                "recovered": len(recovered_rows),
+                "recovery_rate": _rate(len(recovered_rows), len(contacted)),
+                "contact_rate": _rate(len(contacted), len(missed)),
+                "value_cents": recovered_value,
+                # Stated so the interface never has to render a bare
+                # percentage with no denominator behind it.
+                "basis": (
+                    f"{len(recovered_rows)} of {len(contacted)} contacted"
+                    if contacted
+                    else "No recovery messages sent in this period"
+                ),
+            },
+            "dormant": {
+                "threshold_days": settings.reactivation_days,
+                "identified": len(dormant),
+                "contacted": len(dormant_contacted),
+                "returned": len(dormant_returned),
+                "return_rate": _rate(len(dormant_returned), len(dormant_contacted)),
+                "value_cents": dormant_value,
+                "basis": (
+                    f"{len(dormant_returned)} of {len(dormant_contacted)} contacted"
+                    if dormant_contacted
+                    else "No reactivation messages sent in this period"
+                ),
+            },
+            "stories": stories[:40],
+            "generated_at": utcnow().isoformat() + "Z",
+        }
+
+    # ------------------------------------------------------------------ #
+    # Activity feed
+    # ------------------------------------------------------------------ #
+    def activity(self, limit: int = 40, user: str = "staff") -> dict[str, Any]:
+        """What the engine actually did, most recent first.
+
+        Merged from four tables that each record a different kind of work.
+        Nothing is synthesised to fill the feed: a quiet clinic produces a
+        short list, and a short list is the honest answer. There is no
+        simulated activity anywhere in this method, and there must never be —
+        a feed that invents work is the fastest way to destroy an owner's
+        trust in every other number on the screen.
+
+        Two constraints shape the implementation:
+
+        *Nothing dated in the future.* A reminder scheduled for next Tuesday
+        is not something that happened. Rows are written ahead of time and
+        must be filtered out here, or the log reports work nobody has done.
+
+        *Names are resolved last.* Patient relationships are ``lazy="noload"``
+        on purpose — a dashboard has no business decrypting a name it will not
+        show. So rows carry a patient id through the merge and the handful
+        that survive the slice get one batched lookup at the end.
+        """
+        now = utcnow()
+        window = max(limit * 3, 60)
+        items: list[dict[str, Any]] = []
+
+        events = (
+            self.db.execute(
+                select(RetentionEvent)
+                .where(RetentionEvent.created_at <= now)
+                .order_by(RetentionEvent.created_at.desc())
+                .limit(window)
+            )
+            .scalars()
+            .all()
+        )
+        for event in events:
+            items.append(
+                {
+                    "at": _iso(event.created_at),
+                    "actor": _EVENT_ACTORS.get(event.event_type, "Retention"),
+                    "text": _EVENT_LABELS.get(
+                        event.event_type, event.event_type.replace("_", " ").capitalize()
+                    ),
+                    "patient_id": event.patient_id,
+                    "detail": None,
+                    "channel": event.channel,
+                    "tone": _EVENT_TONES.get(event.event_type, "neutral"),
+                }
+            )
+
+        calls = (
+            self.db.execute(
+                select(VoiceCall)
+                .where(VoiceCall.created_at <= now)
+                .order_by(VoiceCall.created_at.desc())
+                .limit(window)
+            )
+            .scalars()
+            .all()
+        )
+        for call in calls:
+            items.append(
+                {
+                    "at": _iso(call.created_at),
+                    "actor": "AI Receptionist",
+                    "text": f"Call {_outcome_label(call.outcome).lower()}",
+                    "patient_id": call.patient_id,
+                    "detail": None,
+                    "channel": "voice",
+                    "tone": "urgent"
+                    if call.outcome
+                    in (VoiceCallOutcome.CALLBACK_REQUESTED, VoiceCallOutcome.TRANSFERRED)
+                    else "neutral",
+                }
+            )
+
+        leads = (
+            self.db.execute(
+                select(Lead)
+                .where(Lead.qualified_at.is_not(None), Lead.qualified_at <= now)
+                .order_by(Lead.qualified_at.desc())
+                .limit(window)
+            )
+            .scalars()
+            .all()
+        )
+        for lead in leads:
+            items.append(
+                {
+                    "at": _iso(lead.qualified_at),
+                    "actor": "Lead Concierge",
+                    "text": f"Qualified a {_treatment_label(lead.treatment_interest).lower()} enquiry",
+                    "patient_id": None,
+                    "detail": f"{mask_name(lead.name) or 'Anonymous'} · {lead.qualification_score}/100",
+                    "channel": lead.source,
+                    "tone": "good" if lead.temperature == LeadTemperature.HOT else "neutral",
+                }
+            )
+
+        appointments = (
+            self.db.execute(
+                select(Appointment)
+                .where(
+                    Appointment.created_at <= now,
+                    Appointment.source.in_(
+                        (AppointmentSource.VOICE, AppointmentSource.WEB, AppointmentSource.SMS)
+                    ),
+                )
+                .order_by(Appointment.created_at.desc())
+                .limit(window)
+            )
+            .scalars()
+            .all()
+        )
+        for appointment in appointments:
+            items.append(
+                {
+                    "at": _iso(appointment.created_at),
+                    "actor": "Booking",
+                    "text": f"Booked {_treatment_label(appointment.service).lower()}",
+                    "patient_id": appointment.patient_id,
+                    "detail": None,
+                    "channel": appointment.source,
+                    "tone": "good",
+                }
+            )
+
+        items = [item for item in items if item["at"]]
+        items.sort(key=lambda item: item["at"], reverse=True)
+        items = items[:limit]
+
+        # One batched lookup for the names actually being shown.
+        wanted = {item["patient_id"] for item in items if item["patient_id"] and not item["detail"]}
+        if wanted:
+            patients = (
+                self.db.execute(select(Patient).where(Patient.id.in_(wanted))).scalars().all()
+            )
+            labels = {patient.id: self._patient_label(patient) for patient in patients}
+            for item in items:
+                if item["detail"] is None:
+                    item["detail"] = labels.get(item["patient_id"])
+
+        for item in items:
+            item.pop("patient_id", None)
+
+        self.audit.log_read(None, DataCategory.DASHBOARD, user, details={"view": "activity"})
+        return {"items": items, "generated_at": utcnow().isoformat() + "Z"}
+
+    # ------------------------------------------------------------------ #
     # System status
     # ------------------------------------------------------------------ #
     def system(self, user: str = "staff") -> dict[str, Any]:
@@ -1584,6 +2035,32 @@ def _event_row(event: RetentionEvent) -> dict[str, Any]:
         "created_at": _iso(event.created_at),
     }
 
+
+#: Which member of the AI team a retention event belongs to. The feed reads as
+#: a team log rather than a table dump because of this mapping — but the
+#: events themselves are real rows, and an unmapped type falls back to a
+#: generic actor rather than being dropped or invented.
+_EVENT_ACTORS = {
+    "reminder_sent": "Booking",
+    "final_reminder_sent": "Booking",
+    "no_show": "Recovery",
+    "reactivation_sent": "Recovery",
+    "credit_offer_sent": "Recovery",
+    "rebooked": "Recovery",
+    "review_requested": "Reviews",
+    "review_received": "Reviews",
+    "review_response_drafted": "Reviews",
+    "treatment_completed": "Booking",
+    "nurture_sent": "Lead Concierge",
+}
+
+_EVENT_TONES = {
+    "no_show": "urgent",
+    "rebooked": "good",
+    "review_received": "good",
+    "credit_offer_sent": "warn",
+    "reactivation_sent": "warn",
+}
 
 _EVENT_LABELS = {
     "reminder_sent": "Reminder sent",

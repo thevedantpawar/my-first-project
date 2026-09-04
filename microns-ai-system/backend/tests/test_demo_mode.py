@@ -188,9 +188,12 @@ def test_reactivations_have_a_campaign_behind_them(seeded):
     )
     assert reactivated_patients
 
+    # The engine uses REACTIVATION_SENT for both no-show recovery and dormant
+    # campaigns; only the dormant one omits an appointment id.
     events = seeded.execute(
         select(func.count(RetentionEvent.id)).where(
-            RetentionEvent.event_type == RetentionEventType.REACTIVATION_SENT
+            RetentionEvent.event_type == RetentionEventType.REACTIVATION_SENT,
+            RetentionEvent.appointment_id.is_(None),
         )
     ).scalar_one()
     assert events == len(reactivated_patients)
