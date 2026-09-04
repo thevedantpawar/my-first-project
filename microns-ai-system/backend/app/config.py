@@ -118,6 +118,18 @@ class Settings(BaseSettings):
     clinic_close_hour: int = 18
     appointment_slot_minutes: int = 30
 
+    # --- Service pricing ---------------------------------------------------
+    #: JSON file mapping a service key to a ``booking_value`` in dollars — the
+    #: value the clinic books one appointment of that service at. Without it
+    #: the built-in defaults in ``pricing_service`` apply. Prices recorded this
+    #: way are reported as *expected* value, never as collected revenue.
+    service_price_list_path: Optional[str] = None
+
+    # --- Demo mode ---------------------------------------------------------
+    #: Serve the seeded Glow Aesthetics dataset and badge the console as a
+    #: demonstration. Refused in production; see ``demo_service``.
+    demo_mode: bool = False
+
     # --- Retention tuning --------------------------------------------------
     reactivation_days: int = 45
     review_request_delay_days: int = 5

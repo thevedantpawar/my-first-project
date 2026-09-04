@@ -51,6 +51,10 @@ class AppointmentCreate(BaseModel):
     source: str = "staff"
     sms_consent: bool = True
     notes: Optional[str] = None
+    #: What the clinic is charging for this appointment, in cents. Optional —
+    #: when omitted the clinic's service price list supplies an expected value
+    #: instead, and the console labels it as such.
+    price_cents: Optional[int] = Field(default=None, ge=0)
 
 
 class AppointmentOut(BaseModel):

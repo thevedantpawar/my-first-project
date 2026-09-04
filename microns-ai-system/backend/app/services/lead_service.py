@@ -43,6 +43,7 @@ from app.services.encryption import get_encryption_service, normalise_identifier
 from app.services.hipaa_audit import DataCategory, HIPAAAuditLogger
 from app.services.llm import get_llm
 from app.services.notifier import notify_lead_qualified
+from app.services import pricing_service
 from app.services.patient_service import get_or_create_patient
 from app.services.sms_service import SMSService
 from app.utils import format_appointment_time, mask_name, mask_phone, utcnow
@@ -366,6 +367,7 @@ class LeadService:
             external_id=reference.external_id,
             extra={"lead_id": str(lead.id), "auto_booked": True},
         )
+        pricing_service.apply_expected_price(appointment)
         self.db.add(appointment)
         self.db.flush()
 

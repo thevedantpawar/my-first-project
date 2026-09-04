@@ -36,6 +36,7 @@ from app.models.lead import Lead, LeadStatus, LeadTemperature
 from app.models.patient import Patient
 from app.models.retention_event import RetentionEvent, RetentionEventType
 from app.models.voice_call import VoiceCall, VoiceCallOutcome
+from app.services import pricing_service
 from app.services.hipaa_audit import DataCategory, HIPAAAuditLogger
 from app.services.retention_service import RetentionService
 from app.utils import days_ago, mask_name, mask_phone, utcnow
@@ -706,12 +707,21 @@ class ConsoleService:
             .all()
         )
 
+        def empty() -> dict[str, int]:
+            return {
+                "count": 0,
+                "priced_count": 0,
+                "cents": 0,
+                "recorded_cents": 0,
+                "expected_cents": 0,
+            }
+
         buckets = {
-            key: {"count": 0, "priced_count": 0, "cents": 0}
+            key: empty()
             for key in ("ai_booked", "recovered_no_show", "reactivated", "front_desk")
         }
-        completed = {"count": 0, "priced_count": 0, "cents": 0}
-        scheduled = {"count": 0, "priced_count": 0, "cents": 0}
+        completed = empty()
+        scheduled = empty()
 
         for appointment in rows:
             bucket = buckets[self._attribution(appointment)]
@@ -734,6 +744,21 @@ class ConsoleService:
             "coverage": {
                 "appointments": len(rows),
                 "with_recorded_price": sum(bucket["priced_count"] for bucket in buckets.values()),
+                # How each priced row came by its figure. When "expected"
+                # dominates, the console captions the total as projected
+                # value rather than collected revenue.
+                "priced_from_booking_system": sum(
+                    1
+                    for appointment in rows
+                    if pricing_service.price_source(appointment)
+                    == pricing_service.PRICE_SOURCE_RECORDED
+                ),
+                "priced_from_price_list": sum(
+                    1
+                    for appointment in rows
+                    if pricing_service.price_source(appointment)
+                    == pricing_service.PRICE_SOURCE_EXPECTED
+                ),
                 # False whenever any row lacks a price — the UI shows a
                 # "partial data" note instead of a confident total.
                 "complete": all(
@@ -1389,10 +1414,24 @@ class ConsoleService:
 # Module-level helpers
 # --------------------------------------------------------------------- #
 def _accumulate(bucket: dict[str, int], appointment: Appointment) -> None:
+    """Add one appointment to a bucket, keeping the two price claims apart.
+
+    ``recorded_cents`` is money a booking platform or a member of staff told
+    us about. ``expected_cents`` is the clinic's own list value, applied
+    because nothing better existed. Both roll up into ``cents`` for callers
+    that want the combined figure, but the split travels with it so the
+    console can label a total as projected instead of collected.
+    """
     bucket["count"] += 1
-    if appointment.price_cents is not None:
-        bucket["priced_count"] += 1
-        bucket["cents"] += appointment.price_cents
+    if appointment.price_cents is None:
+        return
+
+    bucket["priced_count"] += 1
+    bucket["cents"] += appointment.price_cents
+    if pricing_service.price_source(appointment) == pricing_service.PRICE_SOURCE_EXPECTED:
+        bucket["expected_cents"] += appointment.price_cents
+    else:
+        bucket["recorded_cents"] += appointment.price_cents
 
 
 def _rate(part: int, whole: int) -> float:
