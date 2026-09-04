@@ -98,6 +98,44 @@ def cmd_seed_demo(args) -> int:
         db.close()
 
 
+def cmd_demo(args) -> int:
+    """Seed, clear or inspect the Glow Aesthetics demonstration clinic.
+
+    Refuses to run in production — a fictional patient in a live clinic
+    database is a data-integrity incident, and no sales demo is worth one.
+    """
+    from app.database import SessionLocal, init_db
+    from app.services import demo_service
+
+    init_db()
+    db = SessionLocal()
+    try:
+        if args.action == "status":
+            state = demo_service.demo_state(db)
+            print(f"demo_mode:      {'on' if state['active'] else 'off'}")
+            print(f"seeded:         {'yes' if state['seeded'] else 'no'}")
+            print(f"demo patients:  {state['patients']}")
+            return 0
+
+        if args.action == "clear":
+            removed = demo_service.clear(db)
+            print("Cleared: " + ", ".join(f"{value} {key}" for key, value in removed.items()))
+            return 0
+
+        counts = demo_service.seed(db, replace=not args.keep)
+        print(f"Seeded {counts.pop('clinic')}:")
+        for key, value in counts.items():
+            print(f"  {value:>4} {key.replace('_', ' ')}")
+        print()
+        print("Set DEMO_MODE=true so the console badges this data as a demonstration.")
+        return 0
+    except demo_service.DemoModeRefused as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    finally:
+        db.close()
+
+
 def cmd_rotate_phi(_args) -> int:
     """Re-encrypt every PHI field under the current ENCRYPTION_KEY.
 
@@ -178,6 +216,17 @@ def main(argv: list[str] | None = None) -> int:
     subparsers.add_parser("seed-demo", help="insert demo patients, appointments and leads").set_defaults(
         func=cmd_seed_demo
     )
+    demo_parser = subparsers.add_parser(
+        "demo", help="seed, clear or inspect the Glow Aesthetics demo clinic"
+    )
+    demo_parser.add_argument(
+        "action", choices=("seed", "clear", "status"), nargs="?", default="seed"
+    )
+    demo_parser.add_argument(
+        "--keep", action="store_true", help="add to existing demo data instead of replacing it"
+    )
+    demo_parser.set_defaults(func=cmd_demo)
+
     subparsers.add_parser("rotate-phi", help="re-encrypt PHI under the current key").set_defaults(
         func=cmd_rotate_phi
     )

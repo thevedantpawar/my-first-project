@@ -36,7 +36,7 @@ from app.models.lead import Lead, LeadStatus, LeadTemperature
 from app.models.patient import Patient
 from app.models.retention_event import RetentionEvent, RetentionEventType
 from app.models.voice_call import VoiceCall, VoiceCallOutcome
-from app.services import pricing_service
+from app.services import demo_service, pricing_service
 from app.services.hipaa_audit import DataCategory, HIPAAAuditLogger
 from app.services.retention_service import RetentionService
 from app.utils import days_ago, mask_name, mask_phone, utcnow
@@ -711,6 +711,7 @@ class ConsoleService:
             return {
                 "count": 0,
                 "priced_count": 0,
+                "complimentary_count": 0,
                 "cents": 0,
                 "recorded_cents": 0,
                 "expected_cents": 0,
@@ -1307,6 +1308,9 @@ class ConsoleService:
             },
             "environment": settings.environment,
             "is_production": settings.is_production,
+            # Demo state rides on the one request the console always makes, so
+            # a demonstration console can badge itself before it paints a page.
+            "demo": demo_service.demo_state(self.db),
             "integrations": integrations,
             "retention": {
                 "reactivation_days": settings.reactivation_days,
@@ -1428,6 +1432,11 @@ def _accumulate(bucket: dict[str, int], appointment: Appointment) -> None:
 
     bucket["priced_count"] += 1
     bucket["cents"] += appointment.price_cents
+    if appointment.price_cents == 0:
+        # A complimentary consultation is a real, known price. Counting it
+        # among the priced rows but not the revenue keeps the average ticket
+        # honest — twenty free consults must not read as a $0 treatment.
+        bucket["complimentary_count"] += 1
     if pricing_service.price_source(appointment) == pricing_service.PRICE_SOURCE_EXPECTED:
         bucket["expected_cents"] += appointment.price_cents
     else:
