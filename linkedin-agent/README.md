@@ -309,7 +309,31 @@ human loop — 15-30 minutes reading ICP posts, a few specific comments, replyin
 to real comments on your own post, recording recurring prospect language in the
 authenticity pack — stays manual on purpose.
 
-## Deployment
+## Live deployment
+
+Running on Railway, project `microns-linkedin-agent`:
+
+- **https://linkedin-agent-production-a802.up.railway.app** — dashboard and API on one origin
+- Source: this branch, root directory `/linkedin-agent`, built from the Dockerfile
+- Volume mounted at `/app/data`, so the run log and libraries survive redeploys
+- Healthcheck on `/health`, restart on failure
+
+Startup verifies both credentials and logs the result, so a dead token is
+visible in the Railway logs rather than at 21:00:
+
+```
+LinkedIn token verified    member="Vedant Pawar" httpStatus=200
+Research provider verified sources=8
+```
+
+`GET /api/linkedin/verify` re-runs the LinkedIn check on demand. It calls
+`/v2/userinfo` and publishes nothing.
+
+Environment variables are set on the Railway service, not in a committed file.
+Redeploy after changing one; `SOCIAL_CONTENT_DRY_RUN` is the switch that decides
+whether the 21:00 run publishes.
+
+## Deployment (self-hosted)
 
 The API is a single Node process.
 
