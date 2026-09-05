@@ -3,6 +3,7 @@ import { logger } from './lib/logger.js';
 import { toSanitizedError } from './lib/errors.js';
 import { createApp } from './app.js';
 import { verifyLinkedInToken } from './providers/linkedin.js';
+import { researchCurrentTopics } from './providers/tavily.js';
 import { WeekdayScheduler } from './scheduler/weekday-scheduler.js';
 
 loadEnvFile();
@@ -50,6 +51,20 @@ function main(): void {
           logger.error('LinkedIn token check failed', {
             httpStatus: check.httpStatus,
             msg: check.error ?? 'unknown',
+          });
+        }
+      });
+    }
+
+    // A silently dead research key is invisible: the run just falls back to an
+    // evergreen topic every day. Check once at boot and say so.
+    if (readiness.tavily) {
+      void researchCurrentTopics().then((digest) => {
+        if (digest.available) {
+          logger.info('Research provider verified', { sources: digest.results.length });
+        } else {
+          logger.warn('Research unavailable; posts will fall back to evergreen topics', {
+            reason: digest.unavailableReason ?? 'unknown',
           });
         }
       });
