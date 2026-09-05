@@ -14,7 +14,7 @@ import { appendRunRow, isSheetsConfigured } from '../providers/google-sheets.js'
 import type { LogRow, SheetsLogResult } from '../providers/google-sheets.js';
 import { loadAuthenticityPack, markAuthenticityIdeaUsed } from '../store/authenticity-pack.js';
 import { loadSwipeFile } from '../store/swipe-file.js';
-import { appendRun, loadRuns, recentTopics } from '../store/run-log.js';
+import { appendRun, loadRuns, publishedToday, recentTopics } from '../store/run-log.js';
 import type { RunRecord } from '../store/run-log.js';
 import { runQualityGate } from '../validation/quality-gate.js';
 import type { ContentPackage, ImageStatus, WorkflowStatus } from '../validation/linkedin-content-schema.js';
@@ -30,6 +30,8 @@ export interface RunWorkflowOptions {
   /** Required for a manual live publish. The scheduler is authorised by its env flag. */
   confirmPublish?: boolean;
   postType?: PostType;
+  /** Publish a second post today. Off by default: the portfolio is one a day. */
+  allowSecondPostToday?: boolean;
   now?: Date;
   fetchImpl?: typeof fetch;
 }
@@ -172,6 +174,26 @@ export async function runLinkedInContentWorkflow(
       ),
     );
     return result;
+  }
+
+  // One primary post per weekday (growth directive §9). Checked before any
+  // provider call, so a duplicate run costs no research and no Gemini quota.
+  if (!dryRun && !draftOnly && options.allowSecondPostToday !== true) {
+    const earlier = publishedToday(strategy.portfolio.timezone, now);
+    if (earlier) {
+      result.status = 'failed';
+      result.error = toSanitizedError(
+        new AppError(
+          'duplicate_run',
+          `A post was already published today (${earlier.timestamp}, ${earlier.postType ?? 'unknown format'}). The portfolio is one primary post per weekday, so nothing was generated.`,
+        ),
+      );
+      logger.info('Skipped: already published today', {
+        earlierRunId: earlier.id,
+        postType: earlier.postType,
+      });
+      return result;
+    }
   }
 
   let research: ResearchDigest;

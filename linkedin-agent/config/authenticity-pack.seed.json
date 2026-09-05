@@ -1,0 +1,161 @@
+{
+  "month": "2026-09",
+  "updatedAt": "2026-09-05T06:30:00Z",
+  "$note": "DRAFT \u2014 NOT YOUR WORDS YET. Every entry was derived from artifacts in this repository (microns-ai-system source code and your build spec for the LinkedIn agent), not from any memory of you. Each rawText carries a [SOURCE: ...] marker. Read each one, correct anything wrong, rewrite it in your own voice, and delete the markers. Until you do, a founder story built on these will be accurate about the code but will not sound like you.",
+  "ideas": [
+    {
+      "id": "microns-phi-deidentification",
+      "capturedAt": "2026-09-05T06:30:00Z",
+      "rawText": "On the Microns med-spa system I decided nothing would send raw PHI to a third-party model. Text goes through a de-identification pass first that swaps identifiers for stable tokens like [PATIENT_123] and [PHONE_1]. The model reasons over tokens, and the response is re-identified on the way back so the patient still hears their own name. I wrote in the code that this is the identifier-stripping half of HIPAA Safe Harbor for the outbound prompt specifically \u2014 a strong technical control, not a substitute for a BAA and Zero Data Retention on the vendor account. Run all three. [SOURCE: microns-ai-system/backend/app/services/deidentify.py \u2014 VERIFY AND REWRITE IN YOUR OWN WORDS]",
+      "sourceKind": "system_built",
+      "tags": {
+        "audience": "US-based B2B service businesses and operators evaluating AI automation",
+        "painSignal": "AI outputs require constant correction",
+        "dreamSignal": "clear audit trails",
+        "pointOfView": "observable-recoverable-measurable",
+        "contentFormat": null
+      },
+      "used": false
+    },
+    {
+      "id": "microns-phi-leak-error",
+      "capturedAt": "2026-09-05T06:30:00Z",
+      "rawText": "I did not trust my own scrubber. The LLM wrapper raises a PHILeakError if a prompt still carries identifiers at send time. The scrubber can be wrong; the hard check at the boundary catches it. I would rather the call fail loudly than leak quietly. [SOURCE: microns-ai-system/backend/app/services/llm.py \u2014 VERIFY AND REWRITE IN YOUR OWN WORDS]",
+      "sourceKind": "decision",
+      "tags": {
+        "audience": "US-based B2B service businesses and operators evaluating AI automation",
+        "painSignal": "nobody can explain why an automation failed",
+        "dreamSignal": "staff trust the automation",
+        "pointOfView": "observable-recoverable-measurable",
+        "contentFormat": null
+      },
+      "used": false
+    },
+    {
+      "id": "microns-pattern-ordering",
+      "capturedAt": "2026-09-05T06:30:00Z",
+      "rawText": "A detail that cost me time on the de-identification work: pattern order matters. The first pattern to match a span owns it. Emails have to be matched before phone numbers, because an address can contain a run of digits. SSNs before phones, because both are digit groups with separators. Get the order wrong and the scrubber quietly mangles the wrong thing. [SOURCE: microns-ai-system/backend/app/services/deidentify.py \u2014 VERIFY AND REWRITE IN YOUR OWN WORDS]",
+      "sourceKind": "mistake",
+      "tags": {
+        "audience": "US-based B2B service businesses and operators evaluating AI automation",
+        "painSignal": "the workflow works in a demo but breaks in production",
+        "dreamSignal": "workflows that recover from failure",
+        "pointOfView": "orchestration-over-model",
+        "contentFormat": null
+      },
+      "used": false
+    },
+    {
+      "id": "microns-degrade-dont-fail",
+      "capturedAt": "2026-09-05T06:30:00Z",
+      "rawText": "The rule I keep coming back to: degrade instead of failing. With no API key, or when the model provider is down, the Microns system falls back to a deterministic rule engine. It still books appointments and still scores leads. It just stops paraphrasing. The business function survives the outage. [SOURCE: microns-ai-system/backend/app/services/llm.py \u2014 VERIFY AND REWRITE IN YOUR OWN WORDS]",
+      "sourceKind": "operating_principle",
+      "tags": {
+        "audience": "US-based B2B service businesses and operators evaluating AI automation",
+        "painSignal": "the workflow works in a demo but breaks in production",
+        "dreamSignal": "workflows that recover from failure",
+        "pointOfView": "orchestration-over-model",
+        "contentFormat": null
+      },
+      "used": false
+    },
+    {
+      "id": "microns-safe-default-no-delivery",
+      "capturedAt": "2026-09-05T06:30:00Z",
+      "rawText": "Without Twilio configured, every message in the system is recorded and audited but not delivered. The safe default is that a misconfigured install cannot text a real patient. You should be able to run the whole thing end to end before anything reaches a human. [SOURCE: microns-ai-system README and sms_service.py \u2014 VERIFY AND REWRITE IN YOUR OWN WORDS]",
+      "sourceKind": "decision",
+      "tags": {
+        "audience": "US-based B2B service businesses and operators evaluating AI automation",
+        "painSignal": "retries create duplicate actions or surprise bills",
+        "dreamSignal": "the founder can leave the process unattended",
+        "pointOfView": "observable-recoverable-measurable",
+        "contentFormat": null
+      },
+      "used": false
+    },
+    {
+      "id": "microns-health-tells-the-truth",
+      "capturedAt": "2026-09-05T06:30:00Z",
+      "rawText": "The health endpoint reports what is actually wired up, integration by integration, with warnings for anything missing. Not a green tick. If OpenAI is not configured it says so and says what happens instead. I want the first thing an operator sees to be the truth about the system, not a reassurance. [SOURCE: microns-ai-system/backend/app/main.py health endpoint \u2014 VERIFY AND REWRITE IN YOUR OWN WORDS]",
+      "sourceKind": "operating_principle",
+      "tags": {
+        "audience": "US-based B2B service businesses and operators evaluating AI automation",
+        "painSignal": "nobody can explain why an automation failed",
+        "dreamSignal": "clear audit trails",
+        "pointOfView": "observable-recoverable-measurable",
+        "contentFormat": null
+      },
+      "used": false
+    },
+    {
+      "id": "microns-model-choice-by-job",
+      "capturedAt": "2026-09-05T06:30:00Z",
+      "rawText": "Model choice by job, not by prestige. Latency-sensitive conversational turns get the small fast model. Review responses and ambiguous qualification answers get the bigger one. Most of the reliability came from the routing around the models, not from which model I picked. [SOURCE: microns-ai-system/backend/app/services/llm.py \u2014 VERIFY AND REWRITE IN YOUR OWN WORDS]",
+      "sourceKind": "repeated_idea",
+      "tags": {
+        "audience": "US-based B2B service businesses and operators evaluating AI automation",
+        "painSignal": "AI outputs require constant correction",
+        "dreamSignal": "lower model and tool costs",
+        "pointOfView": "orchestration-over-model",
+        "contentFormat": null
+      },
+      "used": false
+    },
+    {
+      "id": "microns-lead-scoring-routing",
+      "capturedAt": "2026-09-05T06:30:00Z",
+      "rawText": "The lead qualification path is six questions, a 0-100 score, and a routing decision: hot, warm or cold. The scoring is boring on purpose. A number a human can argue with beats a model that says 'this lead seems promising'. [SOURCE: microns-ai-system/backend/app/services/lead_service.py \u2014 VERIFY AND REWRITE IN YOUR OWN WORDS]",
+      "sourceKind": "system_built",
+      "tags": {
+        "audience": "US-based B2B service businesses and operators evaluating AI automation",
+        "painSignal": "leads wait hours for a response",
+        "dreamSignal": "faster response without adding headcount",
+        "pointOfView": "automate-failure-points-first",
+        "contentFormat": null
+      },
+      "used": false
+    },
+    {
+      "id": "linkedin-agent-no-dm-promises",
+      "capturedAt": "2026-09-05T06:30:00Z",
+      "rawText": "When I specified my own LinkedIn content agent, I made it a hard rule that it can never write 'comment WORKFLOW and I'll send you the blueprint' or 'DM me'. Not because the copy is bad, but because the system has no comment automation and no messaging. A CTA the system cannot deliver on is a lie, so the quality gate blocks it before it can be published. [SOURCE: your own build spec for this project \u2014 VERIFY AND REWRITE IN YOUR OWN WORDS]",
+      "sourceKind": "decision",
+      "tags": {
+        "audience": "US-based B2B service businesses and operators evaluating AI automation",
+        "painSignal": "AI outputs require constant correction",
+        "dreamSignal": "staff trust the automation",
+        "pointOfView": "observable-recoverable-measurable",
+        "contentFormat": null
+      },
+      "used": false
+    },
+    {
+      "id": "linkedin-agent-no-invented-experience",
+      "capturedAt": "2026-09-05T06:30:00Z",
+      "rawText": "I built an AI that writes posts for me and then told it that it is not allowed to invent my experience. If the authenticity pack is empty, the founder-story slot falls back to a different format rather than making something up. An AI can structure and edit a story. It cannot have lived one. [SOURCE: your own build spec for this project \u2014 VERIFY AND REWRITE IN YOUR OWN WORDS]",
+      "sourceKind": "disagreement",
+      "tags": {
+        "audience": "US-based B2B service businesses and operators evaluating AI automation",
+        "painSignal": "AI outputs require constant correction",
+        "dreamSignal": "staff trust the automation",
+        "pointOfView": "observable-recoverable-measurable",
+        "contentFormat": null
+      },
+      "used": false
+    },
+    {
+      "id": "linkedin-agent-gate-blocks-itself",
+      "capturedAt": "2026-09-05T06:30:00Z",
+      "rawText": "The content agent blocks roughly a quarter of its own drafts. Wrong hook length, a CTA it cannot honour, an unsupported number. I decided a system that publishes nothing today is better than one that publishes something I would have to walk back. The same logic applies to every agent I ship for a client. [SOURCE: measured across live drafts on 2026-09-05 \u2014 VERIFY AND REWRITE IN YOUR OWN WORDS]",
+      "sourceKind": "obsession",
+      "tags": {
+        "audience": "US-based B2B service businesses and operators evaluating AI automation",
+        "painSignal": "AI outputs require constant correction",
+        "dreamSignal": "staff trust the automation",
+        "pointOfView": "observable-recoverable-measurable",
+        "contentFormat": null
+      },
+      "used": false
+    }
+  ]
+}

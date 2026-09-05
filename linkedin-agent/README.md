@@ -118,10 +118,24 @@ external image URL is never sent to LinkedIn.
 ### Google Sheets (optional)
 
 1. Create a spreadsheet and copy its id from the URL into `GOOGLE_SHEETS_ID`.
-2. Create two tabs matching `GOOGLE_SHEETS_PUBLISHED_SHEET` (default `published`)
-   and `GOOGLE_SHEETS_BLOCKED_SHEET` (default `blocked`).
-3. Put an OAuth access token with the `https://www.googleapis.com/auth/spreadsheets`
-   scope in `GOOGLE_SHEETS_ACCESS_TOKEN`.
+   The `published` and `blocked` tabs are created automatically, with their
+   header rows, the first time the agent writes to them.
+2. Authenticate. Two ways, and the choice matters:
+
+   **Refresh token (use this).** A Google access token lasts about an hour, so a
+   bare token is dead before the next scheduled run. Create an OAuth client of
+   type *Desktop app* in Google Cloud with the Sheets API enabled, consent once
+   for the `https://www.googleapis.com/auth/spreadsheets` scope, then set
+   `GOOGLE_SHEETS_CLIENT_ID`, `GOOGLE_SHEETS_CLIENT_SECRET` and
+   `GOOGLE_SHEETS_REFRESH_TOKEN`. The app mints its own access tokens and caches
+   each until a minute before expiry.
+
+   **Access token.** Set `GOOGLE_SHEETS_ACCESS_TOKEN` for a one-off manual test.
+   It stops working within the hour.
+
+   A Claude Google connector authenticates Claude, not this app, so it cannot
+   supply either credential — it can create the spreadsheet, not write to it on a
+   schedule.
 
 Columns appended per run: `timestamp, trigger, status, postType, topic,
 researchSource, linkedinHook, linkedinPost, qualityPassed, qualityReasons,
@@ -202,6 +216,17 @@ so you can change it without a restart.
 - **`profile-audit.json`** — the profile conversion checklist and your real
   proof. Nothing here is inferred; you tick items off yourself.
 
+## One post per weekday
+
+The portfolio is one primary post per weekday, and the workflow enforces it.
+Before any provider call, a publish run checks whether something already went out
+today in `Asia/Kolkata`. If it has, the run stops immediately with
+`error.code: "duplicate_run"` — no research, no generation, no Gemini quota
+spent. Drafts and dry runs are unaffected; it is publishing that is capped.
+
+To publish a second post deliberately, send `allowSecondPostToday: true`
+alongside `confirm: true`.
+
 ## When a format cannot be produced honestly
 
 Two formats depend on things that may not exist yet:
@@ -242,6 +267,11 @@ curl -X POST localhost:3001/api/linkedin/authenticity-pack \
 ```
 
 Blank lines split the text into ideas. The original wording is stored verbatim.
+
+The live pack is `data/authenticity-pack.json`, which is git-ignored because it
+is your material, not code. A committed copy lives at
+`config/authenticity-pack.seed.json` so a fresh deploy has something to restore
+from: `cp config/authenticity-pack.seed.json data/authenticity-pack.json`.
 If the pack is empty, Thursday's founder-story slot falls back to a named-problem
 post rather than inventing a memory, and the gate blocks any story whose
 `authenticitySource` does not match a real pack entry.
@@ -320,7 +350,7 @@ Notes:
 ## Tests
 
 ```bash
-npm test          # 179 tests
+npm test          # 200 tests
 npm run typecheck # API (src and tests) and dashboard
 ```
 

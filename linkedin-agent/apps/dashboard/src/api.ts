@@ -146,6 +146,40 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return payload as T;
 }
 
+export interface PostMetricsInput {
+  postId: string;
+  publishedAt: string;
+  postType: string;
+  ctaType: string;
+  topic?: string;
+  hook?: string;
+  hadImage?: boolean;
+  impressions?: number | null;
+  reactions?: number | null;
+  comments?: number | null;
+  reposts?: number | null;
+  saves?: number | null;
+  profileViews?: number | null;
+  linkClicks?: number | null;
+  qualifiedConversations?: number | null;
+  bookedCalls?: number | null;
+  notes?: string;
+}
+
+export interface AnalyticsResponse {
+  posts: (PostMetricsInput & {
+    rates: {
+      engagementRate: number | null;
+      repostRate: number | null;
+      profileConversionRate: number | null;
+      qualifiedActionRate: number | null;
+    };
+  })[];
+  followerSamples: { date: string; followers: number; note: string }[];
+  followerTarget: { target: number; current: number | null; pacing: string; guaranteed: boolean; note: string };
+  runs: RunRecord[];
+}
+
 export const api = {
   status: () => request<StatusResponse>('/api/workflows/linkedin-content/status'),
   draft: () =>
@@ -165,4 +199,20 @@ export const api = {
     }),
   calendar: () => request<CalendarResponse>('/api/linkedin/calendar?weeks=4'),
   profileAudit: () => request<ProfileAuditReport>('/api/linkedin/profile-audit'),
+  analytics: () => request<AnalyticsResponse>('/api/linkedin/analytics'),
+  saveMetrics: (metrics: PostMetricsInput) =>
+    request<unknown>('/api/linkedin/analytics', {
+      method: 'POST',
+      body: JSON.stringify(metrics),
+    }),
+  saveFollowers: (sample: { date: string; followers: number; note: string }) =>
+    request<unknown>('/api/linkedin/analytics', {
+      method: 'POST',
+      body: JSON.stringify({ followerSample: sample }),
+    }),
+  monthlyReview: () =>
+    request<{ recommendations: string[]; postsAnalyzed: number }>('/api/linkedin/monthly-review', {
+      method: 'POST',
+      body: JSON.stringify({ windowDays: 30 }),
+    }),
 };

@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from './api.js';
+import MetricsTab from './MetricsTab.js';
 import type { CalendarResponse, ProfileAuditReport, StatusResponse, WorkflowResult } from './api.js';
 
-type Tab = 'operations' | 'strategy' | 'profile';
+type Tab = 'operations' | 'strategy' | 'profile' | 'metrics';
 
 function Badge({ ok, label }: { ok: boolean; label: string }) {
   return (
@@ -115,7 +116,7 @@ export default function App() {
       )}
 
       <nav className="tabs">
-        {(['operations', 'strategy', 'profile'] as Tab[]).map((candidate) => (
+        {(['operations', 'strategy', 'profile', 'metrics'] as Tab[]).map((candidate) => (
           <button
             key={candidate}
             className={tab === candidate ? 'tab tab-active' : 'tab'}
@@ -432,6 +433,8 @@ export default function App() {
           )}
         </section>
       )}
+
+      {tab === 'metrics' && <MetricsTab />}
 
       <footer className="card">
         <h2>Deliberately unsupported</h2>

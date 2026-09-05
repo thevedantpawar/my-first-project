@@ -115,3 +115,18 @@ a { color: var(--info); }
   .kv { grid-template-columns: 1fr; }
   .kv dt { margin-top: 8px; }
 }
+
+.field { display: block; margin: 10px 0; font-size: 13px; }
+.field > span { display: block; color: var(--muted); margin-bottom: 4px; }
+.field input, .field select {
+  width: 100%;
+  padding: 7px 10px;
+  background: #10131a;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+}
+.field small { display: block; margin-top: 3px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px 16px; margin-bottom: 14px; }
+.actions input { padding: 8px 10px; background: #10131a; color: var(--text); border: 1px solid var(--border); border-radius: 6px; }

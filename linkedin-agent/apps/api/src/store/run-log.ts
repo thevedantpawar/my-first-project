@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { POST_TYPES } from '../agents/linkedin-content-agent/strategy.js';
 import { WORKFLOW_STATUSES } from '../validation/linkedin-content-schema.js';
+import { zonedDateKey } from '../lib/timezone.js';
 import { readJsonFile, writeJsonFile } from './json-store.js';
 
 const FILE = 'runs.json';
@@ -53,4 +54,25 @@ export function recentTopics(windowDays = 28, now: Date = new Date()): string[] 
     })
     .filter((run) => run.status === 'published' || run.status === 'partially_published')
     .map((run) => run.topic);
+}
+
+/**
+ * The run that already published today, in the given timezone, or null.
+ *
+ * The portfolio allows one primary post per weekday. Checking this before any
+ * provider call means a second run costs nothing — no research, no generation,
+ * no quota.
+ */
+export function publishedToday(
+  timeZone: string,
+  now: Date = new Date(),
+): RunRecord | null {
+  const today = zonedDateKey(now, timeZone);
+  const match = loadRuns()
+    .filter((run) => run.status === 'published' || run.status === 'partially_published')
+    .filter((run) => {
+      const time = Date.parse(run.timestamp);
+      return Number.isFinite(time) && zonedDateKey(new Date(time), timeZone) === today;
+    });
+  return match[match.length - 1] ?? null;
 }

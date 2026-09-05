@@ -32,6 +32,8 @@ const runRequestSchema = z.object({
   dryRun: z.boolean().optional(),
   confirm: z.boolean().optional(),
   postType: z.enum(POST_TYPES).optional(),
+  /** Explicitly authorise a second post on a day that already has one. */
+  allowSecondPostToday: z.boolean().optional(),
 });
 
 const triggerRequestSchema = z.object({
@@ -119,6 +121,9 @@ export function createRouter(scheduler: WeekdayScheduler | null): Router {
           ...(parsed.data.dryRun === undefined ? {} : { dryRun: parsed.data.dryRun }),
           ...(parsed.data.confirm === undefined ? {} : { confirmPublish: parsed.data.confirm }),
           ...(parsed.data.postType ? { postType: parsed.data.postType } : {}),
+          ...(parsed.data.allowSecondPostToday === undefined
+            ? {}
+            : { allowSecondPostToday: parsed.data.allowSecondPostToday }),
         });
         res.status(statusCodeFor(result)).json(result);
       } catch (error) {
@@ -144,6 +149,9 @@ export function createRouter(scheduler: WeekdayScheduler | null): Router {
         dryRun: false,
         confirmPublish: true,
         ...(parsed.data.postType ? { postType: parsed.data.postType } : {}),
+        ...(parsed.data.allowSecondPostToday === undefined
+          ? {}
+          : { allowSecondPostToday: parsed.data.allowSecondPostToday }),
       });
       res.status(statusCodeFor(result)).json(result);
     } catch (error) {

@@ -82,6 +82,11 @@ const envSchema = z.object({
   LINKEDIN_ENABLE_IMAGE_UPLOAD: booleanish,
 
   GOOGLE_SHEETS_ID: optionalString,
+  // Preferred: a refresh token the app exchanges for short-lived access tokens.
+  GOOGLE_SHEETS_CLIENT_ID: optionalString,
+  GOOGLE_SHEETS_CLIENT_SECRET: optionalString,
+  GOOGLE_SHEETS_REFRESH_TOKEN: optionalString,
+  // Fallback for a quick manual test; a Google access token lasts about an hour.
   GOOGLE_SHEETS_ACCESS_TOKEN: optionalString,
   GOOGLE_SHEETS_PUBLISHED_SHEET: z
     .string()
@@ -164,7 +169,12 @@ export function providerReadiness(config: AppConfig = getConfig()): ProviderRead
     linkedin:
       config.LINKEDIN_ACCESS_TOKEN !== '' &&
       config.LINKEDIN_PERSON_URN.startsWith('urn:li:person:'),
-    googleSheets: config.GOOGLE_SHEETS_ID !== '' && config.GOOGLE_SHEETS_ACCESS_TOKEN !== '',
+    googleSheets:
+      config.GOOGLE_SHEETS_ID !== '' &&
+      ((config.GOOGLE_SHEETS_CLIENT_ID !== '' &&
+        config.GOOGLE_SHEETS_CLIENT_SECRET !== '' &&
+        config.GOOGLE_SHEETS_REFRESH_TOKEN !== '') ||
+        config.GOOGLE_SHEETS_ACCESS_TOKEN !== ''),
   };
 }
 
