@@ -53,7 +53,7 @@ linkedin-agent/
 ```bash
 cd linkedin-agent
 npm install
-cp .env.example ../.env      # the API loads the repository-root .env
+cp .env.example .env         # the API loads linkedin-agent/.env
 # fill in GEMINI_API_KEY at minimum
 npm run typecheck
 npm test
@@ -202,6 +202,34 @@ so you can change it without a restart.
 - **`profile-audit.json`** — the profile conversion checklist and your real
   proof. Nothing here is inferred; you tick items off yourself.
 
+## When a format cannot be produced honestly
+
+Two formats depend on things that may not exist yet:
+
+- **Founder/Practitioner Story** needs a real entry in the authenticity pack.
+- **Lead Magnet** needs a configured destination URL (`PUBLIC_RESOURCE_URL` or
+  `PROFILE_URL`); every one of its CTAs is a link.
+
+Rather than generate a post that the quality gate would certainly block, the
+agent substitutes the nearest format it *can* deliver and says so. The run comes
+back with `formatSubstitution: { from, reason }`, and the dashboard shows the
+swap above the quality-gate result. Fill in the missing piece and the scheduled
+format is used again on its own.
+
+## Reliability notes
+
+- Gemini's "this model is currently experiencing high demand" arrives as a 503
+  and clears within seconds. The provider retries it twice (1.5s, then 4s). A
+  429 quota error is never retried — that would only burn the quota faster.
+- The quality gate is strict on purpose, and it does block real drafts. Observed
+  causes are the model paraphrasing its own first line into `linkedinHook`, or
+  writing a forbidden word into `imagePrompt`. A blocked run publishes nothing,
+  logs the reasons, and returns `quality_blocked`; the next scheduled run tries
+  again. If you would rather the agent get one corrective attempt before giving
+  up, that is a deliberate change to the contract and is not enabled.
+- `SKIP_DOTENV=true` stops the API reading `.env`. The test suite sets it, so
+  the suite behaves the same whether or not this machine has one.
+
 ## Authenticity pack
 
 Personal stories come only from material you supply. Paste voice-memo
@@ -292,7 +320,7 @@ Notes:
 ## Tests
 
 ```bash
-npm test          # 171 tests
+npm test          # 179 tests
 npm run typecheck # API (src and tests) and dashboard
 ```
 

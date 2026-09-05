@@ -100,6 +100,7 @@ export interface WorkflowResult {
   imagePrompt: string;
   researchSource: string;
   authenticitySource: string;
+  formatSubstitution: { from: string; reason: string } | null;
   qualityScore: number;
   qualityPassed: boolean;
   qualityReasons: string[];

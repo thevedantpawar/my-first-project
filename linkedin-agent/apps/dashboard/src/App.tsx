@@ -235,6 +235,13 @@ export default function App() {
                 <dd>{result.imageStatus.replace(/_/g, ' ')}</dd>
               </dl>
 
+              {result.formatSubstitution && (
+                <p className="warn-text">
+                  Scheduled format &ldquo;{result.formatSubstitution.from}&rdquo; was swapped for
+                  &ldquo;{result.postType}&rdquo;. {result.formatSubstitution.reason}
+                </p>
+              )}
+
               <h3>
                 Quality gate: {result.qualityPassed ? 'passed' : 'blocked'} (score {result.qualityScore})
               </h3>

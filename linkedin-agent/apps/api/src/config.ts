@@ -13,10 +13,17 @@ export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..
 
 let envLoaded = false;
 
-/** Loads the root .env exactly once. Existing process env always wins. */
+/**
+ * Loads `linkedin-agent/.env` exactly once. Existing process env always wins.
+ *
+ * `SKIP_DOTENV=true` disables the read entirely. Tests set it so the suite
+ * behaves identically whether or not the machine running it happens to have a
+ * populated .env on disk.
+ */
 export function loadEnvFile(): void {
   if (envLoaded) return;
   envLoaded = true;
+  if (process.env.SKIP_DOTENV === 'true') return;
   const envPath = resolve(REPO_ROOT, '.env');
   if (existsSync(envPath)) {
     dotenv.config({ path: envPath, quiet: true });

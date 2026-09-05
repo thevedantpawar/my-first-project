@@ -55,6 +55,8 @@ export interface WorkflowResult {
   imagePrompt: string;
   researchSource: string;
   authenticitySource: string;
+  /** Set when the scheduled format could not be produced honestly. */
+  formatSubstitution: { from: PostType; reason: string } | null;
   qualityScore: number;
   qualityPassed: boolean;
   qualityReasons: string[];
@@ -97,6 +99,7 @@ function baseResult(trigger: WorkflowTrigger, now: Date, dryRun: boolean): Workf
     imagePrompt: '',
     researchSource: '',
     authenticitySource: '',
+    formatSubstitution: null,
     qualityScore: 0,
     qualityPassed: false,
     qualityReasons: [],
@@ -200,6 +203,14 @@ export async function runLinkedInContentWorkflow(
       seed: loadRuns().length,
       ...(options.postType ? { postType: options.postType } : {}),
     });
+    if (assignment.substitution) {
+      result.formatSubstitution = assignment.substitution;
+      logger.info('Substituted the scheduled format', {
+        from: assignment.substitution.from,
+        to: assignment.postType,
+        reason: assignment.substitution.reason,
+      });
+    }
     const generated = await generateContentPackage({
       strategy,
       research,

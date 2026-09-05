@@ -64,6 +64,7 @@ async function callGemini(
     if (!response.ok) {
       const message = payload.error?.message ?? `HTTP ${response.status}`;
       if (response.status === 429 || payload.error?.status === 'RESOURCE_EXHAUSTED') {
+        // Quota is not transient in any useful sense — retrying just burns it.
         throw new AppError('gemini_quota', `Gemini quota or rate limit reached: ${message}`, {
           httpStatus: response.status,
         });
@@ -96,11 +97,59 @@ async function callGemini(
   }
 }
 
+/** Server-side hiccups worth one more attempt; a 429 quota error is not one. */
+const TRANSIENT_HTTP_STATUSES = new Set([500, 502, 503, 504]);
+
+export function isTransientGeminiError(error: unknown): boolean {
+  return (
+    error instanceof AppError &&
+    error.code === 'gemini_failed' &&
+    error.httpStatus !== undefined &&
+    TRANSIENT_HTTP_STATUSES.has(error.httpStatus)
+  );
+}
+
+const RETRY_DELAYS_MS = [1_500, 4_000];
+
+async function sleep(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Runs `attempt`, retrying only "the model is busy" style failures.
+ * "This model is currently experiencing high demand" arrives as a 503 and is
+ * usually gone within seconds — without this, one spike loses the whole day's
+ * scheduled post.
+ */
+async function withTransientRetry<T>(
+  attempt: () => Promise<T>,
+  delays: number[] = RETRY_DELAYS_MS,
+): Promise<T> {
+  let lastError: unknown;
+  for (let index = 0; index <= delays.length; index += 1) {
+    try {
+      return await attempt();
+    } catch (error) {
+      lastError = error;
+      const delay = delays[index];
+      if (delay === undefined || !isTransientGeminiError(error)) throw error;
+      logger.warn('Gemini returned a transient error; retrying', {
+        attempt: index + 1,
+        delayMs: delay,
+        httpStatus: (error as AppError).httpStatus,
+      });
+      await sleep(delay);
+    }
+  }
+  throw lastError;
+}
+
 /** Generates one JSON object matching `responseSchema`. */
 export async function generateJson(options: GenerateJsonOptions): Promise<unknown> {
   const config = getConfig();
   const model = options.model ?? config.GEMINI_MODEL;
-  const payload = await callGemini(
+  const payload = await withTransientRetry(() =>
+    callGemini(
     model,
     {
       systemInstruction: { parts: [{ text: options.systemInstruction }] },
@@ -112,7 +161,8 @@ export async function generateJson(options: GenerateJsonOptions): Promise<unknow
         candidateCount: 1,
       },
     },
-    { timeoutMs: options.timeoutMs, fetchImpl: options.fetchImpl },
+      { timeoutMs: options.timeoutMs, fetchImpl: options.fetchImpl },
+    ),
   );
 
   const text = payload.candidates?.[0]?.content?.parts?.map((part) => part.text ?? '').join('') ?? '';
