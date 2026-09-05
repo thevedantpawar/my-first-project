@@ -257,3 +257,71 @@ export async function uploadImage(
 
   return imageUrn;
 }
+
+export interface LinkedInTokenCheck {
+  valid: boolean;
+  /** Whether the token's own member id matches LINKEDIN_PERSON_URN. */
+  urnMatches: boolean | null;
+  configuredUrn: string;
+  derivedUrn: string | null;
+  name: string | null;
+  httpStatus: number | null;
+  error: string | null;
+}
+
+/**
+ * Read-only check that the member token still works and belongs to the
+ * configured person.
+ *
+ * An expired token is the most likely failure this system will ever hit, and
+ * without this you would discover it at 21:00 when a post fails. Calls
+ * /v2/userinfo, which publishes nothing.
+ */
+export async function verifyLinkedInToken(
+  options: { fetchImpl?: typeof fetch; timeoutMs?: number } = {},
+): Promise<LinkedInTokenCheck> {
+  const config = getConfig();
+  const base: LinkedInTokenCheck = {
+    valid: false,
+    urnMatches: null,
+    configuredUrn: config.LINKEDIN_PERSON_URN,
+    derivedUrn: null,
+    name: null,
+    httpStatus: null,
+    error: null,
+  };
+
+  let credentials: { accessToken: string; personUrn: string };
+  try {
+    credentials = assertLinkedInReady();
+  } catch (error) {
+    return { ...base, error: error instanceof Error ? error.message : String(error) };
+  }
+
+  try {
+    const response = await request(
+      'https://api.linkedin.com/v2/userinfo',
+      { method: 'GET', headers: { authorization: `Bearer ${credentials.accessToken}` } },
+      options,
+    );
+
+    if (!response.ok) {
+      const mapped = mapLinkedInError(response.status, await safeText(response));
+      return { ...base, httpStatus: response.status, error: mapped.message };
+    }
+
+    const payload = (await response.json()) as { sub?: string; name?: string };
+    const derivedUrn = payload.sub ? `urn:li:person:${payload.sub}` : null;
+    return {
+      valid: true,
+      urnMatches: derivedUrn === null ? null : derivedUrn === credentials.personUrn,
+      configuredUrn: credentials.personUrn,
+      derivedUrn,
+      name: payload.name ?? null,
+      httpStatus: response.status,
+      error: null,
+    };
+  } catch (error) {
+    return { ...base, error: error instanceof Error ? redact(error.message) : String(error) };
+  }
+}

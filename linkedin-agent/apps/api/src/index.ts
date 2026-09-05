@@ -2,6 +2,7 @@ import { getConfig, loadEnvFile, providerReadiness } from './config.js';
 import { logger } from './lib/logger.js';
 import { toSanitizedError } from './lib/errors.js';
 import { createApp } from './app.js';
+import { verifyLinkedInToken } from './providers/linkedin.js';
 import { WeekdayScheduler } from './scheduler/weekday-scheduler.js';
 
 loadEnvFile();
@@ -33,6 +34,26 @@ function main(): void {
       if (!ready) logger.warn(`Provider not configured: ${provider}`);
     }
     scheduler.start();
+
+    // Check the member token once at boot. An expired token is the most likely
+    // failure mode, and this surfaces it now instead of at 21:00.
+    if (readiness.linkedin) {
+      void verifyLinkedInToken().then((check) => {
+        if (check.valid && check.urnMatches) {
+          logger.info('LinkedIn token verified', { member: check.name, httpStatus: check.httpStatus });
+        } else if (check.valid) {
+          logger.warn('LinkedIn token is valid but LINKEDIN_PERSON_URN does not match the token owner', {
+            configuredUrn: check.configuredUrn,
+            derivedUrn: check.derivedUrn,
+          });
+        } else {
+          logger.error('LinkedIn token check failed', {
+            httpStatus: check.httpStatus,
+            msg: check.error ?? 'unknown',
+          });
+        }
+      });
+    }
   });
 
   const shutdown = (signal: string): void => {

@@ -23,6 +23,7 @@ import {
 } from '../store/analytics.js';
 import { addSwipeFileEntry, loadSwipeFile, swipeFileInputSchema, SwipeFileRejected } from '../store/swipe-file.js';
 import { loadRuns } from '../store/run-log.js';
+import { verifyLinkedInToken } from '../providers/linkedin.js';
 import { runLinkedInContentWorkflow } from '../workflows/linkedin-content-workflow.js';
 import type { WorkflowTrigger } from '../workflows/linkedin-content-workflow.js';
 import type { WeekdayScheduler } from '../scheduler/weekday-scheduler.js';
@@ -176,6 +177,16 @@ export function createRouter(scheduler: WeekdayScheduler | null): Router {
         ...(parsed.data.postType ? { postType: parsed.data.postType } : {}),
       });
       res.status(statusCodeFor(result)).json({ agentId: AGENT_ID, result });
+    } catch (error) {
+      handleFailure(res, error);
+    }
+  });
+
+  /** Read-only credential check. Publishes nothing. */
+  router.get('/api/linkedin/verify', async (_req: Request, res: Response) => {
+    try {
+      const check = await verifyLinkedInToken();
+      res.status(check.valid ? 200 : 502).json(check);
     } catch (error) {
       handleFailure(res, error);
     }
