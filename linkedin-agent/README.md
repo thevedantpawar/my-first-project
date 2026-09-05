@@ -103,8 +103,17 @@ idea is never dressed up as news.
 
    Take the `sub` value and set `LINKEDIN_PERSON_URN=urn:li:person:<sub>`. The
    provider refuses to publish if it does not start with `urn:li:person:`.
-5. `LINKEDIN_API_VERSION` is the `LinkedIn-Version` header (`YYYYMM`). Bump it
-   when LinkedIn retires the version you are pinned to.
+5. `LINKEDIN_API_VERSION` is the `LinkedIn-Version` header (`YYYYMM`). **Leave
+   it empty.** LinkedIn retires each monthly version after about a year, so any
+   value written into config eventually breaks with
+   `426 NONEXISTENT_VERSION`. Empty means the client derives a current version
+   (last month, since the current month is not always live on the 1st) and, if
+   it ever meets a 426, walks back through recent months, uses the first one
+   LinkedIn accepts, and logs which to pin.
+
+   Note that `/v2/userinfo` takes no version header, so a token check can pass
+   while publishing fails on a retired version. `GET /api/workflows/linkedin-content/status`
+   reports the version in use and whether it was pinned or negotiated.
 
 Publishing posts to `POST https://api.linkedin.com/rest/posts` as the
 authenticated member. That is the only write this system performs.

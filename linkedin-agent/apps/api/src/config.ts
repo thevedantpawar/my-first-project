@@ -78,7 +78,8 @@ const envSchema = z.object({
 
   LINKEDIN_ACCESS_TOKEN: optionalString,
   LINKEDIN_PERSON_URN: optionalString,
-  LINKEDIN_API_VERSION: z.string().optional().transform((v) => ((v ?? '').trim() || '202506')),
+  // Empty means "work it out": a pinned version is retired after about a year.
+  LINKEDIN_API_VERSION: optionalString,
   LINKEDIN_ENABLE_IMAGE_UPLOAD: booleanish,
 
   GOOGLE_SHEETS_ID: optionalString,

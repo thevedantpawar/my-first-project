@@ -8,6 +8,7 @@ import { loadSwipeFile } from '../store/swipe-file.js';
 import { nextRunAt, settingsFromConfig } from '../scheduler/weekday-scheduler.js';
 import type { WeekdayScheduler } from '../scheduler/weekday-scheduler.js';
 import { toSanitizedError } from '../lib/errors.js';
+import { defaultLinkedInVersion, getNegotiatedVersion } from '../providers/linkedin.js';
 
 /** Features this build deliberately does not have. Surfaced in the dashboard. */
 export const UNSUPPORTED_CAPABILITIES = [
@@ -66,7 +67,9 @@ export function buildStatus(scheduler: WeekdayScheduler | null) {
       personUrnFormatValid:
         config.LINKEDIN_PERSON_URN === '' ||
         config.LINKEDIN_PERSON_URN.startsWith('urn:li:person:'),
-      apiVersion: config.LINKEDIN_API_VERSION,
+      apiVersion: config.LINKEDIN_API_VERSION || defaultLinkedInVersion(),
+      apiVersionPinned: config.LINKEDIN_API_VERSION !== '',
+      apiVersionNegotiated: getNegotiatedVersion(),
       imageUploadEnabled: config.LINKEDIN_ENABLE_IMAGE_UPLOAD,
     },
     scheduler: {

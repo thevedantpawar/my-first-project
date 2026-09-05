@@ -14,6 +14,7 @@ export type ErrorCode =
   | 'linkedin_forbidden'
   | 'linkedin_conflict'
   | 'linkedin_rate_limited'
+  | 'linkedin_version'
   | 'linkedin_failed'
   | 'sheets_unauthorized'
   | 'sheets_failed'

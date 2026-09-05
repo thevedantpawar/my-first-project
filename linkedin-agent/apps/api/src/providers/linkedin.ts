@@ -41,8 +41,47 @@ export function assertLinkedInReady(): { accessToken: string; personUrn: string;
   return {
     accessToken: config.LINKEDIN_ACCESS_TOKEN,
     personUrn: config.LINKEDIN_PERSON_URN,
-    apiVersion: config.LINKEDIN_API_VERSION,
+    apiVersion: config.LINKEDIN_API_VERSION || defaultLinkedInVersion(),
   };
+}
+
+function formatVersion(date: Date): string {
+  return `${date.getUTCFullYear()}${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+
+/**
+ * LinkedIn keeps each monthly `LinkedIn-Version` alive for roughly a year, so
+ * any version pinned in configuration eventually stops working. Default to last
+ * month rather than this one: the current month's version is not always live on
+ * the first.
+ */
+export function defaultLinkedInVersion(now: Date = new Date()): string {
+  return formatVersion(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1)));
+}
+
+/** Version candidates, newest first, for negotiating past a retired version. */
+export function recentLinkedInVersions(now: Date = new Date(), count = 12): string[] {
+  const versions: string[] = [];
+  for (let monthsBack = 0; monthsBack < count; monthsBack += 1) {
+    versions.push(
+      formatVersion(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - monthsBack, 1))),
+    );
+  }
+  return versions;
+}
+
+/**
+ * The version that last worked, so one negotiation serves the whole process.
+ * Cleared by tests.
+ */
+let negotiatedVersion: string | null = null;
+
+export function resetNegotiatedVersion(): void {
+  negotiatedVersion = null;
+}
+
+export function getNegotiatedVersion(): string | null {
+  return negotiatedVersion;
 }
 
 function headers(accessToken: string, apiVersion: string): Record<string, string> {
@@ -82,6 +121,12 @@ function mapLinkedInError(status: number, body: string): AppError {
         'LinkedIn reported a conflict (409). This usually means a duplicate post was already created — check the profile before retrying.',
         { httpStatus: status, details: snippet },
       );
+    case 426:
+      return new AppError(
+        'linkedin_version',
+        'LinkedIn rejected the API version (426). Each monthly LinkedIn-Version is retired after about a year — set LINKEDIN_API_VERSION to a current YYYYMM value.',
+        { httpStatus: status, details: snippet },
+      );
     case 429:
       return new AppError(
         'linkedin_rate_limited',
@@ -118,6 +163,48 @@ async function request(
   } finally {
     clearTimeout(timeout);
   }
+}
+
+/**
+ * Sends a versioned REST request, negotiating the version on a 426.
+ *
+ * A retired version is indistinguishable from a broken deployment at 21:00, so
+ * rather than fail the day's post the client walks recent versions and uses the
+ * first LinkedIn still accepts, then remembers it.
+ */
+async function requestVersioned(
+  url: string,
+  build: (version: string) => RequestInit,
+  configuredVersion: string,
+  options: { fetchImpl?: typeof fetch; timeoutMs?: number },
+): Promise<Response> {
+  const candidates =
+    negotiatedVersion !== null
+      ? [negotiatedVersion]
+      : [...new Set([configuredVersion, ...recentLinkedInVersions()].filter(Boolean))];
+
+  let lastBody = '';
+  for (const version of candidates) {
+    const response = await request(url, build(version), options);
+    if (response.status !== 426) {
+      if (negotiatedVersion === null && version !== configuredVersion) {
+        logger.warn('LinkedIn version was retired; negotiated a working one', {
+          configured: configuredVersion,
+          using: version,
+          hint: 'Set LINKEDIN_API_VERSION to this value to skip negotiation.',
+        });
+      }
+      negotiatedVersion = version;
+      return response;
+    }
+    lastBody = redact(await safeText(response));
+  }
+
+  throw new AppError(
+    'linkedin_version',
+    `LinkedIn rejected every API version tried (${candidates.join(', ')}). Check LinkedIn's current versioning documentation and set LINKEDIN_API_VERSION.`,
+    { httpStatus: 426, details: lastBody.slice(0, 300) },
+  );
 }
 
 async function safeText(response: Response): Promise<string> {
@@ -160,9 +247,14 @@ export async function publishTextPost(options: PublishOptions): Promise<LinkedIn
     };
   }
 
-  const response = await request(
+  const response = await requestVersioned(
     `${REST_BASE}/posts`,
-    { method: 'POST', headers: headers(accessToken, apiVersion), body: JSON.stringify(body) },
+    (version) => ({
+      method: 'POST',
+      headers: headers(accessToken, version),
+      body: JSON.stringify(body),
+    }),
+    apiVersion,
     { fetchImpl: options.fetchImpl, timeoutMs: options.timeoutMs },
   );
 
@@ -214,13 +306,14 @@ export async function uploadImage(
 ): Promise<string> {
   const { accessToken, personUrn, apiVersion } = assertLinkedInReady();
 
-  const initResponse = await request(
+  const initResponse = await requestVersioned(
     `${REST_BASE}/images?action=initializeUpload`,
-    {
+    (version) => ({
       method: 'POST',
-      headers: headers(accessToken, apiVersion),
+      headers: headers(accessToken, version),
       body: JSON.stringify({ initializeUploadRequest: { owner: personUrn } }),
-    },
+    }),
+    apiVersion,
     options,
   );
 
