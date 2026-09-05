@@ -1,0 +1,903 @@
+// Ashirwad Wellness — data model
+//
+// Compliance posture baked into this schema (Drugs and Cosmetics Act 1940 /
+// Rules 1945; Pharmacy Act 1948):
+//
+//  * ScheduleType is the spine. requiresPrescription is derived from it and
+//    held consistent by a DB CHECK constraint, not by application discipline.
+//  * Schedule X / narcotic / psychotropic / habit-forming drugs are
+//    unrepresentable: the enum has no member for them, a CHECK constraint pins
+//    the allowed set, and BannedSubstance blocks smuggling one in under an
+//    innocuous scheduleType.
+//  * ScheduleH1Register is append-only (UPDATE/DELETE rejected by DB trigger)
+//    and stores denormalised snapshots, so the register stays truthful even if
+//    the product, user, or prescription rows later change.
+//  * AuditLog is likewise insert-only.
+//  * Prescription images live in private object storage; only the opaque
+//    storage key is persisted here. Never a URL, never a public path.
+//
+// All money is stored as INTEGER PAISE. No floats anywhere in this file.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  CUSTOMER
+  PHARMACIST
+  ADMIN
+}
+
+/// The complete set of product classes this platform is permitted to list.
+/// There is deliberately no SCHEDULE_X, NARCOTIC, or PSYCHOTROPIC member.
+/// Adding one is a schema change that must be reviewed, not a data entry.
+enum ScheduleType {
+  OTC
+  SCHEDULE_H
+  SCHEDULE_H1
+  AYURVEDIC
+  COSMETIC
+  NUTRACEUTICAL
+  DEVICE
+}
+
+enum DosageForm {
+  TABLET
+  CAPSULE
+  SYRUP
+  SUSPENSION
+  INJECTION
+  CREAM
+  OINTMENT
+  GEL
+  DROPS
+  INHALER
+  RESPULE
+  POWDER
+  SACHET
+  SOLUTION
+  LOTION
+  SPRAY
+  SOAP
+  PATCH
+  DEVICE
+  OTHER
+}
+
+enum PrescriptionStatus {
+  UPLOADED
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+  CLARIFICATION_REQUESTED
+  EXPIRED
+  EXHAUSTED
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING_PHARMACIST_REVIEW
+  PHARMACIST_REJECTED
+  AWAITING_PAYMENT
+  CONFIRMED
+  PACKED
+  SHIPPED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+enum PaymentMethod {
+  RAZORPAY
+  COD
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum Relation {
+  SELF
+  SPOUSE
+  CHILD
+  PARENT
+  SIBLING
+  OTHER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  UNDISCLOSED
+}
+
+enum AddressType {
+  HOME
+  WORK
+  OTHER
+}
+
+enum AuditAction {
+  USER_LOGIN
+  USER_LOGOUT
+  USER_REGISTER
+  PRESCRIPTION_UPLOADED
+  PRESCRIPTION_VIEWED
+  PRESCRIPTION_VERIFIED
+  PRESCRIPTION_REJECTED
+  PRESCRIPTION_CLARIFICATION_REQUESTED
+  RX_GATE_BLOCKED
+  ORDER_PLACED
+  ORDER_STATUS_CHANGED
+  ORDER_CANCELLED
+  H1_REGISTER_ENTRY_CREATED
+  H1_REGISTER_CORRECTION_FILED
+  PRODUCT_CREATED
+  PRODUCT_UPDATED
+  PRODUCT_DELISTED
+  BANNED_SUBSTANCE_REJECTED
+  CLAIM_LANGUAGE_REJECTED
+  INVENTORY_ADJUSTED
+  PINCODE_ENABLED
+  PINCODE_DISABLED
+  PAYMENT_CAPTURED
+  PAYMENT_REFUNDED
+}
+
+enum BannedReason {
+  SCHEDULE_X
+  NARCOTIC
+  PSYCHOTROPIC
+  HABIT_FORMING
+  BANNED_FDC
+  WITHDRAWN
+}
+
+// ---------------------------------------------------------------------------
+// Identity — NextAuth v5 (Prisma adapter) + roles
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  phone         String?   @unique
+  phoneVerified DateTime?
+  image         String?
+  /// bcrypt hash. Null for OAuth-only accounts.
+  passwordHash  String?
+  role          Role      @default(CUSTOMER)
+
+  /// Populated only for role = PHARMACIST. Surfaced on the storefront footer
+  /// and stamped onto every H1 register row this pharmacist signs off.
+  pharmacistRegNo String?
+  isActive        Boolean @default(true)
+
+  accounts      Account[]
+  sessions      Session[]
+  addresses     Address[]
+  patients      Patient[]
+  cart          Cart?
+  orders        Order[]
+  prescriptions Prescription[]        @relation("PrescriptionOwner")
+  verifiedRx    Prescription[]        @relation("PrescriptionVerifier")
+  h1Entries     ScheduleH1Register[]
+  auditLogs     AuditLog[]
+  healthRecords HealthRecord[]
+  reviewedOrders OrderStatusEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([role])
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+/// A person a prescription can be written for. Prescriptions are frequently
+/// for a relative, and the H1 register needs a stable patient identity across
+/// refills rather than a name retyped each time.
+model Patient {
+  id        String    @id @default(cuid())
+  userId    String
+  fullName  String
+  relation  Relation  @default(SELF)
+  gender    Gender    @default(UNDISCLOSED)
+  dateOfBirth DateTime? @db.Date
+  /// Free-text fallback when DOB is unknown; the H1 register wants an age.
+  ageYears  Int?
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prescriptions Prescription[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("patients")
+}
+
+model Address {
+  id        String      @id @default(cuid())
+  userId    String
+  label     AddressType @default(HOME)
+  fullName  String
+  phone     String
+  line1     String
+  line2     String?
+  landmark  String?
+  city      String
+  state     String
+  pincode   String
+  isDefault Boolean     @default(false)
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([pincode])
+  @@map("addresses")
+}
+
+// ---------------------------------------------------------------------------
+// Catalogue
+// ---------------------------------------------------------------------------
+
+model Category {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  description String?
+  imageUrl    String?
+  parentId    String?
+  sortOrder   Int     @default(0)
+  isActive    Boolean @default(true)
+
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([parentId])
+  @@map("categories")
+}
+
+model Brand {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  slug     String  @unique
+  logoUrl  String?
+  isActive Boolean @default(true)
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@map("brands")
+}
+
+/// The licensed manufacturer / marketer printed on the pack. Kept separate
+/// from Brand because one manufacturer markets many brands, and bulk CSV
+/// import (Phase 5) needs a normalised target rather than a free-text column.
+model Manufacturer {
+  id      String  @id @default(cuid())
+  name    String  @unique
+  slug    String  @unique
+  address String?
+  country String  @default("India")
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("manufacturers")
+}
+
+/// Active pharmaceutical ingredient. Drives salt-based search ("paracetamol"
+/// surfaces every brand) and the cheaper-substitutes panel on the PDP.
+model Salt {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  slug        String  @unique
+  /// Plain-language mechanism, shown in the "how it works" block.
+  description String?
+
+  products ProductSalt[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@map("salts")
+}
+
+/// Join table carrying per-salt strength, so combination drugs are modelled
+/// honestly (Paracetamol 325 mg + Caffeine 30 mg) instead of as one blob.
+model ProductSalt {
+  productId String
+  saltId    String
+  /// Human-readable strength for this salt in this product, e.g. "325 mg".
+  strength  String
+  /// Normalised numeric value + unit, for substitute equivalence matching.
+  strengthValue Float?
+  strengthUnit  String?
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  salt    Salt    @relation(fields: [saltId], references: [id], onDelete: Restrict)
+
+  @@id([productId, saltId])
+  @@index([saltId])
+  @@map("product_salts")
+}
+
+model Product {
+  id     String @id @default(cuid())
+  name   String
+  slug   String @unique
+  /// Devanagari / regional name, rendered with the Noto Sans Devanagari stack.
+  nameHi String?
+
+  brandId        String?
+  categoryId     String
+  manufacturerId String
+
+  scheduleType ScheduleType
+
+  /// DERIVED from scheduleType. A CHECK constraint added in the initial
+  /// migration enforces requiresPrescription = (scheduleType IN
+  /// ('SCHEDULE_H','SCHEDULE_H1')), so the two can never drift — including via
+  /// a direct psql UPDATE that bypasses the application entirely.
+  requiresPrescription Boolean
+
+  /// Denormalised, normalised-and-sorted salt fingerprint
+  /// (e.g. "amlodipine:5mg|telmisartan:40mg"). Substitute lookup is an index
+  /// hit on this rather than a join fan-out.
+  saltKey String?
+
+  /// Marketing composition line exactly as printed on the pack.
+  composition String
+  /// Headline strength, e.g. "500 mg" or "10 mg/5 ml".
+  strength    String?
+  form        DosageForm
+  /// e.g. "strip of 15 tablets", "bottle of 100 ml".
+  packSize    String
+  packUnits   Int?
+
+  /// HSN code and GST slab, both required for a compliant tax invoice.
+  hsnCode   String
+  /// GST rate in basis points: 500 = 5%, 1200 = 12%, 1800 = 18%.
+  gstRateBps Int
+
+  /// Money in integer paise. mrpPaise >= sellingPricePaise is CHECK-enforced.
+  mrpPaise          Int
+  sellingPricePaise Int
+
+  stock         Int     @default(0)
+  lowStockAlert Int     @default(10)
+  maxPerOrder   Int     @default(10)
+
+  images String[]
+
+  /// Long-form PDP content. Validated at write time against the therapeutic
+  /// claim linter for NUTRACEUTICAL / COSMETIC / AYURVEDIC products.
+  shortDescription String?
+  uses             String?
+  howItWorks       String?
+  sideEffects      String?
+  storage          String?
+  warnings         String?
+  directions       String?
+  expiryPolicy     String?
+
+  isActive     Boolean @default(true)
+  isRefrigerated Boolean @default(false)
+  isReturnable Boolean @default(false)
+
+  brand        Brand?       @relation(fields: [brandId], references: [id])
+  category     Category     @relation(fields: [categoryId], references: [id])
+  manufacturer Manufacturer @relation(fields: [manufacturerId], references: [id])
+  salts        ProductSalt[]
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+  batches      InventoryBatch[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([scheduleType])
+  @@index([requiresPrescription])
+  @@index([saltKey])
+  @@index([isActive])
+  // Trigram indexes backing typo-tolerant search. Declared here rather than
+  // only in raw SQL so `prisma migrate dev` does not drop them.
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@index([composition(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@map("products")
+}
+
+/// Drugs that must never appear in the catalogue regardless of what
+/// scheduleType someone types. Product creation matches name and composition
+/// against this table and hard-rejects. Seeded from Schedule X, the NDPS
+/// schedules, and the CDSCO banned-FDC list.
+model BannedSubstance {
+  id        String       @id @default(cuid())
+  /// Normalised INN / generic name, lowercased.
+  name      String       @unique
+  reason    BannedReason
+  /// Statutory citation, shown in the rejection message and the audit log.
+  authority String?
+  notes     String?
+
+  createdAt DateTime @default(now())
+
+  @@map("banned_substances")
+}
+
+/// Batch-level stock with expiry. Near-expiry alerting and the batch/expiry
+/// columns of the H1 register both read from here.
+model InventoryBatch {
+  id          String   @id @default(cuid())
+  productId   String
+  batchNumber String
+  expiryDate  DateTime @db.Date
+  quantity    Int
+  /// Purchase cost in paise, for margin reporting.
+  costPaise   Int?
+  receivedAt  DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, batchNumber])
+  @@index([expiryDate])
+  @@map("inventory_batches")
+}
+
+// ---------------------------------------------------------------------------
+// Prescriptions
+// ---------------------------------------------------------------------------
+
+model Prescription {
+  id     String @id @default(cuid())
+  userId String
+  /// Who the prescription is for. Null only for legacy rows.
+  patientId String?
+
+  /// Opaque private-storage key. NEVER a URL and never rendered client-side;
+  /// reads go through a server action that mints a short-lived signed URL and
+  /// writes a PRESCRIPTION_VIEWED audit row.
+  imageKey     String
+  mimeType     String?
+  fileSizeBytes Int?
+
+  status PrescriptionStatus @default(UPLOADED)
+
+  /// Prescriber details. Captured at upload where legible, then confirmed or
+  /// corrected by the pharmacist at verification — the H1 register copies the
+  /// pharmacist-confirmed values, not the customer-entered ones.
+  doctorName     String?
+  doctorRegNo    String?
+  hospitalName   String?
+  issuedOn       DateTime? @db.Date
+
+  uploadedAt DateTime  @default(now())
+  verifiedById String?
+  verifiedAt   DateTime?
+  rejectionReason String?
+  pharmacistNotes String?
+
+  /// Validity window and repeat-dispensing budget, both set by the verifying
+  /// pharmacist. The checkout gate requires status = VERIFIED AND
+  /// validUntil > now() AND refillsUsed < refillsAllowed.
+  validUntil     DateTime?
+  refillsAllowed Int @default(0)
+  refillsUsed    Int @default(0)
+
+  user       User    @relation("PrescriptionOwner", fields: [userId], references: [id], onDelete: Cascade)
+  patient    Patient? @relation(fields: [patientId], references: [id])
+  verifiedBy User?   @relation("PrescriptionVerifier", fields: [verifiedById], references: [id])
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  h1Entries  ScheduleH1Register[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([verifiedById])
+  @@map("prescriptions")
+}
+
+// ---------------------------------------------------------------------------
+// Cart and orders
+// ---------------------------------------------------------------------------
+
+model Cart {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String @id @default(cuid())
+  cartId    String
+  productId String
+  quantity  Int    @default(1)
+
+  /// Customer's attachment of a prescription to this specific line. Advisory
+  /// only — the checkout gate re-validates server-side and ignores anything
+  /// the client asserts about it.
+  prescriptionId String?
+
+  cart         Cart          @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  prescription Prescription? @relation(fields: [prescriptionId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId])
+  @@index([prescriptionId])
+  @@map("cart_items")
+}
+
+model Order {
+  id          String @id @default(cuid())
+  /// Human-facing order number, rendered in IBM Plex Mono. e.g. "AW-2026-004182".
+  orderNumber String @unique
+  userId      String
+  addressId   String
+
+  status        OrderStatus   @default(DRAFT)
+  paymentMethod PaymentMethod
+  paymentStatus PaymentStatus @default(PENDING)
+
+  /// True if any line is SCHEDULE_H / SCHEDULE_H1. Drives routing into the
+  /// pharmacist queue and is recomputed server-side at order creation.
+  containsRxItems Boolean @default(false)
+  containsH1Items Boolean @default(false)
+
+  /// All amounts in integer paise.
+  subtotalPaise  Int
+  discountPaise  Int @default(0)
+  deliveryPaise  Int @default(0)
+  gstPaise       Int @default(0)
+  totalPaise     Int
+
+  couponId   String?
+  couponCode String?
+
+  /// Address is snapshotted at placement so later edits to the address book
+  /// cannot rewrite where a dispensed order was sent.
+  shipAddressSnapshot Json
+
+  razorpayOrderId   String? @unique
+  razorpayPaymentId String? @unique
+  razorpaySignature String?
+
+  /// Pharmacist decision on the order as a whole.
+  reviewedById    String?
+  reviewedAt      DateTime?
+  reviewRejectionReason String?
+
+  placedAt    DateTime  @default(now())
+  deliveredAt DateTime?
+  cancelledAt DateTime?
+  cancellationReason String?
+
+  user      User               @relation(fields: [userId], references: [id])
+  address   Address            @relation(fields: [addressId], references: [id])
+  coupon    Coupon?            @relation(fields: [couponId], references: [id])
+  items     OrderItem[]
+  events    OrderStatusEvent[]
+  h1Entries ScheduleH1Register[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([containsRxItems, status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+
+  /// Denormalised snapshot of the product as dispensed. The catalogue row may
+  /// be repriced, renamed, or delisted later; an invoice and a dispensing
+  /// record must not change retroactively.
+  nameSnapshot         String
+  compositionSnapshot  String
+  strengthSnapshot     String?
+  packSizeSnapshot     String
+  manufacturerSnapshot String
+  scheduleTypeSnapshot ScheduleType
+  hsnCodeSnapshot      String
+  gstRateBpsSnapshot   Int
+
+  mrpPaise          Int
+  sellingPricePaise Int
+  lineTotalPaise    Int
+  lineGstPaise      Int
+
+  /// The prescription this line was dispensed against. Enforced NOT NULL for
+  /// Schedule H/H1 lines by a CHECK constraint in the initial migration.
+  prescriptionId String?
+
+  /// Batch actually dispensed, copied into the H1 register.
+  batchNumber String?
+  expiryDate  DateTime? @db.Date
+
+  order        Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product      Product       @relation(fields: [productId], references: [id])
+  prescription Prescription? @relation(fields: [prescriptionId], references: [id])
+  h1Entries    ScheduleH1Register[]
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model OrderStatusEvent {
+  id        String      @id @default(cuid())
+  orderId   String
+  fromStatus OrderStatus?
+  toStatus  OrderStatus
+  note      String?
+  actorId   String?
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  actor User? @relation(fields: [actorId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@map("order_status_events")
+}
+
+model Coupon {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  description   String?
+  /// Exactly one of these is set; CHECK-enforced in the migration.
+  percentOff    Int?
+  flatOffPaise  Int?
+  maxDiscountPaise Int?
+  minOrderPaise Int      @default(0)
+  usageLimit    Int?
+  usageCount    Int      @default(0)
+  perUserLimit  Int      @default(1)
+  /// Rx items are excluded from discounting by default — price competition on
+  /// prescription medicines is a policy decision, not a default.
+  appliesToRxItems Boolean @default(false)
+  startsAt      DateTime
+  endsAt        DateTime
+  isActive      Boolean  @default(true)
+
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("coupons")
+}
+
+// ---------------------------------------------------------------------------
+// Statutory registers and audit
+// ---------------------------------------------------------------------------
+
+/// Schedule H1 register — Rule 65(11A), Drugs and Cosmetics Rules 1945.
+///
+/// APPEND-ONLY. The initial migration installs a trigger that raises on any
+/// UPDATE or DELETE against this table, so neither application code nor a
+/// direct psql session can rewrite history. Genuine errors are corrected by
+/// inserting a new row that points at the erroneous one via correctsEntryId.
+///
+/// Every column below is a snapshot taken at dispensing time. Nothing here is
+/// a live join to a mutable row.
+model ScheduleH1Register {
+  id          String   @id @default(cuid())
+  /// Monotonic serial, the register's page-and-line equivalent.
+  serialNo    Int      @unique @default(autoincrement())
+  dispensedAt DateTime @default(now())
+
+  orderId String
+  /// NOT globally unique: a correcting entry references the same order item as
+  /// the row it corrects. A partial unique index in the migration enforces the
+  /// real rule — at most one *original* entry per dispensed item, plus
+  /// corrections that point at it.
+  orderItemId    String
+  prescriptionId String
+
+  /// Prescriber — as confirmed by the verifying pharmacist.
+  prescriberName  String
+  prescriberRegNo String
+
+  /// Patient.
+  patientName String
+  patientAge  Int?
+  patientGender Gender?
+
+  /// Drug.
+  drugName     String
+  composition  String
+  strength     String?
+  form         DosageForm
+  packSize     String
+  quantity     Int
+  batchNumber  String?
+  expiryDate   DateTime? @db.Date
+
+  /// Dispensing pharmacist, name and registration number snapshotted.
+  pharmacistId     String
+  pharmacistName   String
+  pharmacistRegNo  String
+
+  /// Correction chain. A row that corrects an earlier row points at it here;
+  /// the earlier row is never modified.
+  correctsEntryId String? @unique
+  correctionReason String?
+
+  order        Order              @relation(fields: [orderId], references: [id])
+  orderItem    OrderItem          @relation(fields: [orderItemId], references: [id])
+  prescription Prescription       @relation(fields: [prescriptionId], references: [id])
+  pharmacist   User               @relation(fields: [pharmacistId], references: [id])
+  corrects     ScheduleH1Register? @relation("H1Correction", fields: [correctsEntryId], references: [id])
+  correctedBy  ScheduleH1Register? @relation("H1Correction")
+
+  createdAt DateTime @default(now())
+
+  @@index([dispensedAt])
+  @@index([prescriberRegNo])
+  @@index([pharmacistId])
+  @@map("schedule_h1_register")
+}
+
+/// Immutable audit trail. INSERT-only, enforced by the same trigger pattern as
+/// the H1 register.
+model AuditLog {
+  id         String      @id @default(cuid())
+  actorId    String?
+  actorRole  Role?
+  action     AuditAction
+  entityType String
+  entityId   String?
+  /// Structured detail — before/after values, rejection reasons, gate context.
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+
+  actor User? @relation(fields: [actorId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([actorId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ---------------------------------------------------------------------------
+// Serviceability and customer vault
+// ---------------------------------------------------------------------------
+
+/// Dispensing is tied to licensed premises, so delivery is allow-list only.
+/// A pincode absent from this table is not serviceable — there is no default-open
+/// path.
+model ServiceablePincode {
+  id       String  @id @default(cuid())
+  pincode  String  @unique
+  city     String
+  state    String
+  isActive Boolean @default(true)
+  codAvailable Boolean @default(true)
+  /// Promised delivery window in hours, shown on the PDP and at checkout.
+  etaHours Int     @default(48)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@map("serviceable_pincodes")
+}
+
+/// Optional customer-uploaded documents (lab reports, discharge summaries).
+/// Same private-storage discipline as prescriptions: key only, never a URL.
+model HealthRecord {
+  id       String @id @default(cuid())
+  userId   String
+  title    String
+  fileKey  String
+  mimeType String?
+  fileSizeBytes Int?
+  recordDate DateTime? @db.Date
+  notes    String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("health_records")
+}
