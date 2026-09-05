@@ -1,53 +1,82 @@
 import { getConfig } from '../config.js';
 import { logger } from '../lib/logger.js';
 import { toSanitizedError } from '../lib/errors.js';
-import { zonedMinuteKey, zonedParts } from '../lib/timezone.js';
+import { zonedDateKey, zonedMinuteKey, zonedParts } from '../lib/timezone.js';
+import { schedulerRanToday } from '../store/run-log.js';
 import { runLinkedInContentWorkflow } from '../workflows/linkedin-content-workflow.js';
 
 export const SCHEDULER_TIMEZONE = 'Asia/Kolkata';
 const TICK_INTERVAL_MS = 20_000;
+
+/**
+ * How long after the scheduled time a run may still start.
+ *
+ * Firing only on the exact minute means a redeploy or a restart spanning 21:00
+ * loses that weekday's post with nothing in the logs to explain it. Within this
+ * window the run is simply late; after it, the day is skipped rather than
+ * posting at a time the audience is not expecting.
+ */
+export const DEFAULT_GRACE_MINUTES = 60;
 
 export interface SchedulerSettings {
   enabled: boolean;
   hour: number;
   minute: number;
   timeZone: string;
+  /** Minutes after the scheduled time during which a late run may still start. */
+  graceMinutes: number;
 }
 
 export interface SchedulerState {
-  /** Minute key (`YYYY-MM-DDTHH:mm`, scheduler timezone) of the last execution. */
-  lastRunMinuteKey: string | null;
+  /** Date key (`YYYY-MM-DD`, scheduler timezone) of the last execution. */
+  lastRunDateKey: string | null;
   lastRunAt: string | null;
   lastRunStatus: string | null;
   running: boolean;
 }
 
+export type SchedulerSkipReason =
+  | 'disabled'
+  | 'weekend'
+  | 'before_window'
+  | 'window_passed'
+  | 'already_ran_today'
+  | 'in_progress';
+
 export type SchedulerDecision =
-  | { run: true; minuteKey: string }
-  | { run: false; reason: 'disabled' | 'weekend' | 'wrong_time' | 'duplicate_minute' | 'in_progress' };
+  | { run: true; dateKey: string; minuteKey: string; minutesLate: number }
+  | { run: false; reason: SchedulerSkipReason };
 
 /**
- * Pure decision function: given the clock, the settings and what already ran,
- * should the workflow fire now? Monday-Friday only, never twice in one minute.
+ * Pure decision function: Monday-Friday, at or shortly after the scheduled
+ * time, at most once per day.
+ *
+ * `alreadyRanToday` comes from the persisted run log, so the once-a-day
+ * guarantee survives a restart instead of living only in this process.
  */
 export function shouldRunNow(
   now: Date,
   settings: SchedulerSettings,
   state: SchedulerState,
+  alreadyRanToday = false,
 ): SchedulerDecision {
   if (!settings.enabled) return { run: false, reason: 'disabled' };
   if (state.running) return { run: false, reason: 'in_progress' };
 
   const parts = zonedParts(now, settings.timeZone);
   if (parts.weekday > 5) return { run: false, reason: 'weekend' };
-  if (parts.hour !== settings.hour || parts.minute !== settings.minute) {
-    return { run: false, reason: 'wrong_time' };
+
+  const minutesLate =
+    parts.hour * 60 + parts.minute - (settings.hour * 60 + settings.minute);
+  if (minutesLate < 0) return { run: false, reason: 'before_window' };
+  if (minutesLate >= settings.graceMinutes) return { run: false, reason: 'window_passed' };
+
+  const dateKey = zonedDateKey(now, settings.timeZone);
+  if (alreadyRanToday || state.lastRunDateKey === dateKey) {
+    return { run: false, reason: 'already_ran_today' };
   }
 
-  const minuteKey = zonedMinuteKey(now, settings.timeZone);
-  if (state.lastRunMinuteKey === minuteKey) return { run: false, reason: 'duplicate_minute' };
-
-  return { run: true, minuteKey };
+  return { run: true, dateKey, minuteKey: zonedMinuteKey(now, settings.timeZone), minutesLate };
 }
 
 export function settingsFromConfig(): SchedulerSettings {
@@ -57,6 +86,7 @@ export function settingsFromConfig(): SchedulerSettings {
     hour: config.SOCIAL_CONTENT_RUN_HOUR,
     minute: config.SOCIAL_CONTENT_RUN_MINUTE,
     timeZone: SCHEDULER_TIMEZONE,
+    graceMinutes: DEFAULT_GRACE_MINUTES,
   };
 }
 
@@ -96,7 +126,7 @@ export function nextRunAt(settings: SchedulerSettings, from: Date = new Date()):
 export class WeekdayScheduler {
   private timer: NodeJS.Timeout | null = null;
   private readonly state: SchedulerState = {
-    lastRunMinuteKey: null,
+    lastRunDateKey: null,
     lastRunAt: null,
     lastRunStatus: null,
     running: false,
@@ -141,18 +171,40 @@ export class WeekdayScheduler {
     return { ...this.settings };
   }
 
-  /** Exposed for tests and for a one-shot check on startup. */
-  async tick(now: Date = new Date()): Promise<SchedulerDecision> {
-    const decision = shouldRunNow(now, this.settings, this.state);
+  /**
+   * Exposed for tests and for a one-shot check on startup. `fetchImpl` is a
+   * test seam, matching every provider in this codebase.
+   */
+  async tick(now: Date = new Date(), fetchImpl?: typeof fetch): Promise<SchedulerDecision> {
+    let alreadyRanToday = false;
+    try {
+      alreadyRanToday = schedulerRanToday(this.settings.timeZone, now) !== null;
+    } catch (error) {
+      // A missing or unreadable run log must not wedge the scheduler; the
+      // in-memory date key still prevents a same-process double run.
+      logger.warn('Could not read the run log for today', {
+        msg: toSanitizedError(error).message,
+      });
+    }
+
+    const decision = shouldRunNow(now, this.settings, this.state, alreadyRanToday);
     if (!decision.run) return decision;
 
-    // Claim the minute before awaiting, so a slow run cannot be started twice.
-    this.state.lastRunMinuteKey = decision.minuteKey;
+    // Claim the day before awaiting, so a slow run cannot be started twice.
+    this.state.lastRunDateKey = decision.dateKey;
     this.state.running = true;
-    logger.info('Scheduled LinkedIn run starting', { minuteKey: decision.minuteKey });
+    logger.info('Scheduled LinkedIn run starting', {
+      dateKey: decision.dateKey,
+      minutesLate: decision.minutesLate,
+      late: decision.minutesLate > 0,
+    });
 
     try {
-      const result = await runLinkedInContentWorkflow({ trigger: 'scheduler', now });
+      const result = await runLinkedInContentWorkflow({
+        trigger: 'scheduler',
+        now,
+        ...(fetchImpl ? { fetchImpl } : {}),
+      });
       this.state.lastRunAt = result.timestamp;
       this.state.lastRunStatus = result.status;
       logger.info('Scheduled LinkedIn run finished', {

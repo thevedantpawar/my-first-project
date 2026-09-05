@@ -5,17 +5,18 @@ import {
   shouldRunNow,
 } from '../src/scheduler/weekday-scheduler.js';
 import type { SchedulerSettings, SchedulerState } from '../src/scheduler/weekday-scheduler.js';
-import { zonedMinuteKey, zonedParts } from '../src/lib/timezone.js';
+import { zonedDateKey, zonedParts } from '../src/lib/timezone.js';
 
 const settings: SchedulerSettings = {
   enabled: true,
   hour: 21,
   minute: 0,
   timeZone: SCHEDULER_TIMEZONE,
+  graceMinutes: 60,
 };
 
 function freshState(): SchedulerState {
-  return { lastRunMinuteKey: null, lastRunAt: null, lastRunStatus: null, running: false };
+  return { lastRunDateKey: null, lastRunAt: null, lastRunStatus: null, running: false };
 }
 
 /** 21:00 Asia/Kolkata is 15:30 UTC (IST is UTC+5:30, with no DST). */
@@ -64,9 +65,28 @@ describe('weekend exclusion', () => {
 });
 
 describe('time and enablement gates', () => {
-  it('does not run outside the configured minute', () => {
-    const now = new Date('2026-09-07T15:31:00.000Z');
-    expect(shouldRunNow(now, settings, freshState())).toEqual({ run: false, reason: 'wrong_time' });
+  it('does not run before the scheduled time', () => {
+    // 20:59 IST.
+    const now = new Date('2026-09-07T15:29:00.000Z');
+    expect(shouldRunNow(now, settings, freshState())).toEqual({
+      run: false,
+      reason: 'before_window',
+    });
+  });
+
+  it('still runs a few minutes late, so a restart does not lose the day', () => {
+    // 21:12 IST — inside the grace window.
+    const decision = shouldRunNow(new Date('2026-09-07T15:42:00.000Z'), settings, freshState());
+    expect(decision.run).toBe(true);
+    if (decision.run) expect(decision.minutesLate).toBe(12);
+  });
+
+  it('skips the day once the grace window has passed', () => {
+    // 22:05 IST — too late to post at a time the audience expects.
+    expect(shouldRunNow(new Date('2026-09-07T16:35:00.000Z'), settings, freshState())).toEqual({
+      run: false,
+      reason: 'window_passed',
+    });
   });
 
   it('does not run when disabled', () => {
@@ -87,21 +107,38 @@ describe('time and enablement gates', () => {
 });
 
 describe('duplicate execution prevention', () => {
-  it('refuses a second run inside the same minute', () => {
+  it('refuses a second run on the same day', () => {
     const now = istNinePm('2026-09-07');
-    const minuteKey = zonedMinuteKey(now, SCHEDULER_TIMEZONE);
-    const state: SchedulerState = { ...freshState(), lastRunMinuteKey: minuteKey };
-    expect(shouldRunNow(now, settings, state)).toEqual({ run: false, reason: 'duplicate_minute' });
-  });
-
-  it('allows the next weekday once the minute has changed', () => {
-    const monday = istNinePm('2026-09-07');
     const state: SchedulerState = {
       ...freshState(),
-      lastRunMinuteKey: zonedMinuteKey(monday, SCHEDULER_TIMEZONE),
+      lastRunDateKey: zonedDateKey(now, SCHEDULER_TIMEZONE),
     };
-    const tuesday = istNinePm('2026-09-08');
-    expect(shouldRunNow(tuesday, settings, state).run).toBe(true);
+    expect(shouldRunNow(now, settings, state)).toEqual({ run: false, reason: 'already_ran_today' });
+  });
+
+  it('refuses a second run anywhere inside the grace window', () => {
+    const state: SchedulerState = { ...freshState(), lastRunDateKey: '2026-09-07' };
+    // 21:30 IST, same day.
+    expect(shouldRunNow(new Date('2026-09-07T16:00:00.000Z'), settings, state)).toEqual({
+      run: false,
+      reason: 'already_ran_today',
+    });
+  });
+
+  it('refuses when the persisted log already shows a run today', () => {
+    // Survives a restart: in-memory state is empty but the log is not.
+    expect(shouldRunNow(istNinePm('2026-09-07'), settings, freshState(), true)).toEqual({
+      run: false,
+      reason: 'already_ran_today',
+    });
+  });
+
+  it('allows the next weekday once the date has changed', () => {
+    const state: SchedulerState = {
+      ...freshState(),
+      lastRunDateKey: zonedDateKey(istNinePm('2026-09-07'), SCHEDULER_TIMEZONE),
+    };
+    expect(shouldRunNow(istNinePm('2026-09-08'), settings, state).run).toBe(true);
   });
 
   it('refuses to start while a run is already in progress', () => {

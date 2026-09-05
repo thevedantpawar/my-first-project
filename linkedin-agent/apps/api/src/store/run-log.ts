@@ -76,3 +76,22 @@ export function publishedToday(
     });
   return match[match.length - 1] ?? null;
 }
+
+/**
+ * Whether the scheduler has already attempted a run today, in the given
+ * timezone — regardless of how that run ended.
+ *
+ * Read from the persisted log rather than memory so a container restart cannot
+ * cause a second attempt, and so a restart that spans the scheduled minute does
+ * not silently lose the day.
+ */
+export function schedulerRanToday(timeZone: string, now: Date = new Date()): RunRecord | null {
+  const today = zonedDateKey(now, timeZone);
+  const match = loadRuns()
+    .filter((run) => run.trigger === 'scheduler')
+    .filter((run) => {
+      const time = Date.parse(run.timestamp);
+      return Number.isFinite(time) && zonedDateKey(new Date(time), timeZone) === today;
+    });
+  return match[match.length - 1] ?? null;
+}

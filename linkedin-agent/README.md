@@ -225,6 +225,29 @@ so you can change it without a restart.
 - **`profile-audit.json`** — the profile conversion checklist and your real
   proof. Nothing here is inferred; you tick items off yourself.
 
+## The scheduled weekday run
+
+`SOCIAL_CONTENT_SCHEDULER_ENABLED=true` plus `SOCIAL_CONTENT_DRY_RUN=false` is
+what makes the agent post on its own, Monday to Friday at
+`SOCIAL_CONTENT_RUN_HOUR`:`SOCIAL_CONTENT_RUN_MINUTE` in `Asia/Kolkata`. The
+scheduled run needs no per-run confirmation — enabling it *is* the
+authorisation. Manual publishes still require `confirm: true`.
+
+It is built to survive an imperfect host:
+
+- **A one-hour grace window.** Firing only on the exact minute meant a redeploy
+  or restart spanning 21:00 lost that day's post silently. A run that starts at
+  21:18 is simply late and is logged as such. After the window the day is
+  skipped rather than posting at a time the audience is not expecting.
+- **Once a day, durably.** "Has today's run happened?" is answered from the
+  persisted run log, not process memory, so a container restart mid-window
+  cannot produce a second post.
+- **A failed day is not retried.** The attempt is recorded either way, so an
+  outage costs one post rather than turning the grace window into a retry loop
+  that burns Gemini quota.
+- **Run exactly one instance** with the scheduler enabled, and keep `data/` on a
+  persistent volume — both guarantees above depend on that log.
+
 ## One post per weekday
 
 The portfolio is one primary post per weekday, and the workflow enforces it.
