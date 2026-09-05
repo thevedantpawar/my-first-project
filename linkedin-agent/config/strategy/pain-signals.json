@@ -1,0 +1,13 @@
+{
+  "$comment": "Editable pain-signal library for the ideal customer. Each post must name at least one pain signal or dream signal.",
+  "signals": [
+    { "id": "slow-lead-response", "text": "leads wait hours for a response", "buyerSituation": "inbound leads arrive faster than the team can answer them" },
+    { "id": "manual-copy-paste", "text": "staff manually copy information between tools", "buyerSituation": "two systems of record and a person in the middle" },
+    { "id": "constant-correction", "text": "AI outputs require constant correction", "buyerSituation": "an assistant that saves less time than it costs to review" },
+    { "id": "duplicate-retries", "text": "retries create duplicate actions or surprise bills", "buyerSituation": "a retry that re-sends the email or re-charges the card" },
+    { "id": "unexplainable-failure", "text": "nobody can explain why an automation failed", "buyerSituation": "a silent failure discovered days later by a customer" },
+    { "id": "demo-only-workflow", "text": "the workflow works in a demo but breaks in production", "buyerSituation": "a pilot that never survived real volume" },
+    { "id": "founder-is-the-process", "text": "the founder is the only person who knows how the process works", "buyerSituation": "a process that stops when one person is on a plane" },
+    { "id": "no-state-no-recovery", "text": "automation has no state or recovery path", "buyerSituation": "a run that dies halfway and cannot be resumed" }
+  ]
+}

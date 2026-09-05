@@ -1,0 +1,24 @@
+{
+  "$comment": "Weekly cadence and the rolling four-week portfolio mix. Percentages must sum to 100.",
+  "timezone": "Asia/Kolkata",
+  "postsPerDay": 1,
+  "weekday": {
+    "1": "Named Problem",
+    "2": "Deep Work System",
+    "3": "Surfaced Problem/Audit",
+    "4": "Founder/Practitioner Story",
+    "5": "Point-of-View"
+  },
+  "fridayAlternate": "Lead Magnet",
+  "rollingWindowWeeks": 4,
+  "targetMix": {
+    "Named Problem": 30,
+    "Surfaced Problem/Audit": 25,
+    "Deep Work System": 20,
+    "Founder/Practitioner Story": 15,
+    "Point-of-View": 10,
+    "Lead Magnet": 0,
+    "Profile View Outreach": 0
+  },
+  "mixTolerancePercentagePoints": 10
+}

@@ -1,0 +1,29 @@
+# Secrets — never commit.
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+npm-debug.log*
+.vite/
+coverage/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local runtime data (agent state, logs, generated images)
+linkedin-agent/data/*
+!linkedin-agent/data/.gitkeep
+linkedin-agent/apps/api/generated/
+
+# OS
+.DS_Store

@@ -1,0 +1,259 @@
+import { getConfig } from '../config.js';
+import { AppError, redact } from '../lib/errors.js';
+import { logger } from '../lib/logger.js';
+
+const REST_BASE = 'https://api.linkedin.com/rest';
+
+export interface LinkedInPublishResult {
+  status: 'published';
+  httpStatus: number;
+  postId: string;
+  postUrl: string | null;
+}
+
+export interface PublishOptions {
+  commentary: string;
+  /** Image URN from `uploadImage`. Never a URL — LinkedIn only accepts its own URN. */
+  imageUrn?: string | null;
+  imageAltText?: string;
+  fetchImpl?: typeof fetch;
+  timeoutMs?: number;
+}
+
+/**
+ * Verifies publishing credentials before any network call, so a
+ * misconfiguration is a clear config error rather than a LinkedIn 401.
+ */
+export function assertLinkedInReady(): { accessToken: string; personUrn: string; apiVersion: string } {
+  const config = getConfig();
+  if (config.LINKEDIN_ACCESS_TOKEN === '') {
+    throw new AppError('config_missing', 'LINKEDIN_ACCESS_TOKEN is not configured.');
+  }
+  if (config.LINKEDIN_PERSON_URN === '') {
+    throw new AppError('config_missing', 'LINKEDIN_PERSON_URN is not configured.');
+  }
+  if (!config.LINKEDIN_PERSON_URN.startsWith('urn:li:person:')) {
+    throw new AppError(
+      'config_invalid',
+      'LINKEDIN_PERSON_URN must start with "urn:li:person:". Use the authenticated member URN, not a numeric id or a company URN.',
+    );
+  }
+  return {
+    accessToken: config.LINKEDIN_ACCESS_TOKEN,
+    personUrn: config.LINKEDIN_PERSON_URN,
+    apiVersion: config.LINKEDIN_API_VERSION,
+  };
+}
+
+function headers(accessToken: string, apiVersion: string): Record<string, string> {
+  return {
+    authorization: `Bearer ${accessToken}`,
+    'content-type': 'application/json',
+    'x-restli-protocol-version': '2.0.0',
+    'linkedin-version': apiVersion,
+  };
+}
+
+/** Post ids are not secrets, but they are echoed to logs — keep them to safe characters. */
+export function sanitizePostId(value: string): string {
+  return value.trim().replace(/[^A-Za-z0-9:_-]/g, '');
+}
+
+function mapLinkedInError(status: number, body: string): AppError {
+  // Redact before the snippet is ever stored on the error — an upstream body
+  // can echo the Authorization header back at us.
+  const snippet = redact(body).slice(0, 300);
+  switch (status) {
+    case 401:
+      return new AppError(
+        'linkedin_unauthorized',
+        'LinkedIn rejected the access token (401). It is invalid or expired — re-run the OAuth flow to get a new member token.',
+        { httpStatus: status, details: snippet },
+      );
+    case 403:
+      return new AppError(
+        'linkedin_forbidden',
+        'LinkedIn refused the request (403). The token is missing the w_member_social permission, or the author URN is not the authenticated member.',
+        { httpStatus: status, details: snippet },
+      );
+    case 409:
+      return new AppError(
+        'linkedin_conflict',
+        'LinkedIn reported a conflict (409). This usually means a duplicate post was already created — check the profile before retrying.',
+        { httpStatus: status, details: snippet },
+      );
+    case 429:
+      return new AppError(
+        'linkedin_rate_limited',
+        'LinkedIn rate limit reached (429). Wait for the window to reset; do not retry in a loop.',
+        { httpStatus: status, details: snippet },
+      );
+    default:
+      return new AppError('linkedin_failed', `LinkedIn returned HTTP ${status}.`, {
+        httpStatus: status,
+        details: snippet,
+      });
+  }
+}
+
+async function request(
+  url: string,
+  init: RequestInit,
+  options: { fetchImpl?: typeof fetch; timeoutMs?: number },
+): Promise<Response> {
+  const doFetch = options.fetchImpl ?? fetch;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? 30_000);
+  try {
+    return await doFetch(url, { ...init, signal: controller.signal });
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new AppError('linkedin_failed', 'LinkedIn request timed out.', { cause: error });
+    }
+    throw new AppError(
+      'linkedin_failed',
+      `LinkedIn request failed: ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error },
+    );
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function safeText(response: Response): Promise<string> {
+  try {
+    return await response.text();
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Publishes to the authenticated member's own profile.
+ *
+ * This is the only write this system performs on LinkedIn. There is no comment
+ * monitoring, no automatic reply, no commenter mention, no messaging and no
+ * connection request anywhere in this codebase.
+ */
+export async function publishTextPost(options: PublishOptions): Promise<LinkedInPublishResult> {
+  const { accessToken, personUrn, apiVersion } = assertLinkedInReady();
+
+  const body: Record<string, unknown> = {
+    author: personUrn,
+    commentary: options.commentary,
+    visibility: 'PUBLIC',
+    distribution: {
+      feedDistribution: 'MAIN_FEED',
+      targetEntities: [],
+      thirdPartyDistributionChannels: [],
+    },
+    lifecycleState: 'PUBLISHED',
+    isReshareDisabledByAuthor: false,
+  };
+
+  if (options.imageUrn) {
+    body.content = {
+      media: {
+        id: options.imageUrn,
+        ...(options.imageAltText ? { altText: options.imageAltText } : {}),
+      },
+    };
+  }
+
+  const response = await request(
+    `${REST_BASE}/posts`,
+    { method: 'POST', headers: headers(accessToken, apiVersion), body: JSON.stringify(body) },
+    { fetchImpl: options.fetchImpl, timeoutMs: options.timeoutMs },
+  );
+
+  if (!response.ok) {
+    throw mapLinkedInError(response.status, await safeText(response));
+  }
+
+  const headerId = response.headers.get('x-restli-id') ?? response.headers.get('x-linkedin-id') ?? '';
+  let postId = sanitizePostId(headerId);
+  if (postId === '') {
+    const text = await safeText(response);
+    try {
+      const parsed = JSON.parse(text) as { id?: string };
+      postId = sanitizePostId(parsed.id ?? '');
+    } catch {
+      postId = '';
+    }
+  }
+
+  if (postId === '') {
+    // A 2xx with no id means we cannot prove the post exists; do not claim success.
+    throw new AppError(
+      'linkedin_failed',
+      `LinkedIn accepted the request (HTTP ${response.status}) but returned no post id. Check the profile before retrying.`,
+      { httpStatus: response.status },
+    );
+  }
+
+  logger.info('LinkedIn post published', { httpStatus: response.status, postId });
+
+  return {
+    status: 'published',
+    httpStatus: response.status,
+    postId,
+    postUrl: postId.startsWith('urn:li:')
+      ? `https://www.linkedin.com/feed/update/${postId}/`
+      : null,
+  };
+}
+
+/**
+ * Three-step LinkedIn image upload: initialize, PUT the bytes, return the URN.
+ * Only the returned URN may be attached to a post — a fake or external image
+ * URL is never sent.
+ */
+export async function uploadImage(
+  image: { base64: string; mimeType: string },
+  options: { fetchImpl?: typeof fetch; timeoutMs?: number } = {},
+): Promise<string> {
+  const { accessToken, personUrn, apiVersion } = assertLinkedInReady();
+
+  const initResponse = await request(
+    `${REST_BASE}/images?action=initializeUpload`,
+    {
+      method: 'POST',
+      headers: headers(accessToken, apiVersion),
+      body: JSON.stringify({ initializeUploadRequest: { owner: personUrn } }),
+    },
+    options,
+  );
+
+  if (!initResponse.ok) {
+    throw mapLinkedInError(initResponse.status, await safeText(initResponse));
+  }
+
+  const initBody = (await initResponse.json()) as {
+    value?: { uploadUrl?: string; image?: string };
+  };
+  const uploadUrl = initBody.value?.uploadUrl;
+  const imageUrn = initBody.value?.image;
+  if (!uploadUrl || !imageUrn) {
+    throw new AppError('linkedin_failed', 'LinkedIn did not return an image upload URL.');
+  }
+
+  const bytes = Buffer.from(image.base64, 'base64');
+  const uploadResponse = await request(
+    uploadUrl,
+    {
+      method: 'PUT',
+      headers: {
+        authorization: `Bearer ${accessToken}`,
+        'content-type': image.mimeType,
+      },
+      body: new Uint8Array(bytes),
+    },
+    options,
+  );
+
+  if (!uploadResponse.ok) {
+    throw mapLinkedInError(uploadResponse.status, await safeText(uploadResponse));
+  }
+
+  return imageUrn;
+}

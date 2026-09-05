@@ -1,0 +1,12 @@
+{
+  "$comment": "Editable dream-signal library for the ideal customer.",
+  "signals": [
+    { "id": "fast-response-no-headcount", "text": "faster response without adding headcount", "buyerSituation": "same team, minutes instead of hours" },
+    { "id": "self-healing", "text": "workflows that recover from failure", "buyerSituation": "a failed step retried safely without human triage" },
+    { "id": "audit-trail", "text": "clear audit trails", "buyerSituation": "any run can be explained after the fact" },
+    { "id": "lower-cost", "text": "lower model and tool costs", "buyerSituation": "spend that tracks volume instead of surprising the CFO" },
+    { "id": "staff-trust", "text": "staff trust the automation", "buyerSituation": "the team stops double-checking every output" },
+    { "id": "unattended-process", "text": "the founder can leave the process unattended", "buyerSituation": "a week away without the process degrading" },
+    { "id": "revenue-and-quality", "text": "revenue and service quality improve together", "buyerSituation": "faster service that does not cut corners" }
+  ]
+}

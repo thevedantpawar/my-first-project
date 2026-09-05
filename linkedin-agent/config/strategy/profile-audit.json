@@ -1,0 +1,18 @@
+{
+  "$comment": "Profile conversion checklist. Set completed=true only when the element is genuinely done. The dashboard surfaces every incomplete item as a warning. Never record proof that does not exist.",
+  "items": [
+    { "id": "photo", "label": "Profile photo is clear, credible and human", "completed": false, "notes": "" },
+    { "id": "banner", "label": "Banner states the audience, the problem and the outcome", "completed": false, "notes": "" },
+    { "id": "headline", "label": "Outcome-led headline, not only \"CEO at Microns\"", "completed": false, "notes": "" },
+    { "id": "about-who", "label": "About section: who Vedant helps", "completed": false, "notes": "" },
+    { "id": "about-problems", "label": "About section: the expensive problems solved", "completed": false, "notes": "" },
+    { "id": "about-method", "label": "About section: the practical method", "completed": false, "notes": "" },
+    { "id": "about-proof", "label": "About section: proof or honest experience", "completed": false, "notes": "" },
+    { "id": "about-next-step", "label": "About section: one clear next step", "completed": false, "notes": "" },
+    { "id": "featured-resource", "label": "Featured: one useful public resource", "completed": false, "notes": "" },
+    { "id": "featured-case-study", "label": "Featured: one relevant case study or implementation breakdown", "completed": false, "notes": "" },
+    { "id": "featured-service", "label": "Featured: one clear service or audit page", "completed": false, "notes": "" },
+    { "id": "profile-link", "label": "One profile link to a focused landing page or calendar", "completed": false, "notes": "" }
+  ],
+  "proof": []
+}

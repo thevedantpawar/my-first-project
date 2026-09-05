@@ -1,0 +1,38 @@
+{
+  "$comment": "Three recurring beliefs. Every post reinforces one, or makes a clearly labelled challenge to one. Edit these; the agent reads this file at request time.",
+  "beliefs": [
+    {
+      "id": "orchestration-over-model",
+      "claim": "Reliable AI automation is an orchestration problem, not merely a model-selection problem.",
+      "opposingBelief": "Pick the best model and the workflow will be reliable.",
+      "evidenceAngles": [
+        "routing rules that decide which step runs at all",
+        "state that survives a restart",
+        "retry semantics that do not duplicate side effects",
+        "the cost difference between a good prompt and a good queue"
+      ]
+    },
+    {
+      "id": "automate-failure-points-first",
+      "claim": "Businesses should automate expensive failure points before automating impressive demos.",
+      "opposingBelief": "Start with the flashiest use case so the team gets excited.",
+      "evidenceAngles": [
+        "lead response time measured in hours",
+        "manual re-keying between two systems of record",
+        "the handoff nobody owns",
+        "work that gets redone because the first pass was wrong"
+      ]
+    },
+    {
+      "id": "observable-recoverable-measurable",
+      "claim": "A good agent is observable, recoverable, and tied to a measurable business outcome.",
+      "opposingBelief": "If the output looks right in testing, the automation is done.",
+      "evidenceAngles": [
+        "a run log a non-engineer can read",
+        "a defined recovery path for every failure mode",
+        "one business metric the workflow is accountable for",
+        "alerting that fires before the customer notices"
+      ]
+    }
+  ]
+}

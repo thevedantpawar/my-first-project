@@ -1,0 +1,24 @@
+{
+  "name": "microns-linkedin-agent",
+  "private": true,
+  "version": "1.0.0",
+  "description": "LinkedIn-only AI content agent for Microns. No Twitter/X, no comment automation, no DM automation.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "apps/api",
+    "apps/dashboard"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @microns/linkedin-api",
+    "dev:dashboard": "npm run dev --workspace @microns/linkedin-dashboard",
+    "build": "npm run build --workspace @microns/linkedin-api && npm run build --workspace @microns/linkedin-dashboard",
+    "build:api": "npm run build --workspace @microns/linkedin-api",
+    "build:dashboard": "npm run build --workspace @microns/linkedin-dashboard",
+    "typecheck": "npm run typecheck --workspace @microns/linkedin-api && npm run typecheck --workspace @microns/linkedin-dashboard",
+    "test": "npm run test --workspace @microns/linkedin-api",
+    "start": "npm run start --workspace @microns/linkedin-api"
+  }
+}

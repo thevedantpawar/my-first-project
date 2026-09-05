@@ -1,0 +1,36 @@
+{
+  "$comment": "Non-negotiable positioning. The agent rejects topics that do not map to this ICP.",
+  "primaryAudience": [
+    "US-based service businesses and B2B companies",
+    "founders, operators, revenue leaders and marketing leaders",
+    "teams evaluating AI agents, workflow automation, internal operations, lead response, support and revenue systems"
+  ],
+  "positioning": {
+    "company": "Microns",
+    "operator": "Vedant Pawar",
+    "summary": "Practical AI automation for businesses that need reliable execution, not AI demos.",
+    "focus": [
+      "orchestration",
+      "routing",
+      "state",
+      "retries",
+      "observability",
+      "cost control",
+      "measurable business outcomes"
+    ]
+  },
+  "rejectTopics": [
+    "generic productivity advice",
+    "generic motivation",
+    "broad \"AI is changing everything\" commentary",
+    "content aimed primarily at other agencies",
+    "disconnected personal stories with no buyer relevance",
+    "trend-chasing with no practical mechanism"
+  ],
+  "growthTarget": {
+    "followers": 10000,
+    "months": 4,
+    "guaranteed": false,
+    "note": "A target to work toward, never a promise. Qualified audience, profile views, saves, reposts, clicks, conversations, booked calls and revenue are tracked alongside follower count."
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "$comment": "One primary CTA per post. destination maps to an env-configured URL; a CTA whose destination URL is empty is blocked by the quality gate.",
+  "ctaTypes": {
+    "follow": { "destination": null, "examples": ["Follow for practical automation breakdowns."] },
+    "repost": { "destination": null, "examples": ["Share this with the person responsible for your workflow stack."] },
+    "save": { "destination": null, "examples": ["Save this for your next workflow review.", "Use this as a checklist when auditing an AI workflow."] },
+    "profile": { "destination": "PROFILE_URL", "examples": ["The full implementation pattern is in my profile."] },
+    "resource": { "destination": "PUBLIC_RESOURCE_URL", "examples": ["The public implementation guide is linked in my profile."] },
+    "case_study": { "destination": "CASE_STUDY_URL", "examples": ["The implementation breakdown is linked in my profile."] },
+    "calendar": { "destination": "CALENDAR_URL", "examples": ["My calendar is linked in my profile if you want to walk through your stack."] }
+  },
+  "preferredByPostType": {
+    "Named Problem": ["case_study", "follow", "save"],
+    "Surfaced Problem/Audit": ["save", "resource", "profile"],
+    "Deep Work System": ["resource", "save", "follow"],
+    "Founder/Practitioner Story": ["follow", "profile"],
+    "Point-of-View": ["follow", "resource"],
+    "Lead Magnet": ["resource", "profile"],
+    "Profile View Outreach": ["profile", "follow"]
+  }
+}
