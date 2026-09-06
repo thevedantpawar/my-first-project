@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import secrets
 import sys
+from pathlib import Path
 from datetime import timedelta
 
 from sqlalchemy import func, select
@@ -136,6 +137,64 @@ def cmd_demo(args) -> int:
         db.close()
 
 
+def cmd_audit(args) -> int:
+    """Run a Leak Audit over a prospect's enquiry export.
+
+    Read-only and database-free by design: this reads someone else's
+    spreadsheet and prints arithmetic. It opens a session only to borrow the
+    real scoring function, so an audit and a live enquiry are scored by
+    exactly the same code.
+    """
+    from app.database import SessionLocal
+    from app.services import leak_audit
+    from app.services.lead_service import LeadService
+
+    path = Path(args.csv)
+    if not path.exists():
+        print(f"No such file: {path}", file=sys.stderr)
+        return 1
+
+    try:
+        text = path.read_text(encoding="utf-8-sig")
+    except UnicodeDecodeError:
+        # Clinic exports out of older spreadsheet tools are often cp1252.
+        text = path.read_text(encoding="cp1252", errors="replace")
+
+    db = SessionLocal()
+    try:
+        service = LeadService(db)
+        audit, rows = leak_audit.audit_csv(
+            text,
+            scorer=service.score_lead,
+            slow_hours=args.slow_hours,
+        )
+    finally:
+        db.close()
+
+    if not audit.total_rows:
+        print("No rows found in that file.", file=sys.stderr)
+        for warning in audit.warnings:
+            print(f"  {warning}", file=sys.stderr)
+        return 1
+
+    report = leak_audit.render_report(audit, args.clinic)
+    print(report)
+
+    if args.out:
+        Path(args.out).write_text(report + "\n", encoding="utf-8")
+        print(f"\nWritten to {args.out}", file=sys.stderr)
+
+    if args.json:
+        import json as _json
+
+        Path(args.json).write_text(
+            _json.dumps(audit.as_dict(), indent=2, default=str) + "\n", encoding="utf-8"
+        )
+        print(f"Figures written to {args.json}", file=sys.stderr)
+
+    return 0
+
+
 def cmd_rotate_phi(_args) -> int:
     """Re-encrypt every PHI field under the current ENCRYPTION_KEY.
 
@@ -226,6 +285,18 @@ def main(argv: list[str] | None = None) -> int:
         "--keep", action="store_true", help="add to existing demo data instead of replacing it"
     )
     demo_parser.set_defaults(func=cmd_demo)
+
+    audit_parser = subparsers.add_parser(
+        "audit", help="run a Leak Audit over a prospect's enquiry export"
+    )
+    audit_parser.add_argument("csv", help="path to the clinic's enquiry export")
+    audit_parser.add_argument("--clinic", default="this clinic", help="name for the report header")
+    audit_parser.add_argument(
+        "--slow-hours", type=float, default=4.0, help="what counts as a slow reply (default 4)"
+    )
+    audit_parser.add_argument("--out", help="also write the report to this file")
+    audit_parser.add_argument("--json", help="also write the raw figures to this JSON file")
+    audit_parser.set_defaults(func=cmd_audit)
 
     subparsers.add_parser("rotate-phi", help="re-encrypt PHI under the current key").set_defaults(
         func=cmd_rotate_phi
