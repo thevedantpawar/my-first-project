@@ -100,13 +100,90 @@ for rid, ans in FAQ:
 RESULTS = '''<section id="results" class="relative scroll-mt-24 px-5 py-24 sm:px-8 md:py-32 bg-surface text-surface-foreground"><div class="mx-auto w-full max-w-6xl"><div class="grid gap-12 lg:grid-cols-[1fr_1fr] lg:gap-16"><div class="reveal transition-[opacity,transform] duration-700 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none"><p class="rule-label text-primary"><span aria-hidden="true" class="h-px w-8 bg-primary/40"></span>Proof of work</p><h2 class="text-balance text-[clamp(2rem,5.2vw,3.9rem)] font-semibold leading-[1.02] mt-6">We&#x27;ve built this before<span class="block text-primary">for a clinic down the road.</span></h2><div class="mt-8 space-y-5 text-[1.0625rem] leading-relaxed text-muted-foreground"><p>Before MICRONS, we built the consultation-booking system for a multi-location skin &amp; laser clinic in our own city. Same problem, smaller scale: inquiries scattered across phone, email and Instagram, with no consistent way for the front desk to pick them up in the morning.</p><p class="font-display text-xl font-medium leading-snug text-foreground">Every inquiry now arrives the same way &mdash; structured, time-stamped and ready to book &mdash; instead of being pieced back together from three inboxes.</p><p class="text-[0.9375rem]">Client name withheld. This is our own build, not a stock testimonial.</p></div></div><div class="reveal transition-[opacity,transform] duration-700 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none"><div class="rounded-2xl border border-border bg-card p-7 shadow-editorial sm:p-9"><p class="eyebrow text-primary">What we built</p><ul class="mt-4 space-y-4 text-[0.9375rem] text-foreground"><li class="flex gap-3"><span aria-hidden="true" class="mt-2 size-1.5 shrink-0 rounded-full bg-primary/50"></span>A structured consultation request on their website &mdash; treatment concern, preferred date, contact details &mdash; in place of a generic &ldquo;contact us&rdquo; box.</li><li class="flex gap-3"><span aria-hidden="true" class="mt-2 size-1.5 shrink-0 rounded-full bg-primary/50"></span>Every submission routed to the front desk in one consistent format, ready to action.</li><li class="flex gap-3"><span aria-hidden="true" class="mt-2 size-1.5 shrink-0 rounded-full bg-primary/50"></span>After-hours inquiries captured around the clock instead of lost to voicemail.</li><li class="flex gap-3"><span aria-hidden="true" class="mt-2 size-1.5 shrink-0 rounded-full bg-primary/50"></span>Automated confirmation to the client so the conversation does not go quiet.</li></ul><p class="hairline mt-7 pt-5 text-[0.8125rem] text-muted-foreground">The same building blocks behind every MICRONS system \u2014 applied to the front door instead of the whole funnel.</p></div></div></div></div></section>'''
 body = body.replace('</section><section id="pricing"', '</section>' + RESULTS + '<section id="pricing"', 1)
 
+# ---------------------------------------------------------------- 7. trust strip (above the fold)
+CHECK = ('<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" '
+         'fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" '
+         'stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>')
+
+def _trust(text):
+    return '<p class="trust-item text-muted-foreground">' + CHECK + '<span>' + text + '</span></p>'
+
+TRUST = ('<section id="trust" class="relative border-b border-border bg-background px-5 py-6 '
+         'text-foreground sm:px-8"><div class="mx-auto w-full max-w-6xl">'
+         '<p class="eyebrow text-primary">Founding-partner program \u00b7 now onboarding a limited '
+         'number of U.S. med spas</p>'
+         '<div class="mt-5 grid gap-x-8 gap-y-3 md:grid-cols-2">'
+         + _trust('Built only for U.S. med spas \u2014 not a general-purpose chatbot.')
+         + _trust('Clinical questions stop the AI and go straight to your staff.')
+         + _trust('Built around the CRM, calendar and phone system you already run.')
+         + _trust('You approve every patient-facing message before it goes live.')
+         + '</div></div></section>')
+
+body = body.replace('<section id="problem"', TRUST + '<section id="problem"', 1)
+
+# ---------------------------------------------------------------- 8. safety & compliance
+_REVEAL = ('reveal transition-[opacity,transform] duration-700 '
+           '[transition-timing-function:cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none')
+
+def _li(text):
+    return ('<li class="flex gap-3"><span aria-hidden="true" class="mt-2 size-1.5 shrink-0 '
+            'rounded-full bg-primary/50"></span>' + text + '</li>')
+
+COMPLIANCE = (
+ '<section id="safety" class="relative scroll-mt-24 px-5 py-24 sm:px-8 md:py-32 bg-background text-foreground">'
+ '<div class="mx-auto w-full max-w-6xl"><div class="grid gap-12 lg:grid-cols-[1fr_1fr] lg:gap-16">'
+ '<div class="' + _REVEAL + '">'
+ '<p class="rule-label text-primary"><span aria-hidden="true" class="h-px w-8 bg-primary/40"></span>Safety</p>'
+ '<h2 class="text-balance text-[clamp(2rem,5.2vw,3.9rem)] font-semibold leading-[1.02] mt-6">'
+ 'Built for healthcare,<span class="block text-primary">not just chat.</span></h2>'
+ '<div class="mt-8 space-y-5 text-[1.0625rem] leading-relaxed text-muted-foreground">'
+ '<p>A med spa inbox is not an ordinary inbox. Some messages are commercial and some are clinical, '
+ 'and an automation that cannot tell the difference is a liability rather than an asset.</p>'
+ '<p class="font-display text-xl font-medium leading-snug text-foreground">So the clinical boundary '
+ 'is enforced by the platform itself \u2014 not left to a prompt.</p>'
+ '<p>Every inbound message is classified before any agent sees it. Your own keyword list can widen '
+ 'that net. Nothing can narrow it.</p></div></div>'
+ '<div class="' + _REVEAL + '">'
+ '<div class="rounded-2xl border border-border bg-card p-7 shadow-editorial sm:p-9">'
+ '<p class="eyebrow text-primary">What is built in</p>'
+ '<ul class="mt-4 space-y-4 text-[0.9375rem] text-foreground">'
+ + _li('When a clinical question is detected the AI stops, sends your clinic-approved response, '
+       'pauses automation on that conversation and assigns an urgent task to your staff.')
+ + _li('Escalation alerts bypass quiet hours and message frequency caps, so an urgent message is '
+       'never held back by a scheduling rule.')
+ + _li('Replies are grounded only in knowledge you have approved. The system does not improvise '
+       'about treatments, pricing or suitability.')
+ + _li('Role-based access, per-clinic data isolation, and an audit log covering every action the '
+       'system takes.')
+ + _li('Opt-outs take effect immediately, and no patient data is written to system logs.')
+ + _li('Encryption in transit as standard. Encryption at rest, data retention and per-state '
+       'messaging consent rules are set with you during deployment.')
+ + '</ul>'
+ '<p class="hairline mt-7 pt-5 text-[0.8125rem] text-muted-foreground">MICRONS handles the '
+ 'non-clinical, commercial side of your practice. It does not diagnose, prescribe, assess treatment '
+ 'suitability, interpret images or provide clinical judgement. It is not a medical device and it is '
+ 'not a system of record for clinical data. Before any patient data is processed, the deployment is '
+ 'reviewed against HIPAA, applicable state law and TCPA/CTIA messaging rules.</p>'
+ '</div></div></div></div></section>')
+
+body = body.replace('<section id="pricing"', COMPLIANCE + '<section id="pricing"', 1)
+
+# ---------------------------------------------------------------- 9. nav links for the new section
+_m = re.search(r'(<a href="#why-microns" class="relative[^"]*">)Why Microns</a>', body)
+assert _m, "desktop nav anchor for #why-microns not found"
+body = body.replace(
+    _m.group(0),
+    _m.group(0) + _m.group(1).replace('#why-microns', '#safety') + 'Safety</a>',
+    1)
+
+
 # ---------------------------------------------------------------- 6 + 1. audit: form + Calendly
 # left CTA: mailto -> Calendly popup + scroll helper
 body = body.replace(
  '<a href="mailto:hello@microns.ai?subject=Revenue%20Leak%20Audit" class="group mt-9 inline-flex min-h-12 items-center gap-3 rounded-full bg-champagne px-7 text-[0.8125rem] font-semibold uppercase tracking-[0.14em] text-champagne-foreground shadow-editorial transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift">Book your free audit',
  '<a href="#audit-form" data-calendly class="group mt-9 inline-flex min-h-12 items-center gap-3 rounded-full bg-champagne px-7 text-[0.8125rem] font-semibold uppercase tracking-[0.14em] text-champagne-foreground shadow-editorial transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift">Pick a time now', 1)
 
-AUDIT_FORM = '''<div id="audit-form" class="scroll-mt-24 rounded-2xl border border-ink-border bg-ink-foreground/[0.04] p-6 sm:p-8"><p class="eyebrow text-champagne">Request your audit</p><p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-muted">Tell us where inquiries come in. We reply within one business day \u2014 or book a time straight away.</p><form id="mform" class="mt-6 grid gap-4" novalidate><input type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" class="hidden"><div class="grid gap-4 sm:grid-cols-2"><label class="mf"><span>Name</span><input name="name" autocomplete="name" required></label><label class="mf"><span>Med spa</span><input name="medspa" required></label></div><label class="mf"><span>Location (city, state)</span><input name="location" placeholder="Scottsdale, AZ" required></label><div class="grid gap-4 sm:grid-cols-2"><label class="mf"><span>Email</span><input type="email" name="email" autocomplete="email" required></label><label class="mf"><span>Phone</span><input type="tel" name="phone" autocomplete="tel"></label></div><label class="mf"><span>New leads / month</span><select name="monthly_leads"><option value="">Select\u2026</option><option>Under 50</option><option>50\u2013150</option><option>150\u2013400</option><option>400+</option><option>Not sure</option></select></label><label class="mf"><span>Biggest gap</span><select name="gap"><option value="">Select\u2026</option><option>Missed calls</option><option>Slow lead response</option><option>No-shows</option><option>Losing no-shows</option><option>Not enough reviews</option><option>Not sure yet</option></select></label><button type="submit" class="group mt-1 inline-flex min-h-12 items-center justify-center gap-2.5 rounded-full bg-champagne px-7 text-[0.8125rem] font-semibold uppercase tracking-[0.14em] text-champagne-foreground shadow-editorial transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift">Get my free audit<span aria-hidden="true" class="transition-transform duration-300 group-hover:translate-x-1">\u2192</span></button><p class="text-[0.75rem] leading-relaxed text-ink-muted">20 minutes \u00b7 no obligation \u00b7 no hard pitch. By submitting you agree to our <a class="underline hover:text-champagne" href="/privacy.html">Privacy Policy</a>.</p></form><div id="mdone" hidden><div class="flex items-center gap-3"><span class="grid size-9 shrink-0 place-items-center rounded-full bg-champagne text-champagne-foreground"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><p class="font-display text-[1.0625rem] font-semibold text-ink-foreground">Request received.</p></div><p class="mt-3 text-[0.9375rem] leading-relaxed text-ink-muted">Pick a 20-minute slot now, or we&#x27;ll email you within one business day.</p><div id="calendly-inline" class="mt-5 overflow-hidden rounded-xl border border-ink-border" style="min-width:280px;height:640px" data-url="https://calendly.com/vedantpawar3690/30min?hide_gdpr_banner=1&background_color=1a1a1a&text_color=f5f3ef&primary_color=e8d5b5"></div></div><iframe name="mform-sink" title="form target" class="hidden" aria-hidden="true"></iframe></div>'''
+AUDIT_FORM = '''<div id="audit-form" class="scroll-mt-24 rounded-2xl border border-ink-border bg-ink-foreground/[0.04] p-6 sm:p-8"><p class="eyebrow text-champagne">Request your audit</p><p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-muted">Tell us where inquiries come in. We reply within one business day \u2014 or book a time straight away.</p><form id="mform" class="mt-6 grid gap-4" novalidate><input type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" class="hidden"><div class="grid gap-4 sm:grid-cols-2"><label class="mf"><span>Name</span><input name="name" autocomplete="name" required></label><label class="mf"><span>Med spa</span><input name="medspa" required></label></div><label class="mf"><span>Location (city, state)</span><input name="location" placeholder="Scottsdale, AZ" required></label><div class="grid gap-4 sm:grid-cols-2"><label class="mf"><span>Email</span><input type="email" name="email" autocomplete="email" required></label><label class="mf"><span>Phone</span><input type="tel" name="phone" autocomplete="tel"></label></div><div class="grid gap-4 sm:grid-cols-2"><label class="mf"><span>New leads / month</span><select name="monthly_leads"><option value="">Select\u2026</option><option>Under 50</option><option>50\u2013150</option><option>150\u2013400</option><option>400+</option><option>Not sure</option></select></label><label class="mf"><span>Booking / CRM software</span><select name="crm"><option value="">Select\u2026</option><option>Mindbody</option><option>Zenoti</option><option>Boulevard</option><option>Mangomint</option><option>Aesthetic Record</option><option>PatientNow</option><option>Nextech</option><option>Vagaro</option><option>GoHighLevel</option><option>Spreadsheet / paper</option><option>Something else</option><option>Not sure</option></select></label></div><label class="mf"><span>Biggest gap</span><select name="gap"><option value="">Select\u2026</option><option>Missed calls</option><option>Slow lead response</option><option>No-shows</option><option>Losing no-shows</option><option>Not enough reviews</option><option>Not sure yet</option></select></label><button type="submit" class="group mt-1 inline-flex min-h-12 items-center justify-center gap-2.5 rounded-full bg-champagne px-7 text-[0.8125rem] font-semibold uppercase tracking-[0.14em] text-champagne-foreground shadow-editorial transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift">Get my free audit<span aria-hidden="true" class="transition-transform duration-300 group-hover:translate-x-1">\u2192</span></button><p class="text-[0.75rem] leading-relaxed text-ink-muted">20 minutes \u00b7 no obligation \u00b7 no hard pitch. By submitting you agree to our <a class="underline hover:text-champagne" href="/privacy.html">Privacy Policy</a>.</p></form><div id="mdone" hidden><div class="flex items-center gap-3"><span class="grid size-9 shrink-0 place-items-center rounded-full bg-champagne text-champagne-foreground"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><p class="font-display text-[1.0625rem] font-semibold text-ink-foreground">Request received.</p></div><p class="mt-3 text-[0.9375rem] leading-relaxed text-ink-muted">Pick a 20-minute slot now, or we&#x27;ll email you within one business day.</p><div id="calendly-inline" class="mt-5 overflow-hidden rounded-xl border border-ink-border" style="min-width:280px;height:640px" data-url="https://calendly.com/vedantpawar3690/30min?hide_gdpr_banner=1&background_color=1a1a1a&text_color=f5f3ef&primary_color=e8d5b5"></div></div><iframe name="mform-sink" title="form target" class="hidden" aria-hidden="true"></iframe></div>'''
 
 # insert the form as a new right-hand column inside the audit grid, before the existing 3-step <ol> wrapper
 _audit_anchor = '<div class="transition-[opacity,transform] duration-700 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none reveal"><ol class="space-y-4"><li class="group flex gap-5 rounded-2xl border border-ink-border'
@@ -122,6 +199,7 @@ NAVPANEL = ('<div id="mobile-nav" class="md:hidden">'
  '<a href="#how-it-works" class="border-b border-border py-4 font-display text-[0.9375rem] font-medium">How it works</a>'
  '<a href="#systems" class="border-b border-border py-4 font-display text-[0.9375rem] font-medium">Systems</a>'
  '<a href="#why-microns" class="border-b border-border py-4 font-display text-[0.9375rem] font-medium">Why Microns</a>'
+ '<a href="#safety" class="border-b border-border py-4 font-display text-[0.9375rem] font-medium">Safety</a>'
  '<a href="#results" class="border-b border-border py-4 font-display text-[0.9375rem] font-medium">Proof</a>'
  '<a href="#faq" class="border-b border-border py-4 font-display text-[0.9375rem] font-medium">FAQ</a>'
  '<a href="#audit" class="mt-5 inline-flex min-h-12 items-center justify-center rounded-full bg-primary px-5 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-primary-foreground">Book a revenue leak audit</a>'
@@ -140,6 +218,33 @@ body = body.replace('<div class="mt-10 flex flex-col gap-3 border-t border-borde
 
 # ---------------------------------------------------------------- HEAD
 ORG_LD = '''<script type="application/ld+json">{"@context":"https://schema.org","@type":["Organization","ProfessionalService"],"name":"MICRONS","description":"AI revenue-recovery and front-desk automation built exclusively for medical spas in the United States.","url":"__SITE__/","email":"ved@micronsai.com","areaServed":{"@type":"Country","name":"United States"},"knowsAbout":["Med spa automation","AI front desk for med spas","Missed call automation","Lead response automation","No-show recovery","Review automation"],"makesOffer":[{"@type":"Offer","name":"Starter system","priceCurrency":"USD","price":"1500"},{"@type":"Offer","name":"Revenue recovery build"},{"@type":"Offer","name":"Ongoing optimization","priceCurrency":"USD","price":"750"}]}</script>'''
+
+# ---------------------------------------------------------------- analytics
+# GA4 is scaffolded but dormant until a Measurement ID is set. `gtag` is always
+# defined, so every track() call downstream is safe with or without an ID, and
+# nothing is requested from Google until that ID exists.
+ANALYTICS = '''
+<script>
+  /* ==================================================================
+     ANALYTICS - paste your GA4 Measurement ID below to switch on.
+     Find it at analytics.google.com -> Admin -> Data streams -> Web.
+     While it is empty nothing loads and nothing is sent.
+     ================================================================== */
+  window.MICRONS_ANALYTICS = { ga4: "" };   /* e.g. "G-XXXXXXXXXX" */
+
+  (function(){
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = window.gtag || function(){ window.dataLayer.push(arguments); };
+    var id = (window.MICRONS_ANALYTICS || {}).ga4;
+    if(!id) return;                      /* dormant: queue only, no network */
+    var s = document.createElement("script");
+    s.async = true;
+    s.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(id);
+    document.head.appendChild(s);
+    window.gtag("js", new Date());
+    window.gtag("config", id, { anonymize_ip: true });
+  })();
+</script>'''
 
 HEAD = '''<meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -192,7 +297,13 @@ HEAD = '''<meta charset="utf-8"/>
   #mobile-cta a{display:flex;min-height:2.9rem;align-items:center;justify-content:center;border-radius:999px;background:var(--primary,#7a1f2b);
     color:#fff;font-family:"Sora",sans-serif;font-size:.75rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
   @media (max-width:768px){#mobile-cta{display:block}body{padding-bottom:4.5rem}}
-</style>'''
+  /* utilities referenced in markup that the JIT stylesheet never emitted */
+  .underline{text-decoration-line:underline}
+  @media (min-width:640px){.sm\\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  /* trust strip */
+  .trust-item{display:flex;align-items:flex-start;gap:.6rem;font-size:.875rem;line-height:1.45}
+  .trust-item svg{margin-top:.15rem;flex:0 0 auto;color:var(--primary,#7a1f2b)}
+</style>''' + ANALYTICS
 
 APP_JS = '''<script src="https://assets.calendly.com/assets/external/widget.js" defer></script>
 <script>
@@ -205,12 +316,21 @@ APP_JS = '''<script src="https://assets.calendly.com/assets/external/widget.js" 
     formEndpoint: "https://formsubmit.co/ajax/ved@micronsai.com",
     // Optional: also mirror submissions into a Google Form (fill action + entry IDs).
     googleFormAction: "",
-    entries: { name:"", medspa:"", location:"", email:"", phone:"", monthly_leads:"", gap:"" }
+    entries: { name:"", medspa:"", location:"", email:"", phone:"", monthly_leads:"", crm:"", gap:"" }
   }, window.MICRONS_CONFIG || {});
   var CAL = "https://calendly.com/vedantpawar3690/30min";
   var $=function(s,c){return (c||document).querySelector(s)};
   var $$=function(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))};
   var reduce = matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+  // ------- analytics -------
+  // Safe with or without a GA4 ID: gtag is always defined, and with no ID the
+  // events queue into dataLayer and go nowhere. Never send PII (name, email,
+  // phone, clinic name) - only the qualifying answers.
+  function track(name, params){
+    try{ window.gtag("event", name, params || {}); }catch(_){}
+  }
+  window.micronsTrack = track;
 
   // ------- reveal on scroll -------
   var io = new IntersectionObserver(function(es){
@@ -234,6 +354,31 @@ APP_JS = '''<script src="https://assets.calendly.com/assets/external/widget.js" 
     $$("a",panel).forEach(function(a){ a.addEventListener("click", function(){ setM(false); }); });
   }
 
+  // ------- CTA click tracking -------
+  $$('a[href^="#audit"], [data-calendly], #mobile-cta a').forEach(function(a){
+    a.addEventListener("click", function(){
+      var sec = a.closest("section");
+      track("cta_click", {
+        cta_text: (a.textContent || "").trim().slice(0, 60),
+        cta_section: (sec && sec.id) || (a.closest("#mobile-cta") ? "mobile-sticky" : "header")
+      });
+    });
+  });
+
+  // ------- scroll depth -------
+  (function(){
+    var hit = {}, marks = [25, 50, 75, 100];
+    addEventListener("scroll", function(){
+      var h = document.documentElement,
+          max = (h.scrollHeight - innerHeight);
+      if(max <= 0) return;
+      var pct = (scrollY / max) * 100;
+      marks.forEach(function(m){
+        if(!hit[m] && pct >= m){ hit[m] = 1; track("scroll_depth", { percent: m }); }
+      });
+    }, {passive:true});
+  })();
+
   // ------- smooth anchor scroll -------
   $$('a[href^="#"]').forEach(function(a){
     a.addEventListener("click", function(e){
@@ -251,6 +396,7 @@ APP_JS = '''<script src="https://assets.calendly.com/assets/external/widget.js" 
     var ans = region && region.querySelector(".faq-answer");
     btn.addEventListener("click", function(){
       var open = btn.getAttribute("aria-expanded") === "true";
+      if(!open){ track("faq_open", { question: (btn.textContent || "").trim().slice(0, 80) }); }
       $$('#faq [data-radix-collection-item]').forEach(function(b){
         b.setAttribute("aria-expanded","false");
         var r=b.closest("div[data-state]"); r.setAttribute("data-state","closed");
@@ -271,6 +417,7 @@ APP_JS = '''<script src="https://assets.calendly.com/assets/external/widget.js" 
   $$('#demo [data-demo]').forEach(function(tab){
     tab.addEventListener("click", function(){
       var k = tab.getAttribute("data-demo");
+      track("demo_scenario", { scenario: k });
       $$('#demo [data-demo]').forEach(function(t){
         var on = t===tab;
         t.setAttribute("aria-selected", on?"true":"false");
@@ -289,12 +436,14 @@ APP_JS = '''<script src="https://assets.calendly.com/assets/external/widget.js" 
 
   // ------- Calendly -------
   function openCal(e){ if(e)e.preventDefault();
+    track("calendly_open", { surface: "popup" });
     if(window.Calendly){ Calendly.initPopupWidget({url: CAL + "?hide_gdpr_banner=1"}); }
     else { window.open(CAL, "_blank", "noopener"); } }
   $$('[data-calendly]').forEach(function(a){ a.addEventListener("click", openCal); });
   function inlineCal(){
     var host = $("#calendly-inline"); if(!host || host.dataset.done) return;
     host.dataset.done = "1";
+    track("calendly_open", { surface: "inline_post_submit" });
     if(window.Calendly){ Calendly.initInlineWidget({ url: host.getAttribute("data-url"), parentElement: host }); }
     else { host.innerHTML = '<a class="flex h-full items-center justify-center text-champagne underline" target="_blank" rel="noopener" href="'+CAL+'">Open the scheduler &rarr;</a>'; }
   }
@@ -302,6 +451,11 @@ APP_JS = '''<script src="https://assets.calendly.com/assets/external/widget.js" 
   // ------- audit form -------
   var form = $("#mform");
   if(form){
+    var _started = false;
+    form.addEventListener("focusin", function(){
+      if(_started) return; _started = true;
+      track("audit_form_start");
+    });
     form.addEventListener("submit", function(e){
       e.preventDefault();
       if(form.querySelector('[name="company"]').value){ return; } // honeypot
@@ -309,6 +463,11 @@ APP_JS = '''<script src="https://assets.calendly.com/assets/external/widget.js" 
       var cfg = window.MICRONS_CONFIG, data = {};
       $$("input,select", form).forEach(function(f){ if(f.name && f.name!=="company") data[f.name]=f.value; });
       var btn = form.querySelector('button[type="submit"]'); if(btn){ btn.disabled = true; btn.style.opacity = .6; }
+      track("audit_form_submit", {
+        monthly_leads: data.monthly_leads || "(blank)",
+        gap: data.gap || "(blank)",
+        software: data.crm || "(blank)"
+      });
 
       function finish(){
         form.hidden = true;
@@ -360,7 +519,9 @@ html = ("<!doctype html>\n<html lang=\"en\">\n<head>\n"
         + "\n</body>\n</html>\n")
 
 for must in ['id="mform"', 'id="results"', 'id="mobile-nav"', 'data-calendly', '/privacy.html',
-             'hero-flow', 'demo-log', 'calendly-inline', 'Pick a time now', '__DEMOS__ = {']:
+             'hero-flow', 'demo-log', 'calendly-inline', 'Pick a time now', '__DEMOS__ = {',
+             'id="trust"', 'id="safety"', 'MICRONS_ANALYTICS', 'name="crm"',
+             'audit_form_submit', 'not a medical device']:
     assert must in html, "missing in output: " + must
 assert "mailto:hello@microns.ai?subject" not in html, "old mailto CTA still present"
 assert "index-IxsVMaXH.js" not in html and "lovable-badge" not in html, "leftover bundle refs"
