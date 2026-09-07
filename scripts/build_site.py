@@ -181,16 +181,16 @@ body = body.replace(
 # left CTA: mailto -> Calendly popup + scroll helper
 body = body.replace(
  '<a href="mailto:hello@microns.ai?subject=Revenue%20Leak%20Audit" class="group mt-9 inline-flex min-h-12 items-center gap-3 rounded-full bg-champagne px-7 text-[0.8125rem] font-semibold uppercase tracking-[0.14em] text-champagne-foreground shadow-editorial transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift">Book your free audit',
- '<a href="#audit-form" data-calendly class="group mt-9 inline-flex min-h-12 items-center gap-3 rounded-full bg-champagne px-7 text-[0.8125rem] font-semibold uppercase tracking-[0.14em] text-champagne-foreground shadow-editorial transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift">Pick a time now', 1)
+ '<a href="#book-panel" data-calendly class="group mt-9 inline-flex min-h-12 items-center gap-3 rounded-full bg-champagne px-7 text-[0.8125rem] font-semibold uppercase tracking-[0.14em] text-champagne-foreground shadow-editorial transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift">Book a discovery call', 1)
 
-AUDIT_FORM = '''<div id="audit-form" class="scroll-mt-24 rounded-2xl border border-ink-border bg-ink-foreground/[0.04] p-6 sm:p-8"><p class="eyebrow text-champagne">Request your audit</p><p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-muted">Tell us where inquiries come in. We reply within one business day \u2014 or book a time straight away.</p><form id="mform" class="mt-6 grid gap-4" novalidate><input type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" class="hidden"><div class="grid gap-4 sm:grid-cols-2"><label class="mf"><span>Name</span><input name="name" autocomplete="name" required></label><label class="mf"><span>Med spa</span><input name="medspa" required></label></div><label class="mf"><span>Location (city, state)</span><input name="location" placeholder="Scottsdale, AZ" required></label><div class="grid gap-4 sm:grid-cols-2"><label class="mf"><span>Email</span><input type="email" name="email" autocomplete="email" required></label><label class="mf"><span>Phone</span><input type="tel" name="phone" autocomplete="tel"></label></div><div class="grid gap-4 sm:grid-cols-2"><label class="mf"><span>New leads / month</span><select name="monthly_leads"><option value="">Select\u2026</option><option>Under 50</option><option>50\u2013150</option><option>150\u2013400</option><option>400+</option><option>Not sure</option></select></label><label class="mf"><span>Booking / CRM software</span><select name="crm"><option value="">Select\u2026</option><option>Mindbody</option><option>Zenoti</option><option>Boulevard</option><option>Mangomint</option><option>Aesthetic Record</option><option>PatientNow</option><option>Nextech</option><option>Vagaro</option><option>GoHighLevel</option><option>Spreadsheet / paper</option><option>Something else</option><option>Not sure</option></select></label></div><label class="mf"><span>Biggest gap</span><select name="gap"><option value="">Select\u2026</option><option>Missed calls</option><option>Slow lead response</option><option>No-shows</option><option>Losing no-shows</option><option>Not enough reviews</option><option>Not sure yet</option></select></label><button type="submit" class="group mt-1 inline-flex min-h-12 items-center justify-center gap-2.5 rounded-full bg-champagne px-7 text-[0.8125rem] font-semibold uppercase tracking-[0.14em] text-champagne-foreground shadow-editorial transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift">Get my free audit<span aria-hidden="true" class="transition-transform duration-300 group-hover:translate-x-1">\u2192</span></button><p class="text-[0.75rem] leading-relaxed text-ink-muted">20 minutes \u00b7 no obligation \u00b7 no hard pitch. By submitting you agree to our <a class="underline hover:text-champagne" href="/privacy.html">Privacy Policy</a>.</p></form><div id="mdone" hidden><div class="flex items-center gap-3"><span class="grid size-9 shrink-0 place-items-center rounded-full bg-champagne text-champagne-foreground"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><p class="font-display text-[1.0625rem] font-semibold text-ink-foreground">Request received.</p></div><p class="mt-3 text-[0.9375rem] leading-relaxed text-ink-muted">Pick a 20-minute slot now, or we&#x27;ll email you within one business day.</p><div id="calendly-inline" class="mt-5 overflow-hidden rounded-xl border border-ink-border" style="min-width:280px;height:640px" data-url="https://calendly.com/vedantpawar3690/30min?hide_gdpr_banner=1&background_color=1a1a1a&text_color=f5f3ef&primary_color=e8d5b5"></div></div><iframe name="mform-sink" title="form target" class="hidden" aria-hidden="true"></iframe></div>'''
+BOOK_PANEL = '''<div id="book-panel" class="scroll-mt-24 rounded-2xl border border-ink-border bg-ink-foreground/[0.04] p-6 sm:p-8"><p class="eyebrow text-champagne">Pick a time</p><p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-muted">Choose a slot that suits you. Confirmation lands in your inbox straight away.</p><div id="calendly-inline" class="mt-6 overflow-hidden rounded-xl border border-ink-border" style="min-width:280px;height:700px" data-url="https://calendly.com/vedantpawar3690/30min?hide_gdpr_banner=1&background_color=1a1a1a&text_color=f5f3ef&primary_color=e8d5b5"></div><p class="mt-4 text-[0.75rem] leading-relaxed text-ink-muted">20 minutes \u00b7 no obligation.</p></div>'''
 
 # insert the form as a new right-hand column inside the audit grid, before the existing 3-step <ol> wrapper
 _audit_anchor = '<div class="transition-[opacity,transform] duration-700 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none reveal"><ol class="space-y-4"><li class="group flex gap-5 rounded-2xl border border-ink-border'
 assert _audit_anchor in body, "audit anchor not found"
 body = body.replace(
  _audit_anchor,
- '<div class="transition-[opacity,transform] duration-700 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none reveal">' + AUDIT_FORM + '<p class="eyebrow text-champagne mt-10">What the 20 minutes covers</p><ol class="space-y-4 mt-4"><li class="group flex gap-5 rounded-2xl border border-ink-border',
+ '<div class="transition-[opacity,transform] duration-700 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none reveal">' + BOOK_PANEL + '<p class="eyebrow text-champagne mt-10">What the call covers</p><ol class="space-y-4 mt-4"><li class="group flex gap-5 rounded-2xl border border-ink-border',
  1)
 
 # ---------------------------------------------------------------- 5 (nav). mobile menu panel
@@ -309,15 +309,6 @@ APP_JS = '''<script src="https://assets.calendly.com/assets/external/widget.js" 
 <script>
 (function(){
   "use strict";
-  // ------- config: fill in once you share the Google Form -------
-  window.MICRONS_CONFIG = Object.assign({
-    // Leads are emailed here via FormSubmit (https://formsubmit.co). The FIRST submission
-    // sends a one-time activation link to this address - click it once, then leads flow.
-    formEndpoint: "https://formsubmit.co/ajax/ved@micronsai.com",
-    // Optional: also mirror submissions into a Google Form (fill action + entry IDs).
-    googleFormAction: "",
-    entries: { name:"", medspa:"", location:"", email:"", phone:"", monthly_leads:"", crm:"", gap:"" }
-  }, window.MICRONS_CONFIG || {});
   var CAL = "https://calendly.com/vedantpawar3690/30min";
   var $=function(s,c){return (c||document).querySelector(s)};
   var $$=function(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))};
@@ -355,7 +346,7 @@ APP_JS = '''<script src="https://assets.calendly.com/assets/external/widget.js" 
   }
 
   // ------- CTA click tracking -------
-  $$('a[href^="#audit"], [data-calendly], #mobile-cta a').forEach(function(a){
+  $$('a[href^="#book"], [data-calendly], #mobile-cta a').forEach(function(a){
     a.addEventListener("click", function(){
       var sec = a.closest("section");
       track("cta_click", {
@@ -443,69 +434,69 @@ APP_JS = '''<script src="https://assets.calendly.com/assets/external/widget.js" 
   function inlineCal(){
     var host = $("#calendly-inline"); if(!host || host.dataset.done) return;
     host.dataset.done = "1";
-    track("calendly_open", { surface: "inline_post_submit" });
+    track("booking_widget_view");
     if(window.Calendly){ Calendly.initInlineWidget({ url: host.getAttribute("data-url"), parentElement: host }); }
     else { host.innerHTML = '<a class="flex h-full items-center justify-center text-champagne underline" target="_blank" rel="noopener" href="'+CAL+'">Open the scheduler &rarr;</a>'; }
   }
 
-  // ------- audit form -------
-  var form = $("#mform");
-  if(form){
-    var _started = false;
-    form.addEventListener("focusin", function(){
-      if(_started) return; _started = true;
-      track("audit_form_start");
-    });
-    form.addEventListener("submit", function(e){
-      e.preventDefault();
-      if(form.querySelector('[name="company"]').value){ return; } // honeypot
-      if(!form.checkValidity()){ form.reportValidity(); return; }
-      var cfg = window.MICRONS_CONFIG, data = {};
-      $$("input,select", form).forEach(function(f){ if(f.name && f.name!=="company") data[f.name]=f.value; });
-      var btn = form.querySelector('button[type="submit"]'); if(btn){ btn.disabled = true; btn.style.opacity = .6; }
-      track("audit_form_submit", {
-        monthly_leads: data.monthly_leads || "(blank)",
-        gap: data.gap || "(blank)",
-        software: data.crm || "(blank)"
-      });
+  // Load the scheduler when the booking panel gets close, not on first paint.
+  (function(){
+    var host = $("#calendly-inline"); if(!host) return;
+    function start(){
+      if(window.Calendly) return inlineCal();
+      var t = setInterval(function(){ if(window.Calendly){ clearInterval(t); inlineCal(); } }, 120);
+      setTimeout(function(){ clearInterval(t); inlineCal(); }, 6000);
+    }
+    var vio = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ vio.disconnect(); start(); } });
+    }, {rootMargin:"400px 0px"});
+    vio.observe(host);
+  })();
 
-      function finish(){
-        form.hidden = true;
-        var done = $("#mdone");
-        if(done){ done.hidden = false; inlineCal(); done.scrollIntoView({behavior:reduce?"auto":"smooth",block:"nearest"}); }
-      }
-      // local backup (survives any network failure)
-      try{ var box=JSON.parse(localStorage.getItem("microns_leads")||"[]"); box.push(Object.assign({t:Date.now()},data)); localStorage.setItem("microns_leads",JSON.stringify(box)); }catch(_){}
-
-      // optional Google Form mirror
-      if(cfg.googleFormAction && cfg.entries && cfg.entries.name){
-        var gf=document.createElement("form"); gf.action=cfg.googleFormAction; gf.method="POST"; gf.target="mform-sink"; gf.style.display="none";
-        Object.keys(cfg.entries).forEach(function(k){ if(!cfg.entries[k]) return;
-          var i=document.createElement("input"); i.type="hidden"; i.name=cfg.entries[k]; i.value=data[k]||""; gf.appendChild(i); });
-        document.body.appendChild(gf); gf.submit(); setTimeout(function(){ gf.remove(); }, 1000);
-      }
-
-      // primary: email the lead via FormSubmit
-      if(cfg.formEndpoint){
-        var payload = Object.assign({
-          _subject: "New revenue leak audit request — " + (data.medspa || data.name || ""),
-          _template: "table", _captcha: "false"
-        }, data);
-        fetch(cfg.formEndpoint, {
-          method:"POST", headers:{ "Content-Type":"application/json", "Accept":"application/json" },
-          body: JSON.stringify(payload)
-        }).then(function(r){ return r.json().catch(function(){ return {}; }); })
-          .then(function(){ finish(); })
-          .catch(function(){ finish(); });
-      } else {
-        finish();
-      }
-    });
-  }
+  // A completed booking is the one conversion on this page.
+  addEventListener("message", function(e){
+    if(String(e.origin).indexOf("calendly.com") === -1) return;
+    var d = e.data;
+    if(d && d.event === "calendly.event_scheduled"){ track("booking_scheduled"); }
+  });
 })();
+
+
 </script>
 <script>window.__DEMOS__ = __DEMOS_JSON__;</script>
-<div id="mobile-cta"><a href="#audit-form">Get a free audit</a></div>'''
+<div id="mobile-cta"><a href="#book">Book a discovery call</a></div>'''
+
+# ---------------------------------------------------------------- 10. one CTA everywhere
+# The site has a single objective: book a discovery call. Every CTA says so, and
+# the "revenue leak audit" offer is gone. Note none of these patterns touch
+# "audit log" in the safety section.
+CTA = "Book a discovery call"
+REBRAND = [
+    # anchors / ids
+    ('href="#audit"', 'href="#book"', 10),   # 9 in the SSR source + 1 in NAVPANEL
+    ('id="audit"', 'id="book"', 1),
+    # button + link labels
+    ("Get a free revenue leak audit", CTA, 5),
+    ("Book a revenue leak audit", CTA, 2),    # header nav + NAVPANEL
+    (">Book a call</a>", ">" + CTA + "</a>", 1),
+    ("Discuss your system", CTA, 1),
+    ("Get a custom plan", CTA, 1),
+    ("Discuss ongoing support", CTA, 1),
+    # body copy that sold the audit
+    ("The revenue leak audit", "The discovery call", 1),   # section label, not a CTA
+    ("20-minute audit.", "20-minute call.", 1),
+    ("The audit maps which of these five leaks",
+     "A 20-minute discovery call maps which of these five leaks", 1),
+    ("20-minute Revenue Leak Audit. We look at",
+     "A 20-minute discovery call. We look at", 1),
+    ("Scoped after audit", "Scoped after the call", 1),
+    ("Typical projects start with an audit and are priced based on scope.",
+     "Typical projects start with a discovery call and are priced based on scope.", 1),
+]
+for _old, _new, _n in REBRAND:
+    _found = body.count(_old)
+    assert _found == _n, "rebrand: expected %d of %r, found %d" % (_n, _old, _found)
+    body = body.replace(_old, _new)
 
 import json
 app_js = APP_JS.replace("__DEMOS_JSON__", json.dumps(DEMOS))
@@ -518,16 +509,21 @@ html = ("<!doctype html>\n<html lang=\"en\">\n<head>\n"
         + "\n" + app_js.replace("__SITE__", SITE_URL)
         + "\n</body>\n</html>\n")
 
-for must in ['id="mform"', 'id="results"', 'id="mobile-nav"', 'data-calendly', '/privacy.html',
-             'hero-flow', 'demo-log', 'calendly-inline', 'Pick a time now', '__DEMOS__ = {',
-             'id="trust"', 'id="safety"', 'MICRONS_ANALYTICS', 'name="crm"',
-             'audit_form_submit', 'not a medical device']:
+for must in ['id="book"', 'id="book-panel"', 'id="results"', 'id="mobile-nav"', 'data-calendly',
+             '/privacy.html', 'hero-flow', 'demo-log', 'calendly-inline', '__DEMOS__ = {',
+             'id="trust"', 'id="safety"', 'MICRONS_ANALYTICS', 'booking_scheduled',
+             'booking_widget_view', 'not a medical device', 'Book a discovery call']:
     assert must in html, "missing in output: " + must
 assert "mailto:hello@microns.ai?subject" not in html, "old mailto CTA still present"
+for gone in ['id="mform"', 'id="mdone"', 'mform-sink', 'MICRONS_CONFIG', 'formsubmit.co', 'name="crm"']:
+    assert gone not in html, "removed feature still present: " + gone
+# the only surviving "audit" on the page is the safety section's audit log
+assert html.lower().count("audit") == html.lower().count("audit log"), \
+    "stray 'audit' copy left on the page"
 assert "index-IxsVMaXH.js" not in html and "lovable-badge" not in html, "leftover bundle refs"
 
 (SITE / "index.html").write_text(html, encoding="utf-8")
 print("wrote index.html:", len(html), "bytes")
-print("checks: form", "id=\"mform\"" in html, "| results", 'id="results"' in html,
+print("checks: booking panel", 'id="book-panel"' in html, "| results", 'id="results"' in html,
       "| calendly", "calendly" in html, "| faq answers", html.count("faq-answer"),
       "| demo tabs", html.count('data-demo="'))

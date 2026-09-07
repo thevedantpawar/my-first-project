@@ -2,7 +2,7 @@
 
 Static reconstruction of the Lovable design (`aesthetic-nexus-systems.lovable.app`) — same
 `styles-vcDe33lo.css`, fonts (Sora / Manrope), images and markup — served as plain HTML/CSS/JS
-with a zero-dependency Node server. The 6 launch items are built in.
+with a zero-dependency Node server.
 
 ## Live
 
@@ -22,25 +22,31 @@ with a zero-dependency Node server. The 6 launch items are built in.
 
 ## The changes
 
-1. **Audit form** — real form in `#audit` (name, med spa, location, email, phone, monthly leads,
-   booking/CRM software, gap).
-   Submits to a **Google Form** and reveals an inline **Calendly** widget. Also writes a local backup.
+1. **Booking panel** — `#book-panel` in the `#book` section holds an always-visible inline
+   **Calendly** embed. It is the only conversion surface on the site: there is no lead form, no
+   FormSubmit and no Google Form. The widget is lazy-initialised when the panel comes within
+   400px of the viewport, so it costs nothing on first paint.
 2. **Mobile** — hero card no longer `position:absolute` on small screens; sections reflow; slide-down
-   mobile menu; sticky bottom "Get a free audit" bar. Verify once more on a real device at 390 px.
+   mobile menu; sticky bottom "Book a discovery call" bar. Verify once more on a real device at 390 px.
 3. **Legal + 404** — `privacy.html`, `terms.html` (template copy — review with counsel), branded `404.html`.
    Linked in the footer.
 4. **SEO** — `Organization`/`ProfessionalService` JSON-LD added (FAQ JSON-LD kept), real `og:image`
    (`/assets/og-cover.jpg`), canonical, `sitemap.xml`, `robots.txt`.
 5. **Results** — `#results` section between Why Microns and Pricing: the anonymized Skin Alive
    consultation-booking build, framed as "what we built" + a qualitative outcome (no invented numbers).
-6. **Contact / Calendly** — `calendly.com/vedantpawar3690/30min` wired to the hero-side "Pick a time now"
-   button (popup), the footer "Book a call" link, and the post-submit inline widget.
+6. **Contact / Calendly** — `calendly.com/vedantpawar3690/30min` drives everything: the inline
+   embed in `#book-panel`, the popup on any `[data-calendly]` link, and the footer link.
 7. **Analytics** — GA4 scaffolded and instrumented, dormant until you paste a Measurement ID.
    See "Analytics" below.
-8. **Trust strip** (`#trust`) — slim band directly under the hero: founding-partner line plus four
+8. **One CTA** — every call to action on the page reads **"Book a discovery call"** and points at
+   `#book`. The "revenue leak audit" offer was removed entirely. `scripts/build_site.py` enforces
+   this at build time: the `REBRAND` table asserts an exact occurrence count for each old string,
+   and a final assert fails the build if any stray "audit" copy survives (the safety section's
+   "audit log" is the one permitted use).
+9. **Trust strip** (`#trust`) — slim band directly under the hero: founding-partner line plus four
    claims that are all independently true (US-only focus, clinical escalation, works around existing
    tooling, client approves messaging).
-9. **Safety & compliance** (`#safety`) — sits between Proof of work and Pricing, and is linked from
+10. **Safety & compliance** (`#safety`) — sits between Proof of work and Pricing, and is linked from
    both navs. Every claim traces to the engine repo's `docs/SECURITY.md` ("Compliance status") and
    `README.md` ("Healthcare boundary"). It deliberately does **not** claim HIPAA certification or a
    signed BAA — those are deployment/configuration matters, not shipped guarantees. Ends with the
@@ -63,40 +69,18 @@ Events fired:
 
 | Event | When | Parameters |
 |---|---|---|
-| `audit_form_start` | first focus into the audit form | — |
-| `audit_form_submit` | audit form submitted | `monthly_leads`, `gap`, `software` |
-| `cta_click` | any audit/Calendly CTA, incl. the sticky mobile bar | `cta_text`, `cta_section` |
-| `calendly_open` | scheduler opened | `surface` = `popup` \| `inline_post_submit` |
+| `booking_widget_view` | Calendly embed initialised (panel scrolled near) | — |
+| `booking_scheduled` | **a call was actually booked** (Calendly postMessage) | — |
+| `cta_click` | any "Book a discovery call" CTA, incl. the sticky mobile bar | `cta_text`, `cta_section` |
+| `calendly_open` | scheduler popup opened | `surface` = `popup` |
 | `demo_scenario` | demo tab switched | `scenario` |
 | `faq_open` | an FAQ item opened | `question` |
 | `scroll_depth` | 25 / 50 / 75 / 100% reached | `percent` |
 
-**No PII is sent.** Name, clinic name, email and phone stay out of analytics entirely; only the
-qualifying dropdown answers are reported.
+**No PII is sent.** `booking_scheduled` records only that a booking happened — the name, email
+and answers the visitor gave Calendly stay in Calendly and never reach analytics.
 
-## Wiring the Google Form
-
-Edit `window.MICRONS_CONFIG` near the top of the inline `<script>` in `index.html`
-(or better, regenerate — see below). You need:
-
-1. The form's POST URL: open the Google Form → **Send** → link, or view-source the live form and
-   find `action="https://docs.google.com/forms/d/e/XXXXX/formResponse"`.
-2. Each field's entry ID: in the live form, right-click a field → Inspect → find
-   `name="entry.123456789"`. Map them:
-
-```js
-window.MICRONS_CONFIG = {
-  googleFormAction: "https://docs.google.com/forms/d/e/XXXXX/formResponse",
-  entries: {
-    name:"entry.___", medspa:"entry.___", location:"entry.___",
-    email:"entry.___", phone:"entry.___", monthly_leads:"entry.___",
-    crm:"entry.___", gap:"entry.___"
-  }
-};
-```
-
-Until it's filled, the form still works — it shows the confirmation + Calendly and keeps a
-`localStorage` copy, it just doesn't post to Google yet.
+`booking_scheduled` is the number that matters: it is the site's only conversion.
 
 ## Rebuilding `index.html`
 
