@@ -15,7 +15,7 @@ from datetime import timedelta
 from typing import Any, Optional
 from uuid import UUID
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, or_, select, update
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -122,11 +122,33 @@ class RetentionService:
         if not appointment.is_active:
             return {"status": "skipped", "reason": f"appointment_{appointment.status}"}
 
-        already_sent = (
-            appointment.reminder_24h_sent_at if kind == "24h" else appointment.reminder_2h_sent_at
-        )
+        field = "reminder_24h_sent_at" if kind == "24h" else "reminder_2h_sent_at"
+        column = getattr(Appointment, field)
+
+        already_sent = getattr(appointment, field)
         if already_sent is not None:
             return {"status": "skipped", "reason": "already_sent", "sent_at": already_sent.isoformat()}
+
+        # Claim the reminder *before* sending, in one conditional UPDATE, and
+        # commit the claim on its own.
+        #
+        # Marking it afterwards looks equivalent and is not: the send succeeds,
+        # then the commit fails or the process dies, and the next run finds no
+        # marker and texts the patient again. Read-then-write also lets a
+        # retried webhook through, because both reads see None before either
+        # writes. Duplicate reminders are the one failure here a patient
+        # actually notices, and the one with regulatory weight.
+        now = utcnow()
+        claimed = self.db.execute(
+            update(Appointment)
+            .where(Appointment.id == appointment.id, column.is_(None))
+            .values(**{field: now})
+        ).rowcount
+        if not claimed:
+            self.db.rollback()
+            return {"status": "skipped", "reason": "already_sent"}
+        self.db.commit()
+        self.db.refresh(appointment)
 
         patient = appointment.patient
         first_name = _first_name(patient)
@@ -141,11 +163,16 @@ class RetentionService:
             sms_consent=patient.sms_consent if patient else None,
         )
 
-        now = utcnow()
-        if kind == "24h":
-            appointment.reminder_24h_sent_at = now
-        else:
-            appointment.reminder_2h_sent_at = now
+        # A transient failure releases the claim so the next run retries. A
+        # suppressed message keeps it: no consent is a decision, not an outage,
+        # and re-deciding it every hour is how a patient who opted out gets
+        # texted anyway the moment consent is misread.
+        if result.status == "failed":
+            self.db.execute(
+                update(Appointment)
+                .where(Appointment.id == appointment.id)
+                .values(**{field: None})
+            )
 
         self.record_event(
             event_type=(
