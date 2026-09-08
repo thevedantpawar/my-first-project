@@ -59,6 +59,12 @@ def signup(
     """Create an account and sign the owner in."""
     signup_limiter.check(request)
 
+    if not accounts.signup_allowed(db):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Sign-up is closed. Ask the account owner to add you.",
+        )
+
     try:
         _, user = accounts.create_account(
             db,
