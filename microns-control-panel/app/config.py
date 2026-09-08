@@ -100,12 +100,22 @@ class Settings(BaseSettings):
     clinic_volume_size_gb: int = 5
     railway_timeout_seconds: float = 30.0
 
-    # --- Stripe ------------------------------------------------------------
-    stripe_api_key: Optional[str] = None
-    stripe_webhook_secret: Optional[str] = None
-    stripe_price_id_starter: Optional[str] = None
-    stripe_price_id_growth: Optional[str] = None
-    stripe_trial_days: int = 14
+    # --- Razorpay ----------------------------------------------------------
+    razorpay_key_id: Optional[str] = None
+    razorpay_key_secret: Optional[str] = None
+    razorpay_webhook_secret: Optional[str] = None
+    razorpay_plan_id_starter: Optional[str] = None
+    razorpay_plan_id_growth: Optional[str] = None
+
+    #: Days before the first charge. Razorpay has no "trial" flag — a trial is a
+    #: subscription whose ``start_at`` is in the future, so this is expressed as
+    #: a delayed start rather than as a separate state.
+    razorpay_trial_days: int = 14
+
+    #: Billing cycles to charge before the subscription completes on its own.
+    #: Razorpay requires a finite count; 120 monthly cycles is ten years, which
+    #: is "until cancelled" for every practical purpose.
+    razorpay_total_count: int = 120
 
     # --- Engine defaults pushed to each clinic -----------------------------
     #: LLM vendor configured on a newly provisioned engine. Defaults to none —
@@ -169,8 +179,10 @@ class Settings(BaseSettings):
         return bool(self.railway_api_token and self.railway_workspace_id)
 
     @property
-    def stripe_enabled(self) -> bool:
-        return bool(self.stripe_api_key and self.stripe_webhook_secret)
+    def razorpay_enabled(self) -> bool:
+        return bool(
+            self.razorpay_key_id and self.razorpay_key_secret and self.razorpay_webhook_secret
+        )
 
     def startup_warnings(self) -> List[str]:
         """Deployment problems worth shouting about at boot."""
@@ -188,10 +200,10 @@ class Settings(BaseSettings):
                 "Railway is not configured — clinics can be created but not "
                 "provisioned. Set RAILWAY_API_TOKEN and RAILWAY_WORKSPACE_ID."
             )
-        if not self.stripe_enabled:
+        if not self.razorpay_enabled:
             warnings.append(
-                "Stripe is not configured — signup works but nothing is billed. "
-                "Set STRIPE_API_KEY and STRIPE_WEBHOOK_SECRET."
+                "Razorpay is not configured — signup works but nothing is billed. "
+                "Set RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET and RAZORPAY_WEBHOOK_SECRET."
             )
         if self.is_production and self.allowed_hosts == ["*"]:
             warnings.append("ALLOWED_HOSTS is '*' in production.")

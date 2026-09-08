@@ -8,6 +8,10 @@ payment.
 
 from __future__ import annotations
 
+import hashlib
+import hmac
+import json
+
 import pytest
 
 from app.models.account import Account
@@ -36,7 +40,7 @@ def entitled(db, signed_up):
 def test_past_due_still_entitles_service():
     """A card that failed this morning must not end the phone line today.
 
-    Stripe's own dunning gets its retry window before anything is suspended.
+    Razorpay's own retry schedule gets its window before anything is suspended.
     """
     subscription = Subscription(status=SubscriptionStatus.PAST_DUE)
     assert subscription.is_entitled is True
@@ -160,49 +164,170 @@ def test_reconciling_never_deletes(db, signed_up, entitled):
 # --------------------------------------------------------------------------- #
 # Webhooks
 # --------------------------------------------------------------------------- #
+def _signed(payload: bytes, secret: str = "whsec_test") -> dict:
+    """Razorpay's signature: HMAC-SHA256 of the raw body, hex."""
+    return {
+        "X-Razorpay-Signature": hmac.new(
+            secret.encode(), payload, hashlib.sha256
+        ).hexdigest()
+    }
+
+
+def _subscription_event(event: str, account_id, **entity) -> dict:
+    body = {
+        "id": "sub_RZP123",
+        "plan_id": "plan_growth",
+        "status": "active",
+        "notes": {"account_id": str(account_id)},
+    }
+    body.update(entity)
+    return {"event": event, "payload": {"subscription": {"entity": body}}}
+
+
 def test_an_unsigned_webhook_is_rejected(client, monkeypatch):
     """The signature is all that stands between this URL and free service."""
-    monkeypatch.setattr("app.config.settings.stripe_webhook_secret", "whsec_test")
-    monkeypatch.setattr("app.config.settings.stripe_api_key", "sk_test")
+    monkeypatch.setattr("app.config.settings.razorpay_webhook_secret", "whsec_test")
 
-    response = client.post("/api/billing/webhook", content=b'{"type":"whatever"}')
+    response = client.post("/api/billing/webhook", content=b'{"event":"whatever"}')
     assert response.status_code == 400
 
 
-def test_a_webhook_is_refused_when_no_secret_is_configured(client):
-    """Refused rather than skipped — an unset secret must not mean 'trust it'."""
+def test_a_forged_signature_is_rejected(client, monkeypatch):
+    monkeypatch.setattr("app.config.settings.razorpay_webhook_secret", "whsec_test")
+
     response = client.post(
         "/api/billing/webhook",
-        content=b'{"type":"customer.subscription.updated"}',
-        headers={"Stripe-Signature": "t=1,v1=nonsense"},
+        content=b'{"event":"subscription.activated"}',
+        headers={"X-Razorpay-Signature": "0" * 64},
+    )
+    assert response.status_code == 400
+
+
+def test_a_signature_over_different_bytes_is_rejected(client, monkeypatch):
+    """The raw body is what is signed.
+
+    Signing a re-serialised copy produces a valid-looking digest over the wrong
+    bytes, which is how a body gets tampered with in transit and still passes.
+    """
+    monkeypatch.setattr("app.config.settings.razorpay_webhook_secret", "whsec_test")
+
+    signed_over = b'{"event":"subscription.activated"}'
+    actually_sent = b'{"event": "subscription.activated"}'  # one space
+    assert signed_over != actually_sent
+
+    response = client.post(
+        "/api/billing/webhook", content=actually_sent, headers=_signed(signed_over)
+    )
+    assert response.status_code == 400
+
+
+def test_a_correctly_signed_webhook_is_accepted(client, monkeypatch):
+    monkeypatch.setattr("app.config.settings.razorpay_webhook_secret", "whsec_test")
+
+    body = json.dumps({"event": "payment.captured"}).encode()
+    response = client.post("/api/billing/webhook", content=body, headers=_signed(body))
+    assert response.status_code == 200
+    assert response.json()["received"] is True
+
+
+def test_a_webhook_is_refused_when_no_secret_is_configured(client, monkeypatch):
+    """Refused rather than skipped — an unset secret must not mean 'trust it'."""
+    monkeypatch.setattr("app.config.settings.razorpay_webhook_secret", None)
+
+    response = client.post(
+        "/api/billing/webhook",
+        content=b'{"event":"subscription.activated"}',
+        headers={"X-Razorpay-Signature": "nonsense"},
     )
     assert response.status_code == 503
 
 
-def test_subscription_state_is_applied_from_a_stripe_object(db, signed_up, monkeypatch):
-    monkeypatch.setattr("app.config.settings.stripe_price_id_growth", "price_growth")
+def test_subscription_state_is_applied_from_a_razorpay_entity(db, signed_up, monkeypatch):
+    monkeypatch.setattr("app.config.settings.razorpay_plan_id_growth", "plan_growth")
     account = db.query(Account).one()
 
     billing.apply_subscription_state(
         db,
         {
-            "id": "sub_123",
-            "customer": "cus_123",
+            "id": "sub_RZP123",
+            "customer_id": "cust_RZP123",
+            "plan_id": "plan_growth",
             "status": "active",
-            "current_period_end": 1800000000,
-            "metadata": {"account_id": str(account.id)},
-            "items": {"data": [{"price": {"id": "price_growth"}}]},
+            "current_end": 1800000000,
+            "notes": {"account_id": str(account.id)},
         },
     )
     db.commit()
 
     record = db.query(Subscription).one()
-    assert record.status == "active"
-    assert record.stripe_customer_id == "cus_123"
-    assert record.stripe_subscription_id == "sub_123"
-    # The plan is derived from the price, not trusted from metadata.
+    assert record.status == SubscriptionStatus.ACTIVE
+    assert record.provider_customer_id == "cust_RZP123"
+    assert record.provider_subscription_id == "sub_RZP123"
+    # The plan is derived from the Razorpay plan id, not trusted from notes —
+    # notes are editable in the dashboard.
     assert record.plan == "growth"
     assert record.clinic_limit == billing.PLANS["growth"]["clinic_limit"]
+
+
+@pytest.mark.parametrize(
+    ("razorpay_status", "expected", "entitled"),
+    [
+        ("created", SubscriptionStatus.INCOMPLETE, False),
+        ("authenticated", SubscriptionStatus.TRIALING, True),
+        ("active", SubscriptionStatus.ACTIVE, True),
+        ("pending", SubscriptionStatus.PAST_DUE, True),
+        ("halted", SubscriptionStatus.UNPAID, False),
+        ("cancelled", SubscriptionStatus.CANCELED, False),
+        ("completed", SubscriptionStatus.CANCELED, False),
+        ("expired", SubscriptionStatus.CANCELED, False),
+    ],
+)
+def test_every_razorpay_status_maps_to_the_right_entitlement(
+    db, signed_up, razorpay_status, expected, entitled
+):
+    """`pending` is the one to read twice.
+
+    Razorpay uses it for a subscription whose charge failed and is being
+    retried — Stripe's `past_due`. It entitles service, because a card that
+    failed this morning should not take a clinic's phone line down this
+    afternoon. `halted` is where it lands once retries are exhausted, and that
+    does not.
+    """
+    account = db.query(Account).one()
+    billing.apply_subscription_state(
+        db,
+        {
+            "id": "sub_RZP123",
+            "status": razorpay_status,
+            "notes": {"account_id": str(account.id)},
+        },
+    )
+    db.commit()
+
+    record = db.query(Subscription).one()
+    assert record.status == expected
+    assert record.is_entitled is entitled
+
+
+def test_an_unknown_razorpay_status_does_not_silently_entitle(db, signed_up, caplog):
+    """Razorpay can add a status. Guessing in either direction is worse."""
+    account = db.query(Account).one()
+    record = db.query(Subscription).one()
+    record.status = SubscriptionStatus.CANCELED
+    db.commit()
+
+    billing.apply_subscription_state(
+        db,
+        {
+            "id": "sub_RZP123",
+            "status": "some_new_status_razorpay_invented",
+            "notes": {"account_id": str(account.id)},
+        },
+    )
+    db.commit()
+
+    db.expire_all()
+    assert db.query(Subscription).one().status == SubscriptionStatus.CANCELED
 
 
 def test_a_cancellation_event_suspends_the_clinics(db, signed_up, entitled):
@@ -211,18 +336,7 @@ def test_a_cancellation_event_suspends_the_clinics(db, signed_up, entitled):
 
     billing.handle_event(
         db,
-        {
-            "type": "customer.subscription.deleted",
-            "data": {
-                "object": {
-                    "id": "sub_123",
-                    "customer": "cus_123",
-                    "status": "canceled",
-                    "metadata": {"account_id": str(account.id)},
-                    "items": {"data": []},
-                }
-            },
-        },
+        _subscription_event("subscription.cancelled", account.id, status="cancelled"),
         client=FakeRailway(),
     )
 
@@ -230,17 +344,65 @@ def test_a_cancellation_event_suspends_the_clinics(db, signed_up, entitled):
     assert db.query(Clinic).one().status == ClinicStatus.SUSPENDED
 
 
-def test_a_failed_invoice_alone_does_not_suspend(db, signed_up, entitled):
-    """Stripe retries the card first; suspending on the first failure is wrong."""
+def test_a_halted_subscription_suspends_the_clinics(db, signed_up, entitled):
+    """Retries exhausted. This is where service actually stops."""
     account = db.query(Account).one()
     _provisioned_clinic(db, account)
 
     billing.handle_event(
         db,
-        {"type": "invoice.payment_failed", "data": {"object": {"customer": "cus_123"}}},
+        _subscription_event("subscription.halted", account.id, status="halted"),
         client=FakeRailway(),
     )
 
+    db.expire_all()
+    assert db.query(Clinic).one().status == ClinicStatus.SUSPENDED
+
+
+def test_a_pending_subscription_does_not_suspend(db, signed_up, entitled):
+    """Razorpay retries the card first; suspending on the first failure is wrong."""
+    account = db.query(Account).one()
+    _provisioned_clinic(db, account)
+
+    billing.handle_event(
+        db,
+        _subscription_event("subscription.pending", account.id, status="pending"),
+        client=FakeRailway(),
+    )
+
+    db.expire_all()
+    assert db.query(Clinic).one().status == ClinicStatus.ACTIVE
+
+
+def test_a_failed_payment_alone_does_not_suspend(db, signed_up, entitled):
+    account = db.query(Account).one()
+    _provisioned_clinic(db, account)
+
+    billing.handle_event(
+        db,
+        {"event": "payment.failed", "payload": {"payment": {"entity": {"id": "pay_1"}}}},
+        client=FakeRailway(),
+    )
+
+    db.expire_all()
+    assert db.query(Clinic).one().status == ClinicStatus.ACTIVE
+
+
+def test_resuming_brings_the_clinics_back(db, signed_up, entitled):
+    """Suspension is reversible. That is the whole point of scaling to zero."""
+    account = db.query(Account).one()
+    clinic = _provisioned_clinic(db, account)
+
+    fake = FakeRailway()
+    billing.handle_event(
+        db, _subscription_event("subscription.halted", account.id, status="halted"), client=fake
+    )
+    db.expire_all()
+    assert db.query(Clinic).one().status == ClinicStatus.SUSPENDED
+
+    billing.handle_event(
+        db, _subscription_event("subscription.activated", account.id, status="active"), client=fake
+    )
     db.expire_all()
     assert db.query(Clinic).one().status == ClinicStatus.ACTIVE
 
@@ -412,3 +574,131 @@ def test_an_unreadable_clinic_secret_does_not_break_sign_in(client, db, entitled
             client.get(f"/api/clinics/{clinic_id}/encryption-key")
     finally:
         crypto.reset_sealer()
+
+
+# --------------------------------------------------------------------------- #
+# Checkout goes to Razorpay's hosted page, not its widget
+# --------------------------------------------------------------------------- #
+class FakeRazorpay:
+    """Records calls; returns the shape Razorpay's subscriptions API returns."""
+
+    def __init__(self, **overrides):
+        self.calls = []
+        self.overrides = overrides
+
+    def create_subscription(self, **kwargs):
+        self.calls.append(("create_subscription", kwargs))
+        body = {
+            "id": "sub_RZP123",
+            "status": "created",
+            "short_url": "https://rzp.io/i/abc123",
+            "plan_id": kwargs.get("plan_id"),
+        }
+        body.update(self.overrides)
+        return body
+
+    def cancel_subscription(self, subscription_id, **kwargs):
+        self.calls.append(("cancel_subscription", {"id": subscription_id, **kwargs}))
+        return {"status": "active", "current_end": 1800000000}
+
+
+def test_checkout_sends_the_customer_to_razorpays_hosted_page(db, signed_up, monkeypatch):
+    """Not its Checkout widget.
+
+    The widget is a script from checkout.razorpay.com. This origin serves the
+    sign-in form and reveals escrowed encryption keys, and the UI has no
+    third-party requests anywhere else — taking a payment is not a good reason
+    to put another party inside that boundary.
+    """
+    monkeypatch.setattr("app.config.settings.razorpay_plan_id_starter", "plan_starter")
+    account = db.query(Account).one()
+    fake = FakeRazorpay()
+
+    result = billing.create_checkout_session(
+        db, account, plan="starter", email="owner@example.com", client=fake
+    )
+
+    assert result["checkout_url"] == "https://rzp.io/i/abc123"
+    assert "razorpay.com/v1/checkout" not in result["checkout_url"]
+    # The key secret must never reach the browser, and neither should the key id
+    # be needed there — the hosted page carries the whole flow.
+    assert "key_secret" not in result
+    assert "key_id" not in result
+
+
+def test_checkout_carries_the_account_id_in_notes(db, signed_up, monkeypatch):
+    """The webhook has to find the account without trusting the browser."""
+    monkeypatch.setattr("app.config.settings.razorpay_plan_id_starter", "plan_starter")
+    account = db.query(Account).one()
+    fake = FakeRazorpay()
+
+    billing.create_checkout_session(
+        db, account, plan="starter", email="owner@example.com", client=fake
+    )
+
+    _, kwargs = fake.calls[0]
+    assert kwargs["notes"]["account_id"] == str(account.id)
+
+
+def test_checkout_delays_the_first_charge_by_the_trial(db, signed_up, monkeypatch):
+    """Razorpay has no trial flag — a trial is a start date in the future."""
+    monkeypatch.setattr("app.config.settings.razorpay_plan_id_starter", "plan_starter")
+    monkeypatch.setattr("app.config.settings.razorpay_trial_days", 14)
+    account = db.query(Account).one()
+    fake = FakeRazorpay()
+
+    billing.create_checkout_session(
+        db, account, plan="starter", email="owner@example.com", client=fake
+    )
+
+    _, kwargs = fake.calls[0]
+    assert kwargs["start_at"] is not None, "without start_at the card is charged today"
+
+
+def test_checkout_without_an_authorisation_link_is_an_error(db, signed_up, monkeypatch):
+    """Better than handing the UI an empty link."""
+    monkeypatch.setattr("app.config.settings.razorpay_plan_id_starter", "plan_starter")
+    account = db.query(Account).one()
+    fake = FakeRazorpay(short_url=None)
+
+    with pytest.raises(billing.BillingError):
+        billing.create_checkout_session(
+            db, account, plan="starter", email="owner@example.com", client=fake
+        )
+
+
+def test_an_unconfigured_plan_says_which_variable_is_missing(db, signed_up, monkeypatch):
+    monkeypatch.setattr("app.config.settings.razorpay_plan_id_starter", None)
+    account = db.query(Account).one()
+
+    with pytest.raises(billing.BillingNotConfigured) as exc:
+        billing.create_checkout_session(
+            db, account, plan="starter", email="o@e.com", client=FakeRazorpay()
+        )
+    assert "RAZORPAY_PLAN_ID_STARTER" in str(exc.value)
+
+
+def test_cancelling_does_not_mark_the_row_cancelled_immediately(db, signed_up, entitled):
+    """The period is paid for. Suspending now would take a paid clinic offline."""
+    account = db.query(Account).one()
+    record = db.query(Subscription).one()
+    record.provider_subscription_id = "sub_RZP123"
+    record.status = SubscriptionStatus.ACTIVE
+    db.commit()
+
+    fake = FakeRazorpay()
+    result = billing.cancel_subscription(db, account, client=fake)
+
+    assert result["cancelled_at_cycle_end"] is True
+    assert fake.calls[0][1]["at_cycle_end"] is True
+
+    db.expire_all()
+    still = db.query(Subscription).one()
+    assert still.status == SubscriptionStatus.ACTIVE
+    assert still.is_entitled, "cancelling at cycle end must not end service today"
+
+
+def test_cancelling_without_a_subscription_is_refused(db, signed_up):
+    account = db.query(Account).one()
+    with pytest.raises(billing.BillingError):
+        billing.cancel_subscription(db, account, client=FakeRazorpay())

@@ -39,6 +39,9 @@ class AuditAction:
     CREDENTIALS_ROTATED = "credentials_rotated"
     CUSTOM_DOMAIN_ATTACHED = "custom_domain_attached"
     SUBSCRIPTION_CHANGED = "subscription_changed"
+    #: The owner cancelled. Recorded here because Razorpay has no portal whose
+    #: own log could answer "who cancelled this, and when".
+    SUBSCRIPTION_CANCELLED = "subscription_cancelled"
     ACCESS_DENIED = "access_denied"
 
 

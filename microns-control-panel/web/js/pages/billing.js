@@ -1,4 +1,4 @@
-/** Plans, the current subscription, and the Stripe portal. */
+/** Plans, the current subscription, and cancellation. */
 
 import { api } from "../api.js";
 import { el, toast } from "../dom.js";
@@ -43,14 +43,30 @@ export async function billing(user) {
         ]),
         subscription.status !== "none"
           ? el("div.row", { style: "margin-top: var(--s4)" }, [
+              // Razorpay has no billing portal to hand this off to, so
+              // cancelling is an action here rather than a link away.
               el("button.btn.btn--secondary", {
                 type: "button",
-                text: "Manage billing",
+                text: "Cancel subscription",
                 onclick: async (event) => {
+                  const confirmed = window.confirm(
+                    "Cancel at the end of the paid period?\n\n" +
+                      "Clinics keep running until then. Nothing is deleted when it " +
+                      "ends — their databases and records stay, and they come back " +
+                      "if billing resumes.",
+                  );
+                  if (!confirmed) return;
+
                   event.target.disabled = true;
                   try {
-                    const { checkout_url } = await api.portal();
-                    window.location.href = checkout_url;
+                    const result = await api.cancelSubscription();
+                    toast(
+                      result.ends_at
+                        ? `Cancelled. Service continues until ${fmt.date(result.ends_at)}.`
+                        : "Cancelled at the end of the current period.",
+                      "success",
+                    );
+                    billing(user);
                   } catch (error) {
                     toast(error.message, "error");
                     event.target.disabled = false;

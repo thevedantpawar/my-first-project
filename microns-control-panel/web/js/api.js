@@ -95,7 +95,7 @@ export const api = {
   plans: () => request("GET", "/api/billing/plans"),
   subscription: () => request("GET", "/api/billing/subscription"),
   checkout: (plan) => request("POST", "/api/billing/checkout", { plan }),
-  portal: () => request("POST", "/api/billing/portal"),
+  cancelSubscription: () => request("POST", "/api/billing/cancel"),
 
   health: () => request("GET", "/health"),
 };
