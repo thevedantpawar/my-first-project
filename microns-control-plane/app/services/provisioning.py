@@ -55,6 +55,32 @@ POSTGRES_VOLUME_MOUNT = "/var/lib/postgresql/data"
 #: whole point of attaching one.
 POSTGRES_DATA_PATH = f"{POSTGRES_VOLUME_MOUNT}/pgdata"
 
+#: The role and database the engine connects as.
+POSTGRES_USER = "microns"
+POSTGRES_DB = "microns"
+
+#: The DSN the engine is given, defined *on the Postgres service*.
+#:
+#: Railway's Postgres **template** ships a ``DATABASE_URL`` variable. A service
+#: created from the bare ``postgres`` image — which is what this provisioner
+#: does, so that the image is pinned — ships nothing of the kind. Referencing
+#: ``${{Postgres.DATABASE_URL}}`` against such a service does not fail: Railway
+#: finds no variable of that name and passes the reference through *literally*,
+#: so the engine hands SQLAlchemy the twenty-eight characters
+#: ``${{Postgres.DATABASE_URL}}`` and dies on "Could not parse SQLAlchemy URL
+#: from given URL string". Nothing in that message points at a missing
+#: variable, and the database itself is healthy throughout.
+#:
+#: Defining it here restores the assumption the rest of the code makes. The
+#: inner references are resolved by Railway on the Postgres service, so the
+#: password is never copied into a second variable and rotating it does not
+#: strand the engine on a stale DSN. ``RAILWAY_PRIVATE_DOMAIN`` keeps the
+#: traffic on the private network.
+POSTGRES_DSN = (
+    "postgresql://${{POSTGRES_USER}}:${{POSTGRES_PASSWORD}}"
+    "@${{RAILWAY_PRIVATE_DOMAIN}}:5432/${{POSTGRES_DB}}"
+)
+
 #: The port the engine's Dockerfile exposes.
 ENGINE_PORT = 8000
 
@@ -244,11 +270,14 @@ class Provisioner:
                 "Postgres",
                 settings.clinic_postgres_image,
                 variables={
-                    "POSTGRES_USER": "microns",
-                    "POSTGRES_DB": "microns",
-                    # Postgres derives DATABASE_URL from these; the password is
-                    # generated per clinic and never reused.
+                    "POSTGRES_USER": POSTGRES_USER,
+                    "POSTGRES_DB": POSTGRES_DB,
+                    # Generated per clinic and never reused. URL-safe by
+                    # construction, so it needs no escaping in the DSN below.
                     "POSTGRES_PASSWORD": ClinicSecrets().internal_api_token,
+                    # The bare postgres image publishes no DATABASE_URL of its
+                    # own — see POSTGRES_DSN for what breaks without this.
+                    "DATABASE_URL": POSTGRES_DSN,
                     # A subdirectory of the mount, not the mount itself — see
                     # POSTGRES_DATA_PATH.
                     "PGDATA": POSTGRES_DATA_PATH,
@@ -489,6 +518,7 @@ __all__ = [
     "Provisioner",
     "ProvisioningError",
     "POSTGRES_VOLUME_MOUNT",
+    "POSTGRES_DSN",
     "POSTGRES_DATA_PATH",
     "ENGINE_PORT",
     "suspend",

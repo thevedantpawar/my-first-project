@@ -275,6 +275,57 @@ def test_the_database_url_is_a_reference_not_a_literal(provisioned):
     assert fake.variables["DATABASE_URL"] == "${{Postgres.DATABASE_URL}}"
 
 
+def test_the_reference_the_engine_is_given_actually_points_at_something(provisioned):
+    """A reference to a variable that does not exist is not an error.
+
+    Railway resolves ``${{Postgres.DATABASE_URL}}`` by looking for a variable
+    of that name on the Postgres service. If there is none it does not fail the
+    deploy — it passes the reference through verbatim, and the engine hands the
+    literal string to SQLAlchemy and crash-loops on "Could not parse SQLAlchemy
+    URL from given URL string", with a healthy database sitting next to it.
+
+    Railway's Postgres *template* publishes that variable. The bare image this
+    provisioner pins does not, so the provisioner has to publish it — which is
+    the half the previous test cannot see, because it only checks the pointer.
+    """
+    _, fake = provisioned
+    call = next(kwargs for name, kwargs in fake.calls if name == "create_service_from_image")
+    published = call["variables"]
+
+    assert "DATABASE_URL" in published, (
+        "the engine references ${{Postgres.DATABASE_URL}}, so the Postgres "
+        "service has to define it — the bare postgres image does not"
+    )
+
+    dsn = published["DATABASE_URL"]
+    assert dsn.startswith("postgresql://"), dsn
+    # The credentials stay references, so rotating the password on the database
+    # does not leave a second, stale copy behind in the DSN.
+    assert "${{POSTGRES_PASSWORD}}" in dsn
+    assert published["POSTGRES_PASSWORD"] not in dsn, "the password must not be copied"
+    # Private networking: the engine should not reach its own database over the
+    # public internet, and the public domain costs egress.
+    assert "${{RAILWAY_PRIVATE_DOMAIN}}" in dsn
+    assert ":5432/" in dsn
+
+
+def test_the_generated_postgres_password_needs_no_url_escaping(provisioned):
+    """The DSN interpolates the password unescaped, so it has to be safe.
+
+    ``@`` or ``:`` in a password silently changes which host and port the DSN
+    names. The tokens are ``secrets.token_urlsafe``, so this holds — but it
+    holds by construction rather than by accident, and the DSN depends on it.
+    """
+    _, fake = provisioned
+    call = next(kwargs for name, kwargs in fake.calls if name == "create_service_from_image")
+    password = call["variables"]["POSTGRES_PASSWORD"]
+
+    assert password
+    assert not set(password) - set(
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
+    ), "a password outside the URL-safe alphabet would need escaping in the DSN"
+
+
 def test_the_engine_runs_a_single_replica(provisioned):
     """The engine holds an in-process limiter; a second replica doubles it."""
     _, fake = provisioned
