@@ -137,6 +137,29 @@ builder, healthcheck on `/health`). Attach a Postgres **with a volume mounted at
 `/var/lib/postgresql/data`** — the same rule this service enforces for the
 clinics it builds applies to it.
 
+### The branch trap
+
+Railway's service config stores the repo and the root directory but **not the
+branch**. Anything that triggers a deploy without going through the GitHub
+integration — setting a variable, for instance — builds the repository's
+*default* branch instead of the one this service actually runs.
+
+That default is currently `claude/skin-alive-shopify-theme-yo8cf6`, an old
+snapshot that does not contain this directory at all, so the build fails with
+`couldn't locate the dockerfile at path Dockerfile` — a message that says
+nothing about branches. It has happened twice.
+
+Until the repository's default branch is changed to the branch this deploys from
+(`claude/microns-medspa-v2-ui-3t08hh`), re-point the source before deploying:
+
+```
+connect-service-source --repo thevedantpawar/my-first-project \
+                       --branch claude/microns-medspa-v2-ui-3t08hh
+```
+
+A failed build does not replace the running container, so this is a deploy that
+does not happen rather than an outage — which is also why it is easy to miss.
+
 Required in production, or it refuses to boot:
 
 | Variable | Why |
