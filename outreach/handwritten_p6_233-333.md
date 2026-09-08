@@ -40,7 +40,7 @@ Lana — Sunday closed. An agent covers it and books as pending for you to confi
 The address on file belongs to a marketing agency, not the clinic — worth confirming before sending, or this reaches your vendor instead of you. Beyond that: 78 reviews at 4.9 and an agent covering the hours you can't. Worth a look?
 
 **244 · The Luxen Collective** · theluxencollective@gmail.com · 5.0/74 · *sunday calls*
-Sunday dark. An agent covers it and books as pending. Worth exploring?
+Sunday closed, 74 reviews at a flat 5.0. In Minneapolis the Sunday caller is usually planning the week ahead — the warmest they'll be. An agent covers it and books as pending. Worth a look?
 
 **245 · Flawless on Fifth** · flawlessonfifth@gmail.com · 4.9/74 · *two dark days*
 Closed Sunday and Monday in a weekend-visitor market. An agent covers both. Worth a look?
@@ -49,7 +49,7 @@ Closed Sunday and Monday in a weekend-visitor market. An agent covers both. Wort
 Sunday closed on the coast. An agent covers it and books as pending. Worth exploring?
 
 **247 · Eternal Beauty Lifestyle** · eternalbeautylifestyle@gmail.com · 5.0/68 · *weekend calls*
-Both weekend days dark. An agent covers them and books as pending. Worth a look?
+Both weekend days closed in a seasonal Clearwater market where high-season inbound doesn't wait until Monday. An agent covers Saturday and Sunday and books as pending for you to confirm. Worth exploring?
 
 **248 · Fresh Complexion** · freshcomplexion@gmail.com · 5.0/67 · *sunday calls*
 Sunday closed in DC, where clients book around an inflexible week. An agent covers it. Worth exploring?
@@ -67,7 +67,7 @@ Both weekend days closed in Newport. An agent covers them. Worth exploring?
 Shawna — both weekend days closed. An agent covers them and books as pending. Worth exploring?
 
 **253 · NK Aesthetics & Wellness** · nkaestheticswl@gmail.com · 5.0/63 · *weekend calls*
-Both weekend days dark. An agent covers them and books as pending. Worth a look?
+Weekend dark in Ridgewood, 63 reviews at a flat 5.0. Your clients are commuters — the weekend is when they're actually free to call. An agent covers it and books as pending. Worth a look?
 
 **254 · Gen B Medspa** · genbmedspa@gmail.com · 5.0/62 · *weekend calls*
 Both weekend days closed in The Woodlands. An agent covers them. Worth exploring?
@@ -76,10 +76,10 @@ Both weekend days closed in The Woodlands. An agent covers them. Worth exploring
 Both weekend days closed at a physician-led practice. An agent covers them, books as pending, and refuses clinical questions outright — those route to a callback. Worth a look?
 
 **256 · Ciel Eau Day Spa** · cieleaullc@gmail.com · 4.8/59 · *two dark days*
-Closed Sunday and Monday. An agent covers both and books as pending. Worth exploring?
+Closed Sunday and Monday in New Canaan. Two dark days back to back is the pattern that produces the most confused calls, because nobody remembers which one you're shut. An agent covers both. Worth exploring?
 
 **257 · Kanebo Skincare** · kanebo99@gmail.com · 4.9/58 · *sunday calls*
-Sunday closed. An agent covers it and books as pending. Worth a look?
+Sunday closed, 58 reviews at 4.9 in San Jose, where a caller has three alternatives inside two miles. An agent answers Sunday and books as pending for Monday. Worth a look?
 
 **258 · Ozraya Beverly Hills** · ozrayabeverlyhillsinfo@gmail.com · 4.9/55 · *sunday calls*
 Sunday dark in Beverly Hills, where a voicemail reads smaller than you are. An agent answers in your voice. Worth exploring?
@@ -103,7 +103,7 @@ Kimmy — people call asking for you specifically, and mid-injection nobody answ
 Sunday closed in Walnut Creek, where commuters have one free window. An agent covers it. Worth exploring?
 
 **265 · EMME Skin Studio** · emmemedspa@gmail.com · 5.0/53 · *weekend calls*
-Both weekend days closed. An agent covers them and books as pending. Worth a look?
+Thursday plus both weekend days closed. The Thursday one is the costly half — a midweek closure nobody expects produces confused calls and no-shows. An agent knows your real schedule and covers all three. Worth exploring?
 
 **266 · Aju The Spa** · ajuthespa@gmail.com · 5.0/52 · *midweek gap*
 Closed Sunday and Tuesday. The Tuesday closure is the one nobody remembers. Reminders catch it. Worth exploring?

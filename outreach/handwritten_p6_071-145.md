@@ -180,8 +180,9 @@ An agent covers it and books as pending. Worth a look?
 ---
 ## 98 · Omni Medspa — Jacksonville, FL · 5.0 / 54
 **info@theomnispa.com** · **Subject:** two dark days
-Closed Sunday and Monday. An agent covers both and books as pending for Tuesday.
-Worth exploring?
+Sunday and Monday closed in Jacksonville. A flat 5.0 across 54 reviews means the people who
+reach you are happy — it's the ones who can't reach you that cost something. An agent covers
+both and books as pending for Tuesday. Worth exploring?
 
 ---
 ## 99 · The Aesthetics Collective — Southlake, TX · 5.0 / 54

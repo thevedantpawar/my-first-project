@@ -201,9 +201,7 @@ Worth a look?
 ---
 ## 30 · Uptown Med Spa — Salt Lake City, UT · 5.0 / 88
 **kpodgorny@pruptownmedspa.com** · **Subject:** two dark days
-Closed Sunday and Monday. Two dark days means Tuesday opens underwater every week.
-An agent covers both and books as pending.
-Worth exploring?
+88 reviews at a flat 5.0 and closed Sunday plus Monday. That's a two-day gap on the front end of the week, when most people book. An agent covers it and books as pending. Worth a look?
 
 ---
 ## 31 · Beauty Lab — Montclair, NJ · 5.0 / 87

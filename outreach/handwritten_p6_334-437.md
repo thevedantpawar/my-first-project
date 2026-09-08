@@ -165,10 +165,10 @@ Both weekend days closed. Jupiter is referral-driven, so those calls were warm b
 rang. An agent covers weekends. Worth exploring?
 
 **385 · Skin Perfect Brothers** · care@skinperfectmedspa.com · 4.7/106 · *two dark days*
-Closed Sunday and Monday. An agent covers both and books as pending. Worth a look?
+Three dark days — Monday, Thursday and Sunday. The Thursday one is the expensive half; nobody expects a midweek closure, so they call anyway and get voicemail. An agent that knows your real schedule covers all three. Worth a look?
 
 **386 · The MedSpa of DFW** · frontdesk@dfwmsa.com · 5.0/105 · *weekend calls*
-Both weekend days closed. An agent covers them and books as pending. Worth exploring?
+A flat 5.0 across 105 reviews and the whole weekend dark, in a Southlake market where your clients work weekdays. An agent covers Saturday and Sunday and books as pending for Monday's desk to confirm. Worth exploring?
 
 **388 · Azura Medical Spa** · info@azuramedspa.com · 4.7/97 · *weekend calls*
 Both weekend days dark in Charlotte. An agent covers them and books as pending. Worth a look?
@@ -179,10 +179,10 @@ checking it's the right location.* An agent covers Saturday and books as pending
 Worth exploring?
 
 **391 · The Spa by RescueMD** · spa@myrescuemd.com · 4.9/89 · *two dark days*
-Closed Sunday and Monday. An agent covers both and books as pending. Worth a look?
+Closed Sunday and Monday, 89 reviews at 4.9 in Allen. Two consecutive dark days means a Saturday-evening caller waits until Tuesday to hear back. An agent covers both. Worth exploring?
 
 **392 · Sunglow Aesthetics & Wellness** · sales@sunglowaesthetics.com · 4.8/85 · *two dark days*
-Closed Sunday and Monday. An agent covers both and books as pending. Worth exploring?
+Sunday and Monday dark in Sugar Land. 85 reviews at 4.8 says the demand is there; the calendar just isn't open when some of it arrives. An agent covers both days. Worth exploring?
 
 **393 · Ageless Advanced Aesthetics** · info@aaaface.com · 5.0/84 · *two dark days*
 Closed Monday and Saturday. Saturday is the costlier one. An agent covers both.
@@ -207,7 +207,7 @@ Closed Monday and Thursday. The Thursday closure is the one patients forget. Rem
 24 and 2 hours catch the drift. Worth a look?
 
 **408 · The Med Spa at Metropolis** · info@metropolismedspa.com · 5.0/54 · *two dark days*
-Closed Sunday and Monday. An agent covers both and books as pending. Worth exploring?
+Four dark days — Sunday, Monday, Tuesday and Thursday. Open three days a week is a deliberate model, and it also means four days of Princeton inbound with nowhere to land. An agent covers all four and books into your three open days. Worth a look?
 
 **410 · Westport MediSpa** · craig@westportmedispa.com · 4.6/47 · *review replies*
 Craig — 4.6 across 47 reviews in a market where neighbours sit higher. At that count
