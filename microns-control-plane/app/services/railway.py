@@ -420,6 +420,67 @@ class RailwayClient:
         )
         return data["serviceDomainCreate"]
 
+    def create_custom_domain(
+        self,
+        project_id: str,
+        environment_id: str,
+        service_id: str,
+        domain: str,
+        *,
+        target_port: int = 8000,
+    ) -> Dict[str, Any]:
+        """Attach a domain the practice owns to this clinic's engine.
+
+        Returns the DNS records the practice has to create. Both matter: the
+        routing record and the TXT verification token. Without the TXT record
+        the domain stays pending forever and never issues a certificate, which
+        looks like nothing happening rather than like a missing step.
+        """
+        data = self.execute(
+            """
+            mutation customDomainCreate($input: CustomDomainCreateInput!) {
+              customDomainCreate(input: $input) {
+                id
+                domain
+                status {
+                  verificationToken
+                  dnsRecords { hostlabel requiredValue currentValue status }
+                }
+              }
+            }
+            """,
+            {
+                "input": {
+                    "projectId": project_id,
+                    "environmentId": environment_id,
+                    "serviceId": service_id,
+                    "domain": domain,
+                    "targetPort": target_port,
+                }
+            },
+        )
+        return data["customDomainCreate"]
+
+    def get_custom_domain(self, project_id: str, custom_domain_id: str) -> Dict[str, Any]:
+        """Current DNS and certificate status for an attached custom domain."""
+        data = self.execute(
+            """
+            query customDomain($id: String!, $projectId: String!) {
+              customDomain(id: $id, projectId: $projectId) {
+                id
+                domain
+                status {
+                  verificationToken
+                  certificateStatus
+                  dnsRecords { hostlabel requiredValue currentValue status }
+                }
+              }
+            }
+            """,
+            {"id": custom_domain_id, "projectId": project_id},
+        )
+        return data["customDomain"]
+
     def list_domains(
         self, project_id: str, environment_id: str, service_id: str
     ) -> Dict[str, Any]:

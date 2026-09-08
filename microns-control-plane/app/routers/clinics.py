@@ -9,6 +9,7 @@ the way that cannot express the bug.
 from __future__ import annotations
 
 import logging
+from urllib.parse import urlparse
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -19,9 +20,13 @@ from app.models.clinic import Clinic, ClinicStatus
 from app.models.user import User
 from app.schemas import (
     ClinicCreateRequest,
+    ClinicCredentialsResponse,
     ClinicDetailResponse,
     ClinicResponse,
     ClinicUpdateRequest,
+    CustomDomainRequest,
+    CustomDomainResponse,
+    DnsRecord,
     EncryptionKeyResponse,
     ProvisioningEventResponse,
 )
@@ -29,9 +34,18 @@ from app.services import billing
 from app.services.accounts import _unique_slug
 from app.services.audit import AuditAction, AuditLogger
 from app.services.provisioning import Provisioner, ProvisioningError
-from app.utils import slugify
+from app.services.railway import RailwayClient, RailwayError
+from app.services.secrets import generate_token
 
 logger = logging.getLogger(__name__)
+
+
+def _railway_host(engine_url: str | None) -> str | None:
+    """The bare hostname from the Railway-generated URL, if there is one."""
+    if not engine_url:
+        return None
+    return urlparse(engine_url).hostname
+
 
 router = APIRouter(prefix="/api/clinics", tags=["clinics"])
 
@@ -47,7 +61,10 @@ def _to_response(clinic: Clinic) -> ClinicResponse:
         contact_email=clinic.contact_email,
         phone=clinic.phone,
         engine_url=clinic.engine_url,
+        custom_domain=clinic.custom_domain,
+        public_url=clinic.public_url,
         console_url=clinic.console_url,
+        widget_url=clinic.widget_url,
         integrations=clinic.integrations or {},
         key_backup_confirmed=clinic.key_backup_confirmed,
         provisioned_at=clinic.provisioned_at,
@@ -275,3 +292,225 @@ def confirm_key_backup(
     clinic.key_backup_confirmed = True
     db.commit()
     return _to_response(clinic)
+
+
+# --------------------------------------------------------------------------- #
+# Handing a clinic over
+# --------------------------------------------------------------------------- #
+@router.get("/{clinic_id}/credentials", response_model=ClinicCredentialsResponse)
+def reveal_credentials(
+    clinic_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_owner),
+    audit: AuditLogger = Depends(get_audit),
+) -> ClinicCredentialsResponse:
+    """Everything the clinic needs to start using their engine.
+
+    The staff token is what their front desk signs in with, so at some point it
+    has to be shown to a human — this is that point, and it is deliberately a
+    single deliberate action rather than a field on the clinic page. Owner-only,
+    its own response model, and audited on every call.
+    """
+    clinic = clinic_for_user(clinic_id, user, db)
+
+    if not clinic.staff_api_token or not clinic.console_url:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This clinic has not been built yet, so it has no sign-in details.",
+        )
+
+    audit.log(AuditAction.CREDENTIALS_REVEALED, user=user, clinic_id=clinic.id)
+    db.commit()
+
+    return ClinicCredentialsResponse(
+        clinic_id=str(clinic.id),
+        clinic_name=clinic.name,
+        console_url=clinic.console_url,
+        staff_api_token=clinic.staff_api_token,
+        widget_snippet=(
+            f'<script src="{clinic.widget_url}" async></script>'
+            if clinic.widget_url
+            else ""
+        ),
+        warning=(
+            "This token signs in to the clinic's console, which shows patient "
+            "records. Send it through a password manager or hand it over in "
+            "person — never in email or a chat message. Rotate it if it is ever "
+            "sent somewhere it should not have been."
+        ),
+    )
+
+
+@router.post("/{clinic_id}/rotate-staff-token", response_model=ClinicCredentialsResponse)
+def rotate_staff_token(
+    clinic_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_owner),
+    audit: AuditLogger = Depends(get_audit),
+) -> ClinicCredentialsResponse:
+    """Issue a new staff token, and push it to the clinic's engine.
+
+    The reason this exists: the old token is what somebody has if it leaked, and
+    a shared token cannot be revoked per-person. Rotating is the only revocation
+    available, so it has to be one click rather than a support ticket.
+
+    The database is updated only after Railway confirms the new value, because
+    the failure that matters is the two disagreeing — this record saying one
+    thing while the clinic's engine still accepts another.
+    """
+    clinic = clinic_for_user(clinic_id, user, db)
+
+    if not clinic.railway_service_id or not clinic.railway_environment_id:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This clinic has not been built yet.",
+        )
+
+    new_token = generate_token()
+    client = RailwayClient()
+    if not client.is_configured:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Railway is not configured, so the new token cannot be applied.",
+        )
+
+    try:
+        client.set_variables(
+            clinic.railway_project_id,
+            clinic.railway_environment_id,
+            clinic.railway_service_id,
+            {"STAFF_API_TOKEN": new_token},
+            skip_deploys=False,
+        )
+    except RailwayError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Could not apply the new token to the clinic's engine: {exc}",
+        )
+
+    clinic.staff_api_token = new_token
+    audit.log(AuditAction.CREDENTIALS_ROTATED, user=user, clinic_id=clinic.id)
+    db.commit()
+
+    return ClinicCredentialsResponse(
+        clinic_id=str(clinic.id),
+        clinic_name=clinic.name,
+        console_url=clinic.console_url,
+        staff_api_token=new_token,
+        widget_snippet=(
+            f'<script src="{clinic.widget_url}" async></script>'
+            if clinic.widget_url
+            else ""
+        ),
+        warning=(
+            "The previous token stopped working. Anyone signed in with it will "
+            "be asked for the new one."
+        ),
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Custom domains
+# --------------------------------------------------------------------------- #
+@router.post("/{clinic_id}/domain", response_model=CustomDomainResponse)
+def attach_custom_domain(
+    clinic_id: str,
+    payload: CustomDomainRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_owner),
+    audit: AuditLogger = Depends(get_audit),
+) -> CustomDomainResponse:
+    """Point a domain the practice owns at this clinic's engine.
+
+    Worth doing before handing a clinic over rather than after: the console
+    bookmark, the chat widget embed and the VAPI server URL all hard-code
+    whatever address they were given, and the Railway-generated hostname changes
+    if the service is ever recreated. Moving them later means finding all three.
+    """
+    clinic = clinic_for_user(clinic_id, user, db)
+
+    domain = payload.domain.strip().lower().removeprefix("https://").removeprefix("http://")
+    domain = domain.rstrip("/")
+    if "/" in domain or " " in domain or "." not in domain:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Enter a hostname such as care.yourclinic.com, without a path.",
+        )
+
+    if not clinic.railway_service_id:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Build the clinic's engine before attaching a domain to it.",
+        )
+
+    client = RailwayClient()
+    if not client.is_configured:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Railway is not configured, so a domain cannot be attached.",
+        )
+
+    try:
+        created = client.create_custom_domain(
+            clinic.railway_project_id,
+            clinic.railway_environment_id,
+            clinic.railway_service_id,
+            domain,
+        )
+    except RailwayError as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc))
+
+    clinic.custom_domain = domain
+    clinic.railway_custom_domain_id = created.get("id")
+
+    # The engine checks the Host header in production, so a domain it has not
+    # been told about is refused. Both names stay valid: moving a clinic's
+    # bookmark should not be a flag day.
+    hosts = [h for h in (domain, _railway_host(clinic.engine_url)) if h]
+    origins = ",".join(f"https://{h}" for h in hosts)
+    try:
+        client.set_variables(
+            clinic.railway_project_id,
+            clinic.railway_environment_id,
+            clinic.railway_service_id,
+            {"ALLOWED_HOSTS": ",".join(hosts), "CORS_ORIGINS": origins,
+             "PUBLIC_BASE_URL": f"https://{domain}"},
+            skip_deploys=False,
+        )
+    except RailwayError as exc:
+        logger.warning("Domain attached but host config failed for %s: %s", clinic.slug, exc)
+
+    audit.log(
+        AuditAction.CUSTOM_DOMAIN_ATTACHED,
+        user=user,
+        clinic_id=clinic.id,
+        details={"domain": domain},
+    )
+    db.commit()
+
+    status_block = created.get("status") or {}
+    records = [
+        DnsRecord(
+            type="CNAME",
+            name=record.get("hostlabel") or domain,
+            value=record.get("requiredValue") or "",
+            status=record.get("status"),
+        )
+        for record in (status_block.get("dnsRecords") or [])
+    ]
+    token = status_block.get("verificationToken")
+    if token:
+        records.append(
+            DnsRecord(type="TXT", name=domain, value=token, status="PENDING")
+        )
+
+    return CustomDomainResponse(
+        clinic_id=str(clinic.id),
+        domain=domain,
+        records=records,
+        note=(
+            "Create every record below at the practice's DNS provider. The TXT "
+            "record is not optional — without it the domain stays pending, no "
+            "certificate is issued, and nothing appears to happen."
+        ),
+    )

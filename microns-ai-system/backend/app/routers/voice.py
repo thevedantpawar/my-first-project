@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import get_db
 from app.dependencies import get_audit, record_access_denial
+from app.ratelimit import webhook_limiter
 from app.schemas import VoiceActionResponse, VoiceEndRequest, VoiceInboundResponse
 from app.services.hipaa_audit import HIPAAAuditLogger
 from app.services.voice_service import VoiceService, extract_action
@@ -37,6 +38,11 @@ def verify_vapi_secret(
     times. In development an unset secret logs a warning and allows the call so
     the flow can be exercised with curl; in production it is mandatory.
     """
+    # Before the comparison, not after: an unlimited guessing rate is the thing
+    # that makes a shared secret weak, and compare_digest only removes the
+    # timing signal.
+    webhook_limiter.check(request)
+
     expected = settings.vapi_webhook_secret
     if not expected:
         if settings.is_production:

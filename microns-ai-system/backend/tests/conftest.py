@@ -67,10 +67,10 @@ def _clean_tables():
 @pytest.fixture(autouse=True)
 def _reset_rate_limiters():
     """The limiters are process-global; without this, test order changes results."""
-    from app.ratelimit import chat_limiter, qualify_limiter
+    from app.ratelimit import chat_limiter, qualify_limiter, webhook_limiter
 
-    for limiter in (chat_limiter, qualify_limiter):
-        limiter._hits.clear()
+    for limiter in (chat_limiter, qualify_limiter, webhook_limiter):
+        limiter.reset()
     yield
 
 

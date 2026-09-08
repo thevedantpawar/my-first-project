@@ -19,12 +19,20 @@ every query in a codebase that handles PHI, where a single missed `WHERE` clause
 returns one clinic's patients to another. Here the isolation is
 infrastructural rather than conditional: there is no query that *could* cross a
 tenant boundary, because there is no shared table to cross. It is also why none
-of the engine's 332 tests had to change.
+of the engine's existing tests had to change.
 
 What it costs: roughly $15–25/month of Railway per clinic, and provisioning has
 to be automated — which is most of what this service is.
 
 ---
+
+## Handing a clinic over
+
+`docs/HANDOVER.md` covers the whole flow: create, build, point a domain at it,
+reveal the sign-in details, back up the key. It also lists what does *not* work
+on day one — SMS needs A2P registration, bookings need calendar credentials —
+because "the texts are not going out yet" is a very different conversation
+before signature than after.
 
 ## Running it locally
 
@@ -40,7 +48,7 @@ provisioning is refused with a clear message. Without Stripe, signup works and
 nothing is billed. Both states are reported at boot and on `/health`.
 
 ```bash
-pytest -q                        # 81 tests
+pytest -q                        # 99 tests
 python -m app.cli migrate        # bring the schema to head
 python -m app.cli make-staff you@example.com
 ```
@@ -152,26 +160,16 @@ would add one is staged and has never been deployed. That database is on
 ephemeral disk: it holds its records only because the container has not been
 replaced. One restart, redeploy or host migration loses all of it.
 
-Deploying the staged patch restarts the container onto a *fresh, empty* volume,
-so applying it without a dump first causes exactly the loss it prevents.
+**The staged patch is project-wide and atomic.** Patch
+`512421b5-f1e8-47d9-8de1-45619c4a91fe` carries 19 changes spanning both
+services: Postgres2's slice mounts the volume, Backend3's changes a domain
+port. They cannot be applied separately. So the dashboard Deploy button that
+ships new code is also the button that restarts Postgres2 onto a fresh, empty
+volume — and nothing warns you. Take the dump before pressing anything.
 
-The order matters:
-
-1. **Dump first.** From the Railway dashboard or CLI, with the service running:
-   ```bash
-   railway link                     # select microns-ai-system
-   railway run --service Postgres2 pg_dump "$DATABASE_URL" > backend3-$(date +%F).sql
-   ```
-   Verify the file is non-empty and contains `COPY public.patients`.
-2. **Deploy the staged volume patch** on `Postgres2` (Railway dashboard →
-   Postgres2 → the staged changes → deploy). The container restarts onto an
-   empty volume.
-3. **Restore.**
-   ```bash
-   railway run --service Postgres2 psql "$DATABASE_URL" < backend3-YYYY-MM-DD.sql
-   ```
-4. **Verify** row counts match the dump, then confirm `Backend3`'s `/health`
-   reports `database: ok`.
+The full ordered operation, including clearing the demonstration records before
+`ENVIRONMENT=production` makes that impossible, is in
+[`../microns-ai-system/docs/BACKEND3-HARDENING.md`](../microns-ai-system/docs/BACKEND3-HARDENING.md).
 
 Take a dump on a schedule afterwards. Railway's volume backups cover the volume;
 they do not cover the window before it existed.

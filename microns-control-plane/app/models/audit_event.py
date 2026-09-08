@@ -33,6 +33,11 @@ class AuditAction:
     CLINIC_DEPROVISIONED = "clinic_deprovisioned"
     #: Reading a clinic's escrowed encryption key.
     KEY_REVEALED = "key_revealed"
+    #: Reading the sign-in credentials handed to a clinic.
+    CREDENTIALS_REVEALED = "credentials_revealed"
+    #: Rotating the staff token, which signs the clinic out everywhere.
+    CREDENTIALS_ROTATED = "credentials_rotated"
+    CUSTOM_DOMAIN_ATTACHED = "custom_domain_attached"
     SUBSCRIPTION_CHANGED = "subscription_changed"
     ACCESS_DENIED = "access_denied"
 

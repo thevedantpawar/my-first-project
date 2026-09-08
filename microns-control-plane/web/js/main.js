@@ -7,8 +7,8 @@
  * on every request is a bad way to find that out.
  */
 
-import { api } from "./api.js";
-import { el, mount } from "./dom.js";
+import { api, setUnauthorizedHandler } from "./api.js";
+import { el, mount, toast } from "./dom.js";
 import { go, render, route, setNotFound, start } from "./router.js";
 import { billing } from "./pages/billing.js";
 import { clinicDetail, clinicList, newClinic } from "./pages/clinics.js";
@@ -19,6 +19,23 @@ let user = null;
 
 /** Routes reachable without a session. Everything else redirects to sign-in. */
 const PUBLIC = new Set(["signin", "signup", "forgot", "reset"]);
+
+/**
+ * The server has told us the session is gone.
+ *
+ * Navigation here is hash-only, so nothing reloads and nothing re-reads the
+ * session after boot. Without this, a session that expires while the tab is
+ * open leaves every page rendering against a stale user and failing one
+ * request at a time, which reads as the app being broken rather than as
+ * having been signed out.
+ */
+setUnauthorizedHandler(() => {
+  if (user === null) return; // already handled; don't redirect twice
+  user = null;
+  toast("Your session expired. Please sign in again.", "error");
+  go("signin", { replace: true });
+  render().catch(() => {});
+});
 
 function requireSession(handler) {
   return async (context) => {

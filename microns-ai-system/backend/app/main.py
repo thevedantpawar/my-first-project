@@ -64,6 +64,49 @@ def _seed_demo_if_requested() -> None:
         db.close()
 
 
+def _clear_demo_if_requested() -> None:
+    """Remove the seeded demonstration records on boot, when asked.
+
+    The counterpart to ``_seed_demo_if_requested``, for the one moment it is
+    needed: promoting a demo deployment to a real clinic. ``demo_service.clear``
+    refuses to run once ``ENVIRONMENT`` is production — it cannot tell a
+    fictional patient from a real one, so it will not try — which means the
+    clearing has to happen while the deployment is still a demo. On a platform
+    with no shell, this flag is the only way to do that.
+
+    Unlike seeding, a failure here is logged as an error rather than shrugged
+    off. A demo that fails to seed serves an empty console; a clear that
+    silently fails leaves fictional patients in a database that is about to be
+    called production, and nothing downstream would notice.
+    """
+    if not settings.demo_clear_on_boot:
+        return
+
+    from app.database import SessionLocal
+    from app.services import demo_service
+
+    db = SessionLocal()
+    try:
+        state = demo_service.demo_state(db)
+        if not state["seeded"]:
+            logger.info("DEMO_CLEAR_ON_BOOT: nothing seeded, nothing to clear")
+            return
+        counts = demo_service.clear(db)
+        logger.warning("DEMO_CLEAR_ON_BOOT: removed demonstration records %s", counts)
+    except demo_service.DemoModeRefused as exc:
+        # Reached only if the environment is already production, in which case
+        # the records cannot be removed this way at all.
+        logger.error(
+            "DEMO_CLEAR_ON_BOOT refused: %s. Demo records must be cleared "
+            "before ENVIRONMENT is set to production.",
+            exc,
+        )
+    except Exception:
+        logger.exception("DEMO_CLEAR_ON_BOOT failed — demonstration records may remain")
+    finally:
+        db.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Refuses to boot in production with default or missing secrets.
@@ -73,6 +116,10 @@ async def lifespan(app: FastAPI):
         logger.warning("STARTUP: %s", warning)
 
     init_db()
+    # Clearing runs first. If both flags are somehow set, the intent that
+    # matters is the one that empties the database — seeding then finds the
+    # clinic already gone and does nothing, rather than the two fighting.
+    _clear_demo_if_requested()
     _seed_demo_if_requested()
     logger.info(
         "Microns AI System v%s ready (env=%s, booking=%s, llm=%s, sms=%s)",

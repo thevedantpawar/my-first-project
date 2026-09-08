@@ -339,3 +339,45 @@ def test_single_url_dispatcher_routes_by_message_type(client, vapi_headers):
     )
     assert ended.status_code == 200
     assert ended.json()["duration_seconds"] == 42
+
+
+# --------------------------------------------------------------------------- #
+# Rate limiting on the provider webhooks
+#
+# The shared secret is the real control; compare_digest removes the timing
+# signal but not the guessing rate. Without a limit, an attacker gets as many
+# attempts per minute as the network allows.
+# --------------------------------------------------------------------------- #
+def test_wrong_vapi_secret_is_eventually_rate_limited(client, monkeypatch):
+    from app.config import settings
+
+    monkeypatch.setattr(settings, "vapi_webhook_secret", "the-real-secret")
+
+    statuses = [
+        client.post(
+            "/voice/inbound",
+            json={"call_id": "c1", "caller_number": "+15550100"},
+            headers={"X-Vapi-Secret": f"guess-{n}"},
+        ).status_code
+        for n in range(140)
+    ]
+
+    assert 401 in statuses, "wrong secrets must be rejected"
+    assert 429 in statuses, "guessing must not be allowed at an unbounded rate"
+
+
+def test_the_limit_is_generous_enough_for_a_real_call(client, monkeypatch):
+    """A real assistant sends a handful of requests per call, not hundreds."""
+    from app.config import settings
+
+    monkeypatch.setattr(settings, "vapi_webhook_secret", "the-real-secret")
+
+    statuses = [
+        client.post(
+            "/voice/inbound",
+            json={"call_id": f"call-{n}", "caller_number": "+15550100"},
+            headers={"X-Vapi-Secret": "the-real-secret"},
+        ).status_code
+        for n in range(20)
+    ]
+    assert 429 not in statuses, "ordinary call traffic must not be throttled"

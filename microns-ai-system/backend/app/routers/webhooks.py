@@ -22,6 +22,7 @@ from app.database import get_db
 from app.dependencies import get_audit
 from app.models.appointment import Appointment, AppointmentSource, AppointmentStatus
 from app.models.lead import Lead, LeadStatus
+from app.ratelimit import webhook_limiter
 from app.routers.voice import _parse_end_payload, verify_vapi_secret
 from app.schemas import ActionResult
 from app.services.hipaa_audit import DataCategory, HIPAAAuditLogger
@@ -157,6 +158,8 @@ async def twilio_status(
 
     form = await request.form()
     params = {key: str(value) for key, value in form.items()}
+    webhook_limiter.check(request)
+
     signature = request.headers.get("X-Twilio-Signature")
     if not SMSService.validate_signature(str(request.url), params, signature):
         audit.log_denied(reason="invalid_twilio_signature", user_id="twilio")

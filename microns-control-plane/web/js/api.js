@@ -15,6 +15,26 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Called when the server says the session is gone.
+ *
+ * The app resolves who is signed in once, at boot, and navigation after that is
+ * hash-only — no reload, so nothing re-checks. A session that expires with the
+ * tab open would otherwise leave every page rendering against a user object
+ * that is no longer true, and failing one request at a time. The server is the
+ * only thing that knows, so its 401 is what drives the correction.
+ */
+let onUnauthorized = null;
+
+export function setUnauthorizedHandler(handler) {
+  onUnauthorized = handler;
+}
+
+//: The session endpoint answers "nobody" with a 200, so a 401 from it is a
+//: real failure rather than the ordinary signed-out case, and re-entering the
+//: handler from inside the handler's own check would loop.
+const SESSION_PATH = "/api/auth/session";
+
 async function request(method, path, body) {
   const response = await fetch(path, {
     method,
@@ -37,6 +57,9 @@ async function request(method, path, body) {
     // FastAPI validation errors arrive as a list of per-field objects.
     if (Array.isArray(detail)) {
       detail = detail.map((d) => d.msg || "Invalid value").join(". ");
+    }
+    if (response.status === 401 && path !== SESSION_PATH && onUnauthorized) {
+      onUnauthorized();
     }
     throw new ApiError(response.status, detail);
   }
@@ -64,6 +87,9 @@ export const api = {
   updateClinic: (id, payload) => request("PATCH", `/api/clinics/${id}`, payload),
   provision: (id) => request("POST", `/api/clinics/${id}/provision`),
   encryptionKey: (id) => request("GET", `/api/clinics/${id}/encryption-key`),
+  credentials: (id) => request("GET", `/api/clinics/${id}/credentials`),
+  rotateStaffToken: (id) => request("POST", `/api/clinics/${id}/rotate-staff-token`),
+  attachDomain: (id, domain) => request("POST", `/api/clinics/${id}/domain`, { domain }),
   confirmKeyBackup: (id) => request("POST", `/api/clinics/${id}/confirm-key-backup`),
 
   plans: () => request("GET", "/api/billing/plans"),
