@@ -20,6 +20,7 @@ from typing import Optional, Tuple
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.models.account import Account
 from app.models.subscription import Subscription, SubscriptionStatus
 from app.models.user import User
@@ -62,6 +63,26 @@ def find_user_by_email(db: Session, email: str) -> Optional[User]:
         .filter(func.lower(User.email) == normalise_email(email))
         .one_or_none()
     )
+
+
+def signup_allowed(db: Session) -> bool:
+    """Whether a stranger may create an account right now.
+
+    Two rules, and the order matters:
+
+    1. If there are no accounts at all, yes — always. Somebody has to be able
+       to get in the first time, and a closed door with nobody behind it is not
+       security, it is a deployment that can only be recovered by editing the
+       database by hand. This is also what makes turning the setting off safe to
+       ship: it cannot lock out an operator who has not signed up yet.
+
+    2. Otherwise, only if the operator has deliberately opened it. This service
+       holds the sealed copy of every clinic's encryption key. Self-serve is a
+       decision, not a default.
+    """
+    if settings.allow_public_signup:
+        return True
+    return db.query(Account.id).first() is None
 
 
 def create_account(

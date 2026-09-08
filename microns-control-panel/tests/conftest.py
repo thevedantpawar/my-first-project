@@ -23,6 +23,13 @@ os.environ.setdefault("MASTER_KEY", Fernet.generate_key().decode())
 
 # Argon2 at test cost. The production parameters are deliberately expensive,
 # and several hundred hashes at 64 MiB each would dominate the run.
+# Most tests need more than one account — the tenant-boundary tests exist to
+# prove one account cannot read another's clinic, which takes two. The
+# first-account exemption in accounts.signup_allowed would otherwise let exactly
+# one through. The gate itself is covered in test_signup_gate.py, which turns
+# this back off.
+os.environ.setdefault("ALLOW_PUBLIC_SIGNUP", "true")
+
 os.environ.setdefault("ARGON2_TIME_COST", "1")
 os.environ.setdefault("ARGON2_MEMORY_COST_KIB", "8192")
 os.environ.setdefault("ARGON2_PARALLELISM", "1")

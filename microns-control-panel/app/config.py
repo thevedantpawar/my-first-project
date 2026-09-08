@@ -35,6 +35,18 @@ class Settings(BaseSettings):
 
     # --- App ---------------------------------------------------------------
     environment: str = "development"
+
+    #: Whether anyone who reaches the sign-up page may create an account.
+    #:
+    #: Off, because this service holds the sealed copy of every clinic's
+    #: encryption key and is not a self-serve product. It becomes one by setting
+    #: this to true, deliberately.
+    #:
+    #: The first account is exempt whatever this says — see
+    #: ``accounts.signup_allowed``. A closed door with nobody inside is not
+    #: security, it is a service nobody can administer, and recovering from it
+    #: means editing the database by hand.
+    allow_public_signup: bool = False
     log_level: str = "INFO"
     app_name: str = "Microns Control Panel"
     public_base_url: str = "http://localhost:8080"
