@@ -31,6 +31,45 @@ const STEPS = [
   ["verify_health", "Checking it responds"],
 ];
 
+
+/**
+ * A copy-to-clipboard button that tells the truth when it cannot copy.
+ *
+ * navigator.clipboard is undefined on an insecure origin and rejects when the
+ * document is not focused. Both are ordinary — a silent no-op button leaves
+ * somebody clicking and wondering, so failure says what to do instead.
+ */
+function copyButton(label, getValue) {
+  return el("button.btn.btn--secondary", {
+    type: "button",
+    text: label,
+    onclick: async (event) => {
+      const button = event.currentTarget;
+      const value = getValue();
+      try {
+        if (!navigator.clipboard) throw new Error("clipboard unavailable");
+        await navigator.clipboard.writeText(value);
+        const previous = button.textContent;
+        button.textContent = "Copied";
+        setTimeout(() => {
+          button.textContent = previous;
+        }, 1500);
+      } catch {
+        toast("Could not copy automatically — select the text and copy it.", "error");
+      }
+    },
+  });
+}
+
+/** A revealed secret: the value, monospaced and selectable, plus a copy button. */
+function secretBlock(label, value, extraActions = []) {
+  return el("div.stack", {}, [
+    label ? el("div.tiny.muted", { text: label }) : null,
+    el("p.code", { text: value, tabindex: "0" }),
+    el("div.row", {}, [copyButton("Copy", () => value), ...extraActions]),
+  ]);
+}
+
 function statusBadge(clinic) {
   const tone = fmt.statusTone(clinic.status);
   return el(`span.badge${tone ? `.badge--${tone}` : ""}`, {
@@ -224,6 +263,178 @@ function stepsView(clinic) {
   );
 }
 
+
+
+/**
+ * Handing the clinic over.
+ *
+ * The staff token is what their front desk types in, so somebody has to be
+ * shown it eventually. Keeping it behind a deliberate click — rather than
+ * printing it on the page — is what makes the audit row mean something.
+ */
+function handoffSection(clinic) {
+  const host = el("div.stack");
+
+  async function reveal() {
+    clear(host);
+    host.append(el("p.small.muted", { text: "Retrieving…" }));
+    try {
+      const creds = await api.credentials(clinic.id);
+      clear(host);
+      host.append(
+        el("div.note.note--warn", { text: creds.warning, style: "margin: 0" }),
+        el("div.kv", {}, [
+          el("div.kv__row", {}, [
+            el("span.kv__key", { text: "Console" }),
+            el("a", {
+              href: creds.console_url,
+              text: creds.console_url,
+              target: "_blank",
+              rel: "noopener noreferrer",
+            }),
+          ]),
+        ]),
+        secretBlock("Staff sign-in token", creds.staff_api_token),
+        creds.widget_snippet
+          ? el("div.stack", {}, [
+              el("div.tiny.muted", {
+                text: "Chat widget — paste before </body> on the clinic's website",
+              }),
+              el("p.code", { text: creds.widget_snippet, tabindex: "0" }),
+              el("div.row", {}, [copyButton("Copy snippet", () => creds.widget_snippet)]),
+            ])
+          : null,
+      );
+    } catch (error) {
+      clear(host);
+      host.append(el("div.note.note--error", { text: error.message }));
+    }
+  }
+
+  async function rotate(event) {
+    const button = event.currentTarget;
+    button.disabled = true;
+    button.textContent = "Rotating…";
+    try {
+      const creds = await api.rotateStaffToken(clinic.id);
+      clear(host);
+      host.append(
+        el("div.note.note--ok", { text: creds.warning, style: "margin: 0" }),
+        secretBlock("New staff sign-in token", creds.staff_api_token),
+      );
+      toast("Token rotated. The old one no longer works.", "ok");
+    } catch (error) {
+      toast(error.message, "error");
+    } finally {
+      button.disabled = false;
+      button.textContent = "Rotate token";
+    }
+  }
+
+  return el("section.section", {}, [
+    el("div.section__head", {}, [el("h2", { text: "Hand over to the clinic" })]),
+    el("div.card", {}, [
+      el("p.small.muted", {
+        text:
+          "The clinic's front desk signs in to their console with a token. Show it " +
+          "once, hand it over through a password manager or in person, and rotate " +
+          "it if it ever goes somewhere it should not have.",
+      }),
+      el("div.row", { style: "margin-top: var(--s4)" }, [
+        el("button.btn.btn--primary", {
+          type: "button",
+          text: "Show sign-in details",
+          onclick: reveal,
+        }),
+        el("button.btn.btn--danger", {
+          type: "button",
+          text: "Rotate token",
+          onclick: rotate,
+        }),
+      ]),
+      host,
+    ]),
+  ]);
+}
+
+/** Pointing a domain the practice owns at this clinic. */
+function domainSection(clinic) {
+  const host = el("div.stack");
+
+  function renderRecords(payload) {
+    clear(host);
+    host.append(
+      el("div.note.note--accent", { text: payload.note, style: "margin: 0" }),
+      el(
+        "div.kv",
+        {},
+        payload.records.map((record) =>
+          el("div.kv__row", {}, [
+            el("span.kv__key", { text: `${record.type}  ${record.name}` }),
+            el("div.stack", {}, [
+              el("span.code", { text: record.value }),
+              record.status ? el("span.tiny.muted", { text: record.status }) : null,
+            ]),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  const input = field(
+    "Domain",
+    { placeholder: "care.yourclinic.com", autocomplete: "off" },
+    "A hostname the practice owns. Point it here before handing the clinic over — " +
+      "the console bookmark, the widget embed and the voice agent's server URL all " +
+      "hard-code whichever address they were given.",
+  );
+  const submit = el("button.btn.btn--primary", { type: "submit", text: "Attach domain" });
+
+  const form = el("form", {}, [input.node, el("div.row", {}, [submit])]);
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (submit.disabled) return;
+    const value = input.input.value.trim();
+    if (!value) {
+      toast("Enter a domain first.", "error");
+      input.input.focus();
+      return;
+    }
+    submit.disabled = true;
+    submit.textContent = "Attaching…";
+    try {
+      renderRecords(await api.attachDomain(clinic.id, value));
+      toast("Domain attached. Create the DNS records to finish.", "ok");
+    } catch (error) {
+      clear(host);
+      host.append(el("div.note.note--error", { text: error.message }));
+    } finally {
+      submit.disabled = false;
+      submit.textContent = "Attach domain";
+    }
+  });
+
+  return el("section.section", {}, [
+    el("div.section__head", {}, [
+      el("h2", { text: "Custom domain" }),
+      clinic.custom_domain
+        ? el("span.badge.badge--ok", { text: clinic.custom_domain })
+        : el("span.badge", { text: "Not set" }),
+    ]),
+    el("div.card", {}, [
+      clinic.custom_domain
+        ? el("p.small.muted", {
+            text:
+              `This clinic answers on ${clinic.custom_domain}. Attaching another ` +
+              "domain replaces it as the address people are given.",
+          })
+        : null,
+      form,
+      host,
+    ]),
+  ]);
+}
+
 async function revealKey(clinic, host) {
   clear(host);
   host.append(el("p.small.muted", { text: "Retrieving…" }));
@@ -234,18 +445,7 @@ async function revealKey(clinic, host) {
       el("div.note.note--warn", { text: payload.warning }),
       el("p.code", { text: payload.encryption_key }),
       el("div.row", {}, [
-        el("button.btn.btn--secondary", {
-          type: "button",
-          text: "Copy",
-          onclick: async () => {
-            try {
-              await navigator.clipboard.writeText(payload.encryption_key);
-              toast("Copied.", "ok");
-            } catch {
-              toast("Could not copy — select the key and copy it manually.", "error");
-            }
-          },
-        }),
+        copyButton("Copy", () => payload.encryption_key),
         clinic.key_backup_confirmed
           ? null
           : el("button.btn.btn--primary", {
@@ -339,12 +539,12 @@ export async function clinicDetail(user, id) {
           row("Phone", clinic.phone || "—"),
           row("Created", fmt.date(clinic.created_at)),
           row("Built", clinic.provisioned_at ? fmt.date(clinic.provisioned_at) : "Not yet"),
-          clinic.engine_url
+          clinic.public_url
             ? el("div.kv__row", {}, [
                 el("span.kv__key", { text: "Address" }),
                 el("a", {
-                  href: clinic.engine_url,
-                  text: clinic.engine_url,
+                  href: clinic.public_url,
+                  text: clinic.public_url,
                   target: "_blank",
                   rel: "noopener noreferrer",
                 }),
@@ -354,6 +554,11 @@ export async function clinicDetail(user, id) {
       ]),
     ]),
   );
+
+  // --- Handing over and addressing ---
+  if (clinic.status === "active") {
+    content.append(handoffSection(clinic), domainSection(clinic));
+  }
 
   // --- Encryption key ---
   if (clinic.status === "active" || clinic.encryption_key) {

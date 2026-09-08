@@ -76,6 +76,16 @@ class Clinic(Base):
     railway_volume_id = Column(String(64), nullable=True)
     engine_url = Column(String(500), nullable=True)
 
+    #: A domain the practice owns, pointed at this clinic's engine.
+    #:
+    #: The Railway-generated hostname works, but it is not something to put in
+    #: front of a clinic's patients or staff — and it changes if the service is
+    #: ever recreated, which would silently break the console bookmark, the
+    #: chat widget embed and the VAPI server URL all at once. A domain the
+    #: practice controls survives that.
+    custom_domain = Column(String(253), nullable=True, unique=True, index=True)
+    railway_custom_domain_id = Column(String(64), nullable=True)
+
     # --- Sealed secrets ----------------------------------------------------
     #
     # Encrypted at rest under the control plane's master key. encryption_key in
@@ -130,9 +140,23 @@ class Clinic(Base):
         return self.status in ClinicStatus.LIVE
 
     @property
+    def public_url(self) -> str | None:
+        """The address to give people: the custom domain when there is one."""
+        if self.custom_domain:
+            return f"https://{self.custom_domain}"
+        return self.engine_url
+
+    @property
     def console_url(self) -> str | None:
         """Where this clinic's staff sign in to their own console."""
-        return f"{self.engine_url.rstrip('/')}/console" if self.engine_url else None
+        base = self.public_url
+        return f"{base.rstrip('/')}/console" if base else None
+
+    @property
+    def widget_url(self) -> str | None:
+        """The embeddable chat widget's script source."""
+        base = self.public_url
+        return f"{base.rstrip('/')}/widget/microns-chat.js" if base else None
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
         return f"<Clinic {self.slug} {self.status}>"

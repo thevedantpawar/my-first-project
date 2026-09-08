@@ -79,6 +79,15 @@
 .cards { display: grid; gap: var(--s4); }
 .cards--2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
 
+/* A grid or flex child defaults to min-width:auto, which means it refuses to
+ * shrink below its content — so one long unbroken string (a clinic name
+ * somebody pasted, a long domain, an email) widens the column and pushes the
+ * whole page sideways. These two rules are what stop user-supplied text from
+ * deciding the layout. */
+.cards > *,
+.clinic-card > *,
+.plans > * { min-width: 0; }
+
 .clinic-card { display: flex; flex-direction: column; gap: var(--s3); }
 .clinic-card__top {
   display: flex;
@@ -86,8 +95,17 @@
   justify-content: space-between;
   gap: var(--s3);
 }
-.clinic-card__name { font-weight: 650; letter-spacing: -0.01em; }
-.clinic-card__slug { font-size: var(--size-tiny); color: var(--text-faint); font-family: var(--mono); }
+.clinic-card__name {
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+.clinic-card__slug {
+  font-size: var(--size-tiny);
+  color: var(--text-faint);
+  font-family: var(--mono);
+  overflow-wrap: anywhere;
+}
 .clinic-card__actions { display: flex; gap: var(--s2); flex-wrap: wrap; }
 
 /* --- Badges --------------------------------------------------------------- */
@@ -120,7 +138,11 @@
   font-size: var(--size-small);
 }
 .kv__row:last-child { border-bottom: 0; }
-.kv__key { color: var(--text-muted); }
+.kv__key { color: var(--text-muted); overflow-wrap: anywhere; }
+/* Values are user or provider supplied — a DNS target, an engine URL, a
+ * clinic's contact address — and none of them are guaranteed to contain a
+ * space to break at. */
+.kv__row > * { min-width: 0; overflow-wrap: anywhere; }
 .code {
   font-family: var(--mono);
   font-size: var(--size-tiny);

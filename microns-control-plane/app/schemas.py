@@ -103,7 +103,10 @@ class ClinicResponse(BaseModel):
     contact_email: Optional[str]
     phone: Optional[str]
     engine_url: Optional[str]
+    custom_domain: Optional[str] = None
+    public_url: Optional[str] = None
     console_url: Optional[str]
+    widget_url: Optional[str] = None
     integrations: Dict[str, Any]
     key_backup_confirmed: bool
     provisioned_at: Optional[datetime]
@@ -112,6 +115,42 @@ class ClinicResponse(BaseModel):
 
 class ClinicDetailResponse(ClinicResponse):
     provisioning: List[ProvisioningEventResponse] = []
+
+
+class CustomDomainRequest(BaseModel):
+    domain: str = Field(min_length=4, max_length=253)
+
+
+class DnsRecord(BaseModel):
+    type: str
+    name: str
+    value: str
+    status: Optional[str] = None
+
+
+class CustomDomainResponse(BaseModel):
+    """What the practice's DNS administrator needs to do."""
+
+    clinic_id: str
+    domain: str
+    records: List[DnsRecord]
+    note: str
+
+
+class ClinicCredentialsResponse(BaseModel):
+    """Everything a clinic needs to start using their engine.
+
+    Its own model, like the encryption key's, so a field can never be added to
+    the shared clinic schema and start handing out the staff token by accident.
+    Every retrieval is audited.
+    """
+
+    clinic_id: str
+    clinic_name: str
+    console_url: str
+    staff_api_token: str
+    widget_snippet: str
+    warning: str
 
 
 class EncryptionKeyResponse(BaseModel):
