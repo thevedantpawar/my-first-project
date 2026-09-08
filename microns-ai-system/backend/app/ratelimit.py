@@ -41,6 +41,16 @@ class SlidingWindowLimiter:
                     del self._hits[stale_key]
             return True
 
+    def reset(self) -> None:
+        """Clear every window.
+
+        The limiters are process-global, so without this a test that exhausts
+        one makes every later test in the run fail with a 429 — a failure with
+        no relationship to the code under test.
+        """
+        with self._lock:
+            self._hits.clear()
+
     def check(self, request: Request, *, key: str | None = None) -> None:
         identifier = key or _client_key(request)
         if not self.allow(identifier):
@@ -61,3 +71,13 @@ def _client_key(request: Request) -> str:
 chat_limiter = SlidingWindowLimiter(limit=30, window_seconds=60)
 #: Qualification submissions are heavier (they can trigger a booking).
 qualify_limiter = SlidingWindowLimiter(limit=10, window_seconds=60)
+
+#: Provider webhooks — VAPI and Twilio.
+#:
+#: These authenticate by shared secret and by signature, which is the real
+#: control. The limit is here because a secret compared in constant time can
+#: still be guessed at whatever rate the network allows, and because a
+#: signature-valid replay flood is otherwise unbounded. A real assistant sends
+#: a handful of requests per call; 120 a minute is far above that and far below
+#: useful for guessing.
+webhook_limiter = SlidingWindowLimiter(limit=120, window_seconds=60)
