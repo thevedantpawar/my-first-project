@@ -351,7 +351,19 @@
   color: var(--text-on-accent);
 }
 
-.chip__count { font-variant-numeric: tabular-nums; opacity: 0.72; }
+/* The count is quieter than the label, but done with colour rather than
+ * opacity. Opacity composites against whatever is behind the element, so one
+ * value has to work over both the white chip and the accent-filled selected
+ * one — and at 0.72 it met neither, landing at 4.14:1 on white and 3.65:1 on
+ * the accent where WCAG AA wants 4.5:1. Two explicit colours are legible in
+ * both states and keep the hierarchy. */
+.chip__count {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+.chip[aria-pressed="true"] .chip__count { color: var(--text-on-accent); }
+.chip:hover .chip__count { color: inherit; }
 
 .filter-bar { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; }
 
