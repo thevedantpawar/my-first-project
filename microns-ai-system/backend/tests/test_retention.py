@@ -248,3 +248,93 @@ def test_dashboard_is_aggregate_only(db, service, patient):
     body = str(service.dashboard(days=30))
     assert "Jane" not in body
     assert "5551234567" not in body
+
+
+# --------------------------------------------------------------------------- #
+# The reminder is claimed before it is sent
+# --------------------------------------------------------------------------- #
+def test_a_crash_after_sending_does_not_text_the_patient_twice(db, service, patient, monkeypatch):
+    """The marker has to be committed before the send, not after.
+
+    Marking afterwards looks equivalent and is not: the text goes out, the
+    commit fails or the process dies, and the next run finds no marker and
+    sends it again. Duplicate reminders are the one failure here a patient
+    actually notices, and the one with regulatory weight.
+    """
+    appointment = make_appointment(db, patient)
+
+    sent = []
+    real_send = service.sms.send
+
+    def exploding_send(**kwargs):
+        result = real_send(**kwargs)
+        sent.append(kwargs)
+        raise RuntimeError("process died after the text went out")
+
+    monkeypatch.setattr(service.sms, "send", exploding_send)
+    with pytest.raises(RuntimeError):
+        service.send_reminder(appointment.id, kind="24h")
+
+    assert len(sent) == 1
+
+    # A fresh service, as the next scheduled run would be.
+    db.rollback()
+    monkeypatch.setattr(service.sms, "send", real_send)
+    second = service.send_reminder(appointment.id, kind="24h")
+
+    assert second["status"] == "skipped", second
+    assert second["reason"] == "already_sent"
+    assert len(sent) == 1, "the patient must not be texted a second time"
+
+
+def test_a_transient_send_failure_is_retried(db, service, patient, monkeypatch):
+    """A claim that never turned into a message has to be released.
+
+    Otherwise one Twilio blip silently costs that appointment its reminder.
+    """
+    from app.services.sms_service import SMSResult
+
+    appointment = make_appointment(db, patient)
+
+    monkeypatch.setattr(
+        service.sms,
+        "send",
+        lambda **kw: SMSResult(delivered=False, status="failed", reason="ConnectionError"),
+    )
+    first = service.send_reminder(appointment.id, kind="24h")
+    assert first["status"] == "failed"
+
+    db.expire_all()
+    assert db.get(Appointment, appointment.id).reminder_24h_sent_at is None, (
+        "a failed send must not leave the reminder marked as sent"
+    )
+
+    monkeypatch.setattr(
+        service.sms,
+        "send",
+        lambda **kw: SMSResult(delivered=True, status="sent", message_sid="SM1"),
+    )
+    second = service.send_reminder(appointment.id, kind="24h")
+    assert second["status"] == "sent", second
+
+
+def test_a_suppressed_message_is_not_retried_forever(db, service, patient, monkeypatch):
+    """No consent is a decision, not an outage.
+
+    Re-deciding it every run is how somebody who opted out gets texted anyway
+    the moment consent is misread.
+    """
+    from app.services.sms_service import SMSResult
+
+    appointment = make_appointment(db, patient)
+    monkeypatch.setattr(
+        service.sms,
+        "send",
+        lambda **kw: SMSResult(delivered=False, status="suppressed", reason="no_consent"),
+    )
+
+    service.send_reminder(appointment.id, kind="24h")
+    db.expire_all()
+    assert db.get(Appointment, appointment.id).reminder_24h_sent_at is not None
+
+    assert service.send_reminder(appointment.id, kind="24h")["status"] == "skipped"
