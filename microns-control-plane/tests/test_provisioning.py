@@ -23,6 +23,7 @@ from app.models.clinic import Clinic, ClinicStatus
 from app.models.provisioning_event import EventOutcome, ProvisioningEvent, ProvisioningStep
 from app.services.provisioning import (
     POSTGRES_DATA_PATH,
+    POSTGRES_VOLUME_MOUNT,
     Provisioner,
     ProvisioningError,
     resume,
@@ -156,7 +157,7 @@ def test_the_volume_is_mounted_where_postgres_actually_writes(provisioned):
     """Mounted anywhere else, the database still writes to ephemeral disk."""
     _, fake = provisioned
     call = next(kwargs for name, kwargs in fake.calls if name == "create_volume")
-    assert call["mount_path"] == POSTGRES_DATA_PATH == "/var/lib/postgresql/data"
+    assert call["mount_path"] == POSTGRES_VOLUME_MOUNT == "/var/lib/postgresql/data"
 
 
 def test_the_volume_is_attached_to_the_database_not_the_engine(provisioned):
@@ -165,11 +166,31 @@ def test_the_volume_is_attached_to_the_database_not_the_engine(provisioned):
     assert call["service_id"] == clinic.railway_postgres_service_id
 
 
-def test_pgdata_points_at_the_mount_path(provisioned):
-    """PGDATA and the mount path must agree, or the volume holds nothing."""
+def test_pgdata_is_a_subdirectory_of_the_mount_not_the_mount_itself(provisioned):
+    """The two must not be the same path, and this is why.
+
+    Railway volumes arrive containing a ``lost+found`` directory, and ``initdb``
+    refuses to initialise into a directory that is not empty. Setting PGDATA to
+    the mount point produces a Postgres that crash-loops with "directory exists
+    but is not empty" and never starts at all — found by deploying exactly that
+    and watching it fail, not by reading.
+
+    PGDATA still has to be *under* the mount, or the data is back on ephemeral
+    disk and the volume is decoration.
+    """
     _, fake = provisioned
     call = next(kwargs for name, kwargs in fake.calls if name == "create_service_from_image")
-    assert call["variables"]["PGDATA"] == POSTGRES_DATA_PATH
+    pgdata = call["variables"]["PGDATA"]
+
+    assert pgdata != POSTGRES_VOLUME_MOUNT, (
+        "PGDATA must not be the volume mount point — initdb refuses to "
+        "initialise into it because of lost+found, and the container crash-loops"
+    )
+    assert pgdata.startswith(POSTGRES_VOLUME_MOUNT + "/"), (
+        "PGDATA must still live on the volume, or the records do not survive a "
+        "restart and the volume achieves nothing"
+    )
+    assert pgdata == POSTGRES_DATA_PATH
 
 
 # --------------------------------------------------------------------------- #
@@ -252,6 +273,57 @@ def test_the_database_url_is_a_reference_not_a_literal(provisioned):
     """A copied DSN goes stale the moment the Postgres password rotates."""
     _, fake = provisioned
     assert fake.variables["DATABASE_URL"] == "${{Postgres.DATABASE_URL}}"
+
+
+def test_the_reference_the_engine_is_given_actually_points_at_something(provisioned):
+    """A reference to a variable that does not exist is not an error.
+
+    Railway resolves ``${{Postgres.DATABASE_URL}}`` by looking for a variable
+    of that name on the Postgres service. If there is none it does not fail the
+    deploy — it passes the reference through verbatim, and the engine hands the
+    literal string to SQLAlchemy and crash-loops on "Could not parse SQLAlchemy
+    URL from given URL string", with a healthy database sitting next to it.
+
+    Railway's Postgres *template* publishes that variable. The bare image this
+    provisioner pins does not, so the provisioner has to publish it — which is
+    the half the previous test cannot see, because it only checks the pointer.
+    """
+    _, fake = provisioned
+    call = next(kwargs for name, kwargs in fake.calls if name == "create_service_from_image")
+    published = call["variables"]
+
+    assert "DATABASE_URL" in published, (
+        "the engine references ${{Postgres.DATABASE_URL}}, so the Postgres "
+        "service has to define it — the bare postgres image does not"
+    )
+
+    dsn = published["DATABASE_URL"]
+    assert dsn.startswith("postgresql://"), dsn
+    # The credentials stay references, so rotating the password on the database
+    # does not leave a second, stale copy behind in the DSN.
+    assert "${{POSTGRES_PASSWORD}}" in dsn
+    assert published["POSTGRES_PASSWORD"] not in dsn, "the password must not be copied"
+    # Private networking: the engine should not reach its own database over the
+    # public internet, and the public domain costs egress.
+    assert "${{RAILWAY_PRIVATE_DOMAIN}}" in dsn
+    assert ":5432/" in dsn
+
+
+def test_the_generated_postgres_password_needs_no_url_escaping(provisioned):
+    """The DSN interpolates the password unescaped, so it has to be safe.
+
+    ``@`` or ``:`` in a password silently changes which host and port the DSN
+    names. The tokens are ``secrets.token_urlsafe``, so this holds — but it
+    holds by construction rather than by accident, and the DSN depends on it.
+    """
+    _, fake = provisioned
+    call = next(kwargs for name, kwargs in fake.calls if name == "create_service_from_image")
+    password = call["variables"]["POSTGRES_PASSWORD"]
+
+    assert password
+    assert not set(password) - set(
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
+    ), "a password outside the URL-safe alphabet would need escaping in the DSN"
 
 
 def test_the_engine_runs_a_single_replica(provisioned):
