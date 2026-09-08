@@ -220,7 +220,7 @@ class Provisioner:
 
         if not self.client.is_configured:
             raise ProvisioningError(
-                "Railway is not configured on this control plane. Set "
+                "Railway is not configured on this control panel. Set "
                 "RAILWAY_API_TOKEN and RAILWAY_WORKSPACE_ID."
             )
 

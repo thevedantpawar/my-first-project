@@ -1,4 +1,4 @@
-"""The control plane's migration chain must match its models.
+"""The control panel's migration chain must match its models.
 
 Same guard as the engine's, for the same reason: PostgreSQL deployments run the
 Alembic chain and the test suite runs ``create_all``, so without this nothing

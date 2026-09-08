@@ -42,7 +42,7 @@ from app.services.notifier import notify_voice_handoff
 from app.services import pricing_service
 from app.services.patient_service import find_by_phone, get_or_create_patient
 from app.services.sms_service import SMSService
-from app.utils import format_appointment_time, parse_datetime, utcnow
+from app.utils import format_appointment_time, parse_datetime, parse_wall_clock, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +53,25 @@ DEFAULT_PRICE_LIST: dict[str, dict[str, Any]] = {
     "facial": {"label": "Signature facial", "from": 150, "unit": "per session", "typical": "$150-$250"},
     "peel": {"label": "Chemical peel", "from": 175, "unit": "per session", "typical": "$175-$350"},
     "consultation": {"label": "Consultation", "from": 0, "unit": "", "typical": "Complimentary"},
+}
+
+
+#: What the agent says when a time cannot be booked. Each one ends by asking for
+#: something the agent can act on, because "that does not work" with no next
+#: step is where a call gets abandoned.
+_BOOKING_REFUSALS = {
+    "past": (
+        "That time's already gone by — did you mean a day this week? "
+        "I can check what's open."
+    ),
+    "closed": (
+        "We're closed then. We're open Monday through Saturday during the day — "
+        "would another time work?"
+    ),
+    "taken": (
+        "That one's just been taken, sorry. Let me find you the next closest — "
+        "what sort of time suits you?"
+    ),
 }
 
 
@@ -220,7 +239,9 @@ class VoiceService:
         confirmed appointment on the calendar.
         """
         service = _normalise_service(parameters.get("service"))
-        start = parse_datetime(parameters.get("slot_start") or parameters.get("start"))
+        # A caller names a wall-clock time, not an instant in UTC — see
+        # parse_wall_clock. parse_datetime here books the clinic hours early.
+        start = parse_wall_clock(parameters.get("slot_start") or parameters.get("start"))
         phone = parameters.get("patient_phone") or parameters.get("phone")
         name = parameters.get("patient_name") or parameters.get("name")
 
@@ -239,6 +260,20 @@ class VoiceService:
                 "speech": "What's the best phone number for your confirmation text?",
             }
 
+        booking = get_booking_service(self.db)
+
+        # Nothing applied the availability rules on the way *in*. A parsed
+        # timestamp went straight to a row, so the agent could put two callers
+        # in the same slot, book 3am on a Sunday, or book a time that had
+        # already passed — and every one of those sounded to the caller like a
+        # successful booking.
+        refusal = booking.check_bookable(start)
+        if refusal:
+            return {
+                "result": {"error": refusal, "requested": start.isoformat() + "Z"},
+                "speech": _BOOKING_REFUSALS[refusal],
+            }
+
         patient, _ = get_or_create_patient(
             self.db,
             phone=normalise_identifier(phone),
@@ -248,7 +283,6 @@ class VoiceService:
             user_id="voice-agent",
         )
 
-        booking = get_booking_service(self.db)
         reference = booking.create_booking(
             service=service,
             start=start,
@@ -350,7 +384,7 @@ class VoiceService:
         self, *, parameters: dict[str, Any], call_id: Optional[str]
     ) -> dict[str, Any]:
         appointment = self._resolve_appointment(parameters, call_id)
-        new_start = parse_datetime(parameters.get("new_slot_start") or parameters.get("slot_start"))
+        new_start = parse_wall_clock(parameters.get("new_slot_start") or parameters.get("slot_start"))
         if appointment is None:
             return {
                 "result": {"error": "not_found"},
@@ -360,6 +394,19 @@ class VoiceService:
             return {
                 "result": {"error": "missing_slot"},
                 "speech": "What day and time would you like to move it to?",
+            }
+
+        # Same rules as a new booking, except this appointment must not be
+        # found to collide with itself.
+        refusal = get_booking_service(self.db).check_bookable(
+            new_start,
+            appointment.duration_minutes,
+            ignore_appointment_id=str(appointment.id),
+        )
+        if refusal:
+            return {
+                "result": {"error": refusal, "requested": new_start.isoformat() + "Z"},
+                "speech": _BOOKING_REFUSALS[refusal],
             }
 
         old_start = appointment.scheduled_for

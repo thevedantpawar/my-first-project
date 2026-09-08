@@ -276,7 +276,7 @@ def reveal_encryption_key(
         warning=(
             "This key decrypts every patient record in this clinic. Store it in a "
             "password manager or a safe, never in email or chat. If it is lost and "
-            "this control plane is lost, the clinic's records cannot be recovered."
+            "this control panel is lost, the clinic's records cannot be recovered."
         ),
     )
 

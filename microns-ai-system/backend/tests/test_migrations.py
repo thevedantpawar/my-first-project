@@ -178,7 +178,7 @@ def test_migrating_at_startup_does_not_silence_the_engine(tmp_path):
     startup on Railway, so calling it there disables every logger already
     configured — for the rest of the process's life.
 
-    That matters more here than in the control plane: this is the service
+    That matters more here than in the control panel: this is the service
     handling patient records, and a clinic whose engine stops logging after its
     first boot is one nobody can operate. The symptom is not an error either —
     the deploy log shows the boot lines, the migrations, and then silence, which

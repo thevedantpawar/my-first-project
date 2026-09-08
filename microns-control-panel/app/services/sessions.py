@@ -29,6 +29,10 @@ logger = logging.getLogger(__name__)
 
 #: Namespaces the signature, so a token minted for another purpose under the
 #: same secret cannot be replayed as a session.
+# Deliberately still says "control-plane": this is a signing salt, not a label.
+# Changing it invalidates every session cookie in existence, so it does not get
+# to follow a rename. The version suffix is how it would change, if it ever
+# needed to.
 _SALT = "microns.control-plane.session.v1"
 
 

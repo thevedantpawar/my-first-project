@@ -1,4 +1,4 @@
-"""FastAPI entry point for the Microns control plane."""
+"""FastAPI entry point for the Microns control panel."""
 
 from __future__ import annotations
 
@@ -69,7 +69,7 @@ async def lifespan(app: FastAPI):
 
     init_db()
     logger.info(
-        "Microns Control Plane v%s ready (env=%s, railway=%s, stripe=%s)",
+        "Microns Control Panel v%s ready (env=%s, railway=%s, stripe=%s)",
         __version__,
         settings.environment,
         "configured" if settings.railway_enabled else "not configured",

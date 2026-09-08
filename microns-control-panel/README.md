@@ -1,4 +1,4 @@
-# Microns Control Plane
+# Microns Control Panel
 
 Accounts, billing, and per-clinic provisioning of the Microns revenue engine.
 
@@ -176,7 +176,7 @@ they do not cover the window before it existed.
 
 Separately, `Backend3` runs with `ENVIRONMENT=demo`, which disables the engine's
 production guards — see the audit notes. That is correct for a sales demo and
-wrong for real patient data. Clinics built by this control plane are never in
+wrong for real patient data. Clinics built by this control panel are never in
 that state.
 
 ---

@@ -1,4 +1,4 @@
-"""Control-plane models and the custom column types they share."""
+"""Control-panel models and the custom column types they share."""
 
 from __future__ import annotations
 
@@ -69,7 +69,7 @@ class JSONColumn(TypeDecorator):
 
 
 class SealedString(TypeDecorator):
-    """A secret, encrypted at rest under the control plane's master key.
+    """A secret, encrypted at rest under the control panel's master key.
 
     Reads and writes look like an ordinary string column; the sealing happens
     here so no caller can forget it. See ``services/crypto.py`` for why these

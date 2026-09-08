@@ -85,6 +85,69 @@ class BookingAdapter(ABC):
     def __init__(self, db: Session) -> None:
         self.db = db
 
+    def _booked_windows(
+        self, days_ahead: int, exclude_appointment_id: Optional[str] = None
+    ) -> list[tuple[datetime, datetime]]:
+        """Windows already taken, from this engine's own appointments.
+
+        On the base class rather than the internal adapter because the
+        Appointment row is written whichever adapter is in use, so it is the one
+        source of truth every adapter can check against.
+
+        ``exclude_appointment_id`` is for a reschedule: an appointment must not
+        be found to collide with itself.
+        """
+        rows = (
+            self.db.execute(
+                select(Appointment).where(
+                    Appointment.status.in_(AppointmentStatus.ACTIVE),
+                    Appointment.scheduled_for >= utcnow() - timedelta(hours=4),
+                    Appointment.scheduled_for <= utcnow() + timedelta(days=days_ahead + 1),
+                )
+            )
+            .scalars()
+            .all()
+        )
+        return [
+            (row.scheduled_for, row.scheduled_for + timedelta(minutes=row.duration_minutes or 30))
+            for row in rows
+            if exclude_appointment_id is None or str(row.id) != str(exclude_appointment_id)
+        ]
+
+    def check_bookable(
+        self, start: datetime, duration_minutes: Optional[int] = None,
+        ignore_appointment_id: Optional[str] = None,
+    ) -> Optional[str]:
+        """Why this time cannot be booked, or ``None`` if it can.
+
+        ``get_available_slots`` already knows the rules — opening hours, Mon-Sat,
+        not overlapping something booked — but nothing applied them on the way
+        *in*. A booking went from a parsed timestamp straight to a row, so the
+        agent could put two people in the same slot, book 3am on a Sunday, or
+        book a time that had already passed, and every one of those looked like a
+        successful booking to the caller.
+
+        Returns a reason code the caller turns into something speakable rather
+        than raising, because the agent's job at that point is to offer another
+        time, not to apologise for an error.
+        """
+        duration = duration_minutes or settings.appointment_slot_minutes
+
+        if start <= utcnow():
+            return "past"
+
+        local = to_clinic_time(start)
+        if not (settings.clinic_open_hour <= local.hour < settings.clinic_close_hour):
+            return "closed"
+        if local.weekday() >= 6:  # Sunday
+            return "closed"
+
+        end = start + timedelta(minutes=duration)
+        days_ahead = max((start - utcnow()).days + 1, 1)
+        if _overlaps(start, end, self._booked_windows(days_ahead, ignore_appointment_id)):
+            return "taken"
+        return None
+
     @abstractmethod
     def get_available_slots(
         self, *, service: str, days_ahead: int = 7, limit: int = 12
@@ -143,23 +206,6 @@ class InternalBookingAdapter(BookingAdapter):
                 cursor = end
 
         return slots
-
-    def _booked_windows(self, days_ahead: int) -> list[tuple[datetime, datetime]]:
-        rows = (
-            self.db.execute(
-                select(Appointment).where(
-                    Appointment.status.in_(AppointmentStatus.ACTIVE),
-                    Appointment.scheduled_for >= utcnow() - timedelta(hours=4),
-                    Appointment.scheduled_for <= utcnow() + timedelta(days=days_ahead + 1),
-                )
-            )
-            .scalars()
-            .all()
-        )
-        return [
-            (row.scheduled_for, row.scheduled_for + timedelta(minutes=row.duration_minutes or 30))
-            for row in rows
-        ]
 
     def create_booking(
         self,

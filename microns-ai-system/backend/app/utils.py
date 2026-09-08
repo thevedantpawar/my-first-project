@@ -12,6 +12,7 @@ rule above is worth more than per-call cleverness.
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -44,6 +45,37 @@ def parse_datetime(value) -> Optional[datetime]:
         return to_utc_naive(datetime.fromisoformat(text))
     except ValueError:
         return None
+
+
+#: An explicit UTC offset or ``Z`` at the end of an ISO-8601 string.
+#: Four digits are required, so a bare date's ``-09-15`` does not match.
+_EXPLICIT_OFFSET = re.compile(r"(?:Z|[+-]\d{2}:?\d{2})$")
+
+
+def parse_wall_clock(value) -> Optional[datetime]:
+    """Parse a time a human named out loud, into naive UTC.
+
+    Identical to :func:`parse_datetime` except in what a *missing* timezone
+    means. A caller who asks for "two o'clock" means two o'clock where the
+    clinic is, and a voice agent transcribing that has no offset to attach.
+    Treating it as UTC books an America/New_York clinic four hours early — the
+    caller asks for 2pm, the appointment lands at 10am — and nothing about the
+    stored record looks wrong afterwards. It is found when somebody arrives.
+
+    An explicit offset is still honoured. The engine's own slot values carry
+    one, so echoing a slot back has to round-trip exactly rather than being
+    shifted a second time.
+    """
+    if value is None or value == "":
+        return None
+    if isinstance(value, datetime):
+        return from_clinic_time(value) if value.tzinfo is None else to_utc_naive(value)
+
+    text = str(value).strip()
+    parsed = parse_datetime(text)
+    if parsed is None:
+        return None
+    return parsed if _EXPLICIT_OFFSET.search(text) else from_clinic_time(parsed)
 
 
 def clinic_tz() -> ZoneInfo:
