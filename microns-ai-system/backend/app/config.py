@@ -148,6 +148,20 @@ class Settings(BaseSettings):
     #: has: it is a no-op in production, and a no-op when data already exists.
     demo_seed_on_boot: bool = False
 
+    #: Remove the seeded demonstration records at startup.
+    #:
+    #: The counterpart to ``demo_seed_on_boot``, and it exists for a narrower
+    #: reason. A demo deployment that is being promoted to a real clinic has to
+    #: clear its fictional patients *before* ``ENVIRONMENT`` becomes production,
+    #: because ``demo_service.clear`` refuses to run in production — deliberately,
+    #: since the guard cannot tell a fictional patient from a real one. On a
+    #: platform with no shell there is otherwise no way to do that, and the
+    #: fictional records become permanent residents of a clinical database.
+    #:
+    #: Set it, deploy once, confirm the console is empty, then unset it and set
+    #: the production configuration.
+    demo_clear_on_boot: bool = False
+
     # --- Retention tuning --------------------------------------------------
     reactivation_days: int = 45
     review_request_delay_days: int = 5

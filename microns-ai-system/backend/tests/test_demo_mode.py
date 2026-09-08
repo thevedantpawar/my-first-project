@@ -18,6 +18,7 @@ from __future__ import annotations
 import pytest
 from sqlalchemy import func, select
 
+from app.config import settings
 from app.models.appointment import Appointment, AppointmentSource, AppointmentStatus
 from app.models.lead import Lead
 from app.models.patient import Patient
@@ -316,3 +317,97 @@ def test_boot_seeding_is_refused_in_production_without_crashing(db, monkeypatch)
     _seed_demo_if_requested()  # must not raise
 
     assert db.execute(select(func.count(Patient.id))).scalar_one() == 0
+
+
+# --------------------------------------------------------------------------- #
+# Clearing on boot
+#
+# The flag exists for one moment: promoting a demo deployment to a real clinic.
+# demo_service.clear refuses once ENVIRONMENT is production, so the fictional
+# records have to go while the deployment is still a demo — and on a platform
+# with no shell, this is the only way to do it.
+# --------------------------------------------------------------------------- #
+def test_clear_on_boot_removes_the_seeded_clinic(db, monkeypatch):
+    from app.main import _clear_demo_if_requested
+    from app.services import demo_service
+
+    demo_service.seed(db)
+    assert demo_service.demo_state(db)["seeded"] is True
+
+    monkeypatch.setattr(settings, "demo_clear_on_boot", True)
+    _clear_demo_if_requested()
+
+    assert demo_service.demo_state(db)["seeded"] is False
+
+
+def test_clear_on_boot_does_nothing_when_the_flag_is_off(db, monkeypatch):
+    from app.main import _clear_demo_if_requested
+    from app.services import demo_service
+
+    demo_service.seed(db)
+    monkeypatch.setattr(settings, "demo_clear_on_boot", False)
+    _clear_demo_if_requested()
+
+    assert demo_service.demo_state(db)["seeded"] is True
+
+
+def test_clear_on_boot_is_a_no_op_when_nothing_is_seeded(db, monkeypatch):
+    """Booting repeatedly with the flag set must not error."""
+    from app.main import _clear_demo_if_requested
+
+    monkeypatch.setattr(settings, "demo_clear_on_boot", True)
+    _clear_demo_if_requested()
+    _clear_demo_if_requested()  # must not raise
+
+
+def test_clear_on_boot_never_touches_a_real_patient(db, monkeypatch):
+    """The whole safety argument: it removes demo rows and only demo rows.
+
+    A real clinic record looks untagged in exactly the way an unseeded row
+    does, so clearing identifies demo rows by their tag rather than by
+    elimination.
+    """
+    from app.main import _clear_demo_if_requested
+    from app.models.patient import Patient
+    from app.services import demo_service
+    from app.services.patient_service import get_or_create_patient
+
+    demo_service.seed(db)
+    real, _ = get_or_create_patient(
+        db, phone="+15551234567", name="A Real Person", sms_consent=True
+    )
+    db.commit()
+    real_id = real.id
+
+    monkeypatch.setattr(settings, "demo_clear_on_boot", True)
+    _clear_demo_if_requested()
+
+    assert db.get(Patient, real_id) is not None, "a real patient must survive"
+    assert demo_service.demo_state(db)["seeded"] is False
+
+
+def test_clear_on_boot_refuses_in_production_and_says_why(db, monkeypatch, caplog):
+    """Production is exactly when this cannot help, and it must say so.
+
+    Reaching this branch means the promotion happened in the wrong order and
+    the records are now stuck. The log line is the only thing that tells
+    anybody that.
+    """
+    import logging
+
+    from app.main import _clear_demo_if_requested
+    from app.services import demo_service
+
+    demo_service.seed(db)
+    monkeypatch.setattr(settings, "demo_clear_on_boot", True)
+    monkeypatch.setattr(settings, "environment", "production")
+
+    with caplog.at_level(logging.ERROR, logger="microns"):
+        _clear_demo_if_requested()
+
+    assert any(
+        "before ENVIRONMENT is set to production" in record.getMessage()
+        for record in caplog.records
+    ), "the ordering mistake must be named in the log"
+    # And the records are still there — it refused rather than half-deleted.
+    assert demo_service.demo_state(db)["seeded"] is True
