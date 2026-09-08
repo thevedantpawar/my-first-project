@@ -381,3 +381,73 @@ def test_the_limit_is_generous_enough_for_a_real_call(client, monkeypatch):
         for n in range(20)
     ]
     assert 429 not in statuses, "ordinary call traffic must not be throttled"
+
+
+# --------------------------------------------------------------------------- #
+# The assistant-request response has to be in VAPI's dialect, not ours
+# --------------------------------------------------------------------------- #
+def test_assistant_request_answers_in_the_shape_vapi_actually_reads(
+    client, vapi_headers, monkeypatch
+):
+    """``assistantOverrides``, camelCase, alongside an assistant id.
+
+    Returning the engine's own ``assistant_overrides`` is not an error VAPI
+    reports. It is ignored: the personalised greeting never applies and the
+    caller hears the assistant's static first message, which sounds exactly
+    like a working integration. The only way to notice is to read the body.
+    """
+    from app.config import settings
+
+    monkeypatch.setattr(settings, "vapi_assistant_id", "asst_live_123", raising=False)
+
+    response = client.post("/webhooks/vapi", json=inbound_payload(), headers=vapi_headers)
+    assert response.status_code == 200
+    body = response.json()
+
+    assert body["assistantId"] == "asst_live_123"
+    assert "assistantOverrides" in body, (
+        "VAPI reads assistantOverrides; assistant_overrides is silently dropped"
+    )
+    assert "assistant_overrides" not in body
+
+    overrides = body["assistantOverrides"]
+    assert overrides["firstMessage"], "the personalised greeting is the point of the call"
+    assert "variableValues" in overrides
+
+
+def test_assistant_request_declines_audibly_when_no_assistant_is_configured(
+    client, vapi_headers, monkeypatch
+):
+    """A half-configured number should say something, not drop the call.
+
+    VAPI only asks for an assistant when the phone number has none attached, so
+    an assistant-request with no VAPI_ASSISTANT_ID set means the number is
+    misconfigured. Returning an invalid body there fails the call with nothing
+    the caller or the log can act on.
+    """
+    from app.config import settings
+
+    monkeypatch.setattr(settings, "vapi_assistant_id", None, raising=False)
+
+    response = client.post("/webhooks/vapi", json=inbound_payload(), headers=vapi_headers)
+    assert response.status_code == 200
+    assert response.json()["error"], "VAPI needs an error string to speak to the caller"
+
+
+def test_the_call_is_still_recorded_even_when_the_assistant_is_unconfigured(
+    client, vapi_headers, monkeypatch, db
+):
+    """Declining the assistant must not lose the fact that someone rang.
+
+    A missed call from a misconfigured number is still a lead.
+    """
+    from app.config import settings
+    from app.models.voice_call import VoiceCall
+
+    monkeypatch.setattr(settings, "vapi_assistant_id", None, raising=False)
+    before = db.query(VoiceCall).count()
+
+    client.post("/webhooks/vapi", json=inbound_payload(), headers=vapi_headers)
+
+    db.expire_all()
+    assert db.query(VoiceCall).count() == before + 1

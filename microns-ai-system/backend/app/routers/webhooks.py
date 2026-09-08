@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.database import get_db
 from app.dependencies import get_audit
 from app.models.appointment import Appointment, AppointmentSource, AppointmentStatus
@@ -82,8 +83,31 @@ async def vapi_dispatch(
     event_type = str(message.get("type") or payload.get("type") or "").strip()
     service = VoiceService(db, audit)
 
-    if event_type in {"assistant-request", "call.started", "status-update"} and event_type != "status-update":
-        return service.handle_inbound(payload)
+    if event_type in {"assistant-request", "call.started"}:
+        result = service.handle_inbound(payload)
+        overrides = result.get("assistant_overrides") or {}
+
+        # VAPI's own dialect, not the engine's. An assistant-request response
+        # must name an assistant and spell the key ``assistantOverrides``;
+        # returning the engine's snake_case ``assistant_overrides`` is not an
+        # error VAPI reports — it is ignored, the personalised greeting never
+        # applies, and the caller hears the assistant's static first message
+        # instead. Which sounds like the integration working.
+        if not settings.vapi_assistant_id:
+            # VAPI only asks for an assistant when the phone number has none
+            # attached, so reaching here means the number is half-configured.
+            # Declining explicitly makes VAPI say something to the caller
+            # rather than dropping the call with nothing in the log.
+            logger.error(
+                "assistant-request received but VAPI_ASSISTANT_ID is not set — "
+                "either attach an assistant to the number in VAPI, or set it here"
+            )
+            return {"error": "This line is not configured yet. Please try again shortly."}
+
+        return {
+            "assistantId": settings.vapi_assistant_id,
+            "assistantOverrides": overrides,
+        }
 
     if event_type in {"tool-calls", "function-call", "tool_call"}:
         action_name, parameters, call_id = extract_action(payload)
