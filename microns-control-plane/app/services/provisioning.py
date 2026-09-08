@@ -39,9 +39,21 @@ from app.utils import utcnow
 
 logger = logging.getLogger(__name__)
 
-#: Where Postgres keeps its data. The volume must land exactly here — mounted
-#: anywhere else, the database still starts and still writes to ephemeral disk.
-POSTGRES_DATA_PATH = "/var/lib/postgresql/data"
+#: Where the volume is mounted.
+POSTGRES_VOLUME_MOUNT = "/var/lib/postgresql/data"
+
+#: Where Postgres actually keeps its data — a *subdirectory* of the mount.
+#:
+#: These must not be the same path, and the reason is not obvious until you
+#: watch it fail: Railway's volumes arrive containing a ``lost+found``
+#: directory, and ``initdb`` refuses to initialise into a directory that is not
+#: empty. Pointing PGDATA at the mount point itself produces a container that
+#: crash-loops with "directory exists but is not empty" and never starts.
+#:
+#: A subdirectory under the mount is what the postgres image documents, and it
+#: is still on the volume, so the data still survives a restart — which is the
+#: whole point of attaching one.
+POSTGRES_DATA_PATH = f"{POSTGRES_VOLUME_MOUNT}/pgdata"
 
 #: The port the engine's Dockerfile exposes.
 ENGINE_PORT = 8000
@@ -237,6 +249,8 @@ class Provisioner:
                     # Postgres derives DATABASE_URL from these; the password is
                     # generated per clinic and never reused.
                     "POSTGRES_PASSWORD": ClinicSecrets().internal_api_token,
+                    # A subdirectory of the mount, not the mount itself — see
+                    # POSTGRES_DATA_PATH.
                     "PGDATA": POSTGRES_DATA_PATH,
                 },
             )
@@ -256,7 +270,7 @@ class Provisioner:
             volume = client.create_volume(
                 clinic.railway_project_id,
                 clinic.railway_postgres_service_id,
-                POSTGRES_DATA_PATH,
+                POSTGRES_VOLUME_MOUNT,
                 environment_id=clinic.railway_environment_id,
             )
             clinic.railway_volume_id = volume["id"]
@@ -474,6 +488,7 @@ def resume(db: Session, clinic: Clinic, *, client: Optional[RailwayClient] = Non
 __all__ = [
     "Provisioner",
     "ProvisioningError",
+    "POSTGRES_VOLUME_MOUNT",
     "POSTGRES_DATA_PATH",
     "ENGINE_PORT",
     "suspend",

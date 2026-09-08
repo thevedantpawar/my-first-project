@@ -23,6 +23,7 @@ from app.models.clinic import Clinic, ClinicStatus
 from app.models.provisioning_event import EventOutcome, ProvisioningEvent, ProvisioningStep
 from app.services.provisioning import (
     POSTGRES_DATA_PATH,
+    POSTGRES_VOLUME_MOUNT,
     Provisioner,
     ProvisioningError,
     resume,
@@ -156,7 +157,7 @@ def test_the_volume_is_mounted_where_postgres_actually_writes(provisioned):
     """Mounted anywhere else, the database still writes to ephemeral disk."""
     _, fake = provisioned
     call = next(kwargs for name, kwargs in fake.calls if name == "create_volume")
-    assert call["mount_path"] == POSTGRES_DATA_PATH == "/var/lib/postgresql/data"
+    assert call["mount_path"] == POSTGRES_VOLUME_MOUNT == "/var/lib/postgresql/data"
 
 
 def test_the_volume_is_attached_to_the_database_not_the_engine(provisioned):
@@ -165,11 +166,31 @@ def test_the_volume_is_attached_to_the_database_not_the_engine(provisioned):
     assert call["service_id"] == clinic.railway_postgres_service_id
 
 
-def test_pgdata_points_at_the_mount_path(provisioned):
-    """PGDATA and the mount path must agree, or the volume holds nothing."""
+def test_pgdata_is_a_subdirectory_of_the_mount_not_the_mount_itself(provisioned):
+    """The two must not be the same path, and this is why.
+
+    Railway volumes arrive containing a ``lost+found`` directory, and ``initdb``
+    refuses to initialise into a directory that is not empty. Setting PGDATA to
+    the mount point produces a Postgres that crash-loops with "directory exists
+    but is not empty" and never starts at all — found by deploying exactly that
+    and watching it fail, not by reading.
+
+    PGDATA still has to be *under* the mount, or the data is back on ephemeral
+    disk and the volume is decoration.
+    """
     _, fake = provisioned
     call = next(kwargs for name, kwargs in fake.calls if name == "create_service_from_image")
-    assert call["variables"]["PGDATA"] == POSTGRES_DATA_PATH
+    pgdata = call["variables"]["PGDATA"]
+
+    assert pgdata != POSTGRES_VOLUME_MOUNT, (
+        "PGDATA must not be the volume mount point — initdb refuses to "
+        "initialise into it because of lost+found, and the container crash-loops"
+    )
+    assert pgdata.startswith(POSTGRES_VOLUME_MOUNT + "/"), (
+        "PGDATA must still live on the volume, or the records do not survive a "
+        "restart and the volume achieves nothing"
+    )
+    assert pgdata == POSTGRES_DATA_PATH
 
 
 # --------------------------------------------------------------------------- #
