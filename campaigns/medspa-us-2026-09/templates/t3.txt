@@ -1,0 +1,9 @@
+Since the how usually decides this either way:
+
+Your real hours and your real price list, per location. Every booking lands as pending rather than confirmed, so your front desk keeps the calendar. Clinical questions get refused outright and route to a provider callback on a tracked two-hour clock.
+
+Patient data is encrypted at rest and de-identified before it reaches a model — in production it refuses to send a prompt still carrying an identifier.
+
+Same link if that's worth fifteen minutes: {booking_link}
+
+— {sender_first_name}

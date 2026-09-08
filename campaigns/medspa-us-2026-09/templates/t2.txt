@@ -1,0 +1,7 @@
+Following up once on this — mostly checking it didn't land in a spam folder.
+
+The only number in the pilot is recovered bookings against cost, {measure}. If it doesn't clear, I'd rather tell you than have you find out.
+
+Fifteen minutes? {booking_link}
+
+— {sender_first_name}

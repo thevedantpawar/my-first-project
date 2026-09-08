@@ -1,0 +1,11 @@
+{hook}
+
+I'm {sender_first_name}. I build one thing — the system that answers a clinic's phone when nobody's there and books straight into the calendar. It's live at {proof_client}, {proof_descriptor}.
+
+{angle}
+
+{offer}
+
+Fifteen minutes this week? Grab whatever's open: {booking_link}
+
+— {sender_first_name}

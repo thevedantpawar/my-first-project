@@ -1,0 +1,27 @@
+{
+  "_comment": "Fill every PLACEHOLDER below, then run: python3 build.py. Nothing else needs editing.",
+
+  "sender_first_name": "Vedant",
+  "sender_full_name": "Vedant Pawar",
+
+  "booking_link": "PLACEHOLDER_YOUR_BOOKING_LINK",
+
+  "proof_client": "Skin Alive Clinic",
+  "proof_descriptor": "a dermatology and laser group running four clinics",
+  "proof_claim_style": "build_only",
+
+  "campaign_start": "2026-09-09",
+  "sends_per_mailbox_per_day": 2,
+  "send_window_local": "08:00-10:00",
+
+  "touch_offsets_business_days": { "T1": 0, "T2": 3, "T3": 7, "T4": 12, "T5": 18 },
+  "booking_link_in_touches": ["T1", "T2", "T3", "T4"],
+
+  "mailbox_addresses": {
+    "1": "PLACEHOLDER_mailbox1@yourdomain.com",
+    "2": "PLACEHOLDER_mailbox2@yourdomain.com",
+    "3": "PLACEHOLDER_mailbox3@yourdomain.com",
+    "4": "PLACEHOLDER_mailbox4@yourdomain.com",
+    "5": "PLACEHOLDER_mailbox5@yourdomain.com"
+  }
+}
