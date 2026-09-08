@@ -1,0 +1,17 @@
+# Secrets — never commit. MASTER_KEY unwraps every clinic's encryption key.
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local data
+*.db
+*.sqlite3

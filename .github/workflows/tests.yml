@@ -1,0 +1,68 @@
+# Runs both test suites on every pull request.
+#
+# Nothing here needs a secret. Both suites configure their own environment in
+# conftest.py — the engine pins a fixed encryption key so ciphertext assertions
+# are stable, and the control plane generates one per run — and neither makes a
+# third-party call. So this workflow is safe to run on a fork's pull request,
+# and a contributor without repository secrets gets the same result as a
+# maintainer.
+
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      # The branch Backend3 deploys from. A push here reaches a live clinic
+      # demo, so it is worth knowing whether the tests passed.
+      - claude/microns-medspa-v2-ui-3t08hh
+  workflow_dispatch:
+
+# One run per branch. A second push supersedes the first rather than queueing
+# behind it.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    strategy:
+      # Both suites run even when one fails. "Did my change break the other
+      # service too?" is exactly the question a red build should answer.
+      fail-fast: false
+      matrix:
+        include:
+          - name: engine
+            directory: microns-ai-system/backend
+          - name: control-plane
+            directory: microns-control-plane
+
+    steps:
+      - uses: actions/checkout@v4
+        # The control-plane suite reads the engine's config.py to cross-check
+        # the variable names the provisioner sets, so both services have to be
+        # present for either job.
+
+      - uses: actions/setup-python@v5
+        with:
+          # Matches the python:3.11-slim base image both services deploy on.
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: ${{ matrix.directory }}/requirements.txt
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.directory }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        working-directory: ${{ matrix.directory }}
+        run: pytest -q

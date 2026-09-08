@@ -1,0 +1,173 @@
+/* Reset, layout shell and typography. */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: var(--size-body);
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--ground);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, p, figure { margin: 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+  border-radius: var(--r1);
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: var(--s3);
+  padding: var(--s2) var(--s4);
+  background: var(--surface);
+  border-radius: var(--r1);
+  box-shadow: var(--shadow-2);
+  z-index: 100;
+}
+.skip-link:focus { left: var(--s3); }
+
+.boot {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  color: var(--text-faint);
+}
+
+/* --- Signed-out shell: a centred card ------------------------------------ */
+.auth-shell {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: var(--s5);
+}
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r4);
+  box-shadow: var(--shadow-2);
+  padding: var(--s6);
+}
+.auth-card__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  margin-bottom: var(--s5);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.auth-card__mark {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r1);
+  background: var(--accent);
+  color: var(--text-inverse);
+  display: grid;
+  place-items: center;
+  font-size: var(--size-small);
+}
+.auth-card h1 { font-size: var(--size-h1); letter-spacing: -0.02em; }
+.auth-card__sub { color: var(--text-muted); margin-top: var(--s2); font-size: var(--size-small); }
+.auth-card__foot {
+  margin-top: var(--s5);
+  padding-top: var(--s4);
+  border-top: 1px solid var(--line);
+  font-size: var(--size-small);
+  color: var(--text-muted);
+}
+
+/* --- Signed-in shell: rail plus working area ----------------------------- */
+.shell {
+  display: grid;
+  grid-template-columns: 232px 1fr;
+  min-height: 100vh;
+  background: var(--surface-sunken);
+}
+.rail {
+  padding: var(--s5) var(--s4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.rail__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.rail__nav { display: flex; flex-direction: column; gap: var(--s1); }
+.rail__link {
+  display: block;
+  padding: var(--s2) var(--s3);
+  border-radius: var(--r1);
+  color: var(--text-muted);
+  font-size: var(--size-small);
+  transition: background var(--motion), color var(--motion);
+}
+.rail__link:hover { background: var(--surface); color: var(--text); text-decoration: none; }
+.rail__link[aria-current="page"] { background: var(--surface); color: var(--text); font-weight: 600; }
+.rail__foot { margin-top: auto; font-size: var(--size-tiny); color: var(--text-faint); }
+
+.work {
+  background: var(--ground);
+  border-top-left-radius: var(--r4);
+  border-left: 1px solid var(--line);
+  border-top: 1px solid var(--line);
+  margin: var(--s4) 0 0 0;
+  min-width: 0;
+}
+.page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: var(--s6) var(--s5) var(--s8);
+}
+.page__head { margin-bottom: var(--s5); }
+.page__head h1 { font-size: var(--size-h1); letter-spacing: -0.02em; }
+.page__head p { color: var(--text-muted); margin-top: var(--s2); }
+
+.section { margin-top: var(--s6); }
+.section__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s4);
+  padding-bottom: var(--s3);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: var(--s4);
+}
+.section__head h2 { font-size: var(--size-h2); letter-spacing: -0.01em; }
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; }
+  .rail {
+    position: static;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--s4);
+    overflow-x: auto;
+  }
+  .rail__nav { flex-direction: row; }
+  .rail__foot { display: none; }
+  .work { margin: 0; border-radius: 0; border-left: 0; }
+  .page { padding: var(--s5) var(--s4) var(--s7); }
+}
