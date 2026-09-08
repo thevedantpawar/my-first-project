@@ -190,9 +190,20 @@ class RetentionService:
             },
         )
         self.db.commit()
+        # "suppressed" is not "failed". They now behave differently — a failure
+        # releases the claim and retries, a suppression keeps it — so reporting
+        # both as failed hides the difference from whoever is reading the run,
+        # and makes a clinic with no SMS consent look like a broken integration.
+        if result.ok:
+            status = "sent"
+        elif result.status == "suppressed":
+            status = "suppressed"
+        else:
+            status = "failed"
         return {
-            "status": "sent" if result.ok else "failed",
+            "status": status,
             "sms_status": result.status,
+            "reason": result.reason,
             "appointment_id": str(appointment.id),
             "kind": kind,
         }
