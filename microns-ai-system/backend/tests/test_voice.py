@@ -556,3 +556,139 @@ def test_a_tool_call_id_is_never_null(client, vapi_headers):
     )
     assert response.status_code == 200
     assert response.json()["results"][0]["toolCallId"] == ""
+
+
+# --------------------------------------------------------------------------- #
+# The availability rules have to apply on the way in, not only on the way out
+# --------------------------------------------------------------------------- #
+def _book(client, headers, **params):
+    return client.post(
+        "/webhooks/vapi", json=tool_payload("book_appointment", params), headers=headers
+    )
+
+
+def test_the_same_slot_cannot_be_booked_twice(client, vapi_headers, db):
+    """Two callers, one slot. Both used to be told they were all set.
+
+    get_available_slots excluded booked windows, so the agent would not *offer*
+    a taken slot — but nothing checked on the way in, and a caller who names a
+    time directly never goes through the offer path.
+    """
+    from app.models.appointment import Appointment
+
+    first = _book(
+        client, vapi_headers,
+        service="botox", slot_start="2099-09-15T14:00:00",
+        patient_phone="+15550003333", patient_name="First Caller",
+    )
+    assert first.json()["result"].get("appointment_id"), first.json()
+
+    second = _book(
+        client, vapi_headers,
+        service="botox", slot_start="2099-09-15T14:00:00",
+        patient_phone="+15550004444", patient_name="Second Caller",
+    )
+    body = second.json()
+    assert body["result"].get("error") == "taken", body
+    assert "taken" in body["speech"].lower()
+
+    booked = (
+        db.query(Appointment)
+        .filter(Appointment.service == "botox")
+        .filter(Appointment.scheduled_for.isnot(None))
+        .all()
+    )
+    at_that_time = [a for a in booked if a.scheduled_for.hour == 18]
+    assert len(at_that_time) == 1, "the second caller must not get a row"
+
+
+def test_a_time_in_the_past_is_refused(client, vapi_headers):
+    body = _book(
+        client, vapi_headers,
+        service="botox", slot_start="2020-01-06T14:00:00",
+        patient_phone="+15550005555",
+    ).json()
+    assert body["result"]["error"] == "past", body
+    assert body["speech"]
+
+
+def test_a_time_outside_opening_hours_is_refused(client, vapi_headers):
+    """3am is not a bookable appointment, however clearly the caller said it."""
+    body = _book(
+        client, vapi_headers,
+        service="botox", slot_start="2099-09-15T03:00:00",
+        patient_phone="+15550006666",
+    ).json()
+    assert body["result"]["error"] == "closed", body
+
+
+def test_sunday_is_refused(client, vapi_headers):
+    body = _book(
+        client, vapi_headers,
+        service="botox", slot_start="2099-09-20T14:00:00",
+        patient_phone="+15550007777",
+    ).json()
+    assert body["result"]["error"] == "closed", body
+
+
+def test_a_refusal_always_offers_a_way_forward(client, vapi_headers):
+    """"That doesn't work" with no next step is where a call gets abandoned."""
+    for slot in ("2020-01-06T14:00:00", "2099-09-15T03:00:00", "2099-09-20T14:00:00"):
+        speech = _book(
+            client, vapi_headers, service="botox", slot_start=slot,
+            patient_phone="+15550008888",
+        ).json()["speech"]
+        assert "?" in speech, f"no question asked back for {slot}: {speech!r}"
+
+
+def test_rescheduling_onto_its_own_time_is_not_a_collision(client, vapi_headers, db):
+    """An appointment must not be found to collide with itself."""
+    from app.models.appointment import Appointment
+
+    created = _book(
+        client, vapi_headers,
+        service="botox", slot_start="2099-09-16T15:00:00",
+        patient_phone="+15550009999", patient_name="Mover",
+    ).json()
+    appointment_id = created["result"]["appointment_id"]
+
+    response = client.post(
+        "/webhooks/vapi",
+        json=tool_payload(
+            "reschedule_appointment",
+            {"appointment_id": appointment_id, "new_slot_start": "2099-09-16T15:00:00"},
+        ),
+        headers=vapi_headers,
+    )
+    body = response.json()
+    assert body["result"].get("error") != "taken", (
+        "moving an appointment to the time it already has is a no-op, not a clash"
+    )
+
+
+def test_rescheduling_onto_a_taken_slot_is_refused(client, vapi_headers):
+    from_one = _book(
+        client, vapi_headers,
+        service="botox", slot_start="2099-09-16T16:00:00",
+        patient_phone="+15550010001", patient_name="Holder",
+    ).json()
+    assert from_one["result"].get("appointment_id")
+
+    mover = _book(
+        client, vapi_headers,
+        service="botox", slot_start="2099-09-16T17:00:00",
+        patient_phone="+15550010002", patient_name="Mover Two",
+    ).json()
+
+    response = client.post(
+        "/webhooks/vapi",
+        json=tool_payload(
+            "reschedule_appointment",
+            {
+                "appointment_id": mover["result"]["appointment_id"],
+                "new_slot_start": "2099-09-16T16:00:00",
+            },
+        ),
+        headers=vapi_headers,
+    )
+    assert response.json()["result"].get("error") == "taken", response.json()

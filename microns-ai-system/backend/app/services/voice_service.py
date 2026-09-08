@@ -56,6 +56,25 @@ DEFAULT_PRICE_LIST: dict[str, dict[str, Any]] = {
 }
 
 
+#: What the agent says when a time cannot be booked. Each one ends by asking for
+#: something the agent can act on, because "that does not work" with no next
+#: step is where a call gets abandoned.
+_BOOKING_REFUSALS = {
+    "past": (
+        "That time's already gone by — did you mean a day this week? "
+        "I can check what's open."
+    ),
+    "closed": (
+        "We're closed then. We're open Monday through Saturday during the day — "
+        "would another time work?"
+    ),
+    "taken": (
+        "That one's just been taken, sorry. Let me find you the next closest — "
+        "what sort of time suits you?"
+    ),
+}
+
+
 class VoiceService:
     def __init__(self, db: Session, audit: Optional[HIPAAAuditLogger] = None) -> None:
         self.db = db
@@ -241,6 +260,20 @@ class VoiceService:
                 "speech": "What's the best phone number for your confirmation text?",
             }
 
+        booking = get_booking_service(self.db)
+
+        # Nothing applied the availability rules on the way *in*. A parsed
+        # timestamp went straight to a row, so the agent could put two callers
+        # in the same slot, book 3am on a Sunday, or book a time that had
+        # already passed — and every one of those sounded to the caller like a
+        # successful booking.
+        refusal = booking.check_bookable(start)
+        if refusal:
+            return {
+                "result": {"error": refusal, "requested": start.isoformat() + "Z"},
+                "speech": _BOOKING_REFUSALS[refusal],
+            }
+
         patient, _ = get_or_create_patient(
             self.db,
             phone=normalise_identifier(phone),
@@ -250,7 +283,6 @@ class VoiceService:
             user_id="voice-agent",
         )
 
-        booking = get_booking_service(self.db)
         reference = booking.create_booking(
             service=service,
             start=start,
@@ -362,6 +394,19 @@ class VoiceService:
             return {
                 "result": {"error": "missing_slot"},
                 "speech": "What day and time would you like to move it to?",
+            }
+
+        # Same rules as a new booking, except this appointment must not be
+        # found to collide with itself.
+        refusal = get_booking_service(self.db).check_bookable(
+            new_start,
+            appointment.duration_minutes,
+            ignore_appointment_id=str(appointment.id),
+        )
+        if refusal:
+            return {
+                "result": {"error": refusal, "requested": new_start.isoformat() + "Z"},
+                "speech": _BOOKING_REFUSALS[refusal],
             }
 
         old_start = appointment.scheduled_for
