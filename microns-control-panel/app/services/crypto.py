@@ -1,6 +1,6 @@
 """Envelope encryption for the per-clinic secrets this database holds.
 
-**What is at stake.** For each clinic the control plane stores that clinic's
+**What is at stake.** For each clinic the control panel stores that clinic's
 ``ENCRYPTION_KEY`` — the key that decrypts that clinic's PHI — along with its
 staff and internal tokens. A plaintext dump of this table would be every
 clinic's patient records at once.
@@ -10,7 +10,7 @@ variable is the only copy in existence. The engine's own documentation already
 names that as the top data-loss risk: lose the variable and the PHI is
 unrecoverable, permanently. Holding a wrapped copy makes re-provisioning,
 disaster recovery and key rotation possible. This is a deliberate custodial
-escrow, and it is why the control plane refuses to start in production without
+escrow, and it is why the control panel refuses to start in production without
 ``MASTER_KEY``.
 
 **How.** Each value is sealed with Fernet under ``MASTER_KEY``. Rotation is

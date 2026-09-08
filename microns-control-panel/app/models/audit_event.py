@@ -1,4 +1,4 @@
-"""Who did what in the control plane.
+"""Who did what in the control panel.
 
 This is not the engine's HIPAA trail — no PHI passes through here. It is the
 administrative record: who signed in, who provisioned or suspended a clinic,

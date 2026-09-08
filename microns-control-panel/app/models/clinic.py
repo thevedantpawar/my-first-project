@@ -5,7 +5,7 @@ own encryption key. Nothing is shared, so no query in the engine has to
 remember a ``WHERE tenant_id = ...`` and no bug in it can return one clinic's
 patients to another. The isolation is infrastructural rather than conditional.
 
-This row is the control plane's record of that deployment: where it is, what
+This row is the control panel's record of that deployment: where it is, what
 state it is in, and the secrets needed to rebuild it.
 """
 
@@ -88,7 +88,7 @@ class Clinic(Base):
 
     # --- Sealed secrets ----------------------------------------------------
     #
-    # Encrypted at rest under the control plane's master key. encryption_key in
+    # Encrypted at rest under the control panel's master key. encryption_key in
     # particular decrypts this clinic's PHI; see services/crypto.py for why a
     # copy is held here rather than existing only as a Railway variable.
     #

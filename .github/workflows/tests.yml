@@ -2,7 +2,7 @@
 #
 # Nothing here needs a secret. Both suites configure their own environment in
 # conftest.py — the engine pins a fixed encryption key so ciphertext assertions
-# are stable, and the control plane generates one per run — and neither makes a
+# are stable, and the control panel generates one per run — and neither makes a
 # third-party call. So this workflow is safe to run on a fork's pull request,
 # and a contributor without repository secrets gets the same result as a
 # maintainer.
@@ -41,12 +41,12 @@ jobs:
         include:
           - name: engine
             directory: microns-ai-system/backend
-          - name: control-plane
-            directory: microns-control-plane
+          - name: control-panel
+            directory: microns-control-panel
 
     steps:
       - uses: actions/checkout@v4
-        # The control-plane suite reads the engine's config.py to cross-check
+        # The control-panel suite reads the engine's config.py to cross-check
         # the variable names the provisioner sets, so both services have to be
         # present for either job.
 

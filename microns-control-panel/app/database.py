@@ -1,7 +1,7 @@
 """Database engine, session factory and schema bootstrap.
 
 Mirrors the engine's arrangement deliberately: PostgreSQL deployments go
-through Alembic so a schema change can ship to a running control plane, and the
+through Alembic so a schema change can ship to a running control panel, and the
 test suite uses ``create_all`` with a drift test standing guard between them.
 """
 
@@ -38,7 +38,7 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, expi
 
 
 class Base(DeclarativeBase):
-    """Declarative base for every control-plane model."""
+    """Declarative base for every control-panel model."""
 
 
 def get_db() -> Generator[Session, None, None]:

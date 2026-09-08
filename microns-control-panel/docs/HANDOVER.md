@@ -10,7 +10,7 @@ Ten minutes of work, most of it waiting for the build.
 
 ## 1. Create and build
 
-Sign in to the control plane → **Clinics** → **Add a clinic**.
+Sign in to the control panel → **Clinics** → **Add a clinic**.
 
 Name, time zone, opening hours, and the clinic's own booking and review URLs if
 they have them. None of it is permanent except the slug, which is derived from
@@ -54,12 +54,12 @@ Use **one domain with a subdomain per clinic** — `glow.micronsai.com`,
 
 A second domain per clinic means a second thing to renew, a second certificate
 to watch and a second brand to explain. A subdomain costs one DNS record. It
-also keeps the control plane and the clinics visibly part of the same product,
+also keeps the control panel and the clinics visibly part of the same product,
 which matters when the clinic's staff are typing the address into a browser to
 look at patient records.
 
 If you already own `micronsai.online`, that works — the point is one domain, not
-which one. Put the control plane on something like `app.` and give each clinic
+which one. Put the control panel on something like `app.` and give each clinic
 its own subdomain.
 
 ## 3. Hand over the sign-in details
@@ -90,8 +90,8 @@ revocation there is.
 **Encryption key** → **Show the key** → store it somewhere outside this system,
 then mark it backed up.
 
-The control plane holds a sealed copy so the clinic can be rebuilt, but that
-copy is only as durable as the control plane's own `MASTER_KEY`. If both are
+The control panel holds a sealed copy so the clinic can be rebuilt, but that
+copy is only as durable as the control panel's own `MASTER_KEY`. If both are
 lost, the clinic's records are unreadable permanently. There is no recovery
 path, by construction.
 

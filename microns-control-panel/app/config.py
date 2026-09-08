@@ -1,9 +1,9 @@
-"""Control-plane settings.
+"""Control-panel settings.
 
 Everything configurable lives here, loaded from environment variables (see
 ``.env.example``). Nothing in this module may log a secret.
 
-The control plane is a higher-value target than any single clinic's engine: it
+The control panel is a higher-value target than any single clinic's engine: it
 holds the escrowed encryption key for every clinic, and that key decrypts that
 clinic's PHI. The startup checks below are correspondingly strict — this
 process refuses to run in production without them.
@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     # --- App ---------------------------------------------------------------
     environment: str = "development"
     log_level: str = "INFO"
-    app_name: str = "Microns Control Plane"
+    app_name: str = "Microns Control Panel"
     public_base_url: str = "http://localhost:8080"
     cors_origins: Annotated[List[str], NoDecode] = ["http://localhost:8080"]
     allowed_hosts: Annotated[List[str], NoDecode] = ["*"]

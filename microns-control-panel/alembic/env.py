@@ -1,4 +1,4 @@
-"""Alembic environment for the control plane.
+"""Alembic environment for the control panel.
 
 Same arrangement as the engine's: the URL comes from ``app.config.settings`` so
 a deployment configures ``DATABASE_URL`` and nothing else, but an explicit
