@@ -333,7 +333,13 @@ def test_a_suppressed_message_is_not_retried_forever(db, service, patient, monke
         lambda **kw: SMSResult(delivered=False, status="suppressed", reason="no_consent"),
     )
 
-    service.send_reminder(appointment.id, kind="24h")
+    first = service.send_reminder(appointment.id, kind="24h")
+    assert first["status"] == "suppressed", (
+        "a message nobody consented to is not a failure — reporting it as one "
+        "makes a clinic with no consent on file look like a broken integration"
+    )
+    assert first["reason"] == "no_consent"
+
     db.expire_all()
     assert db.get(Appointment, appointment.id).reminder_24h_sent_at is not None
 

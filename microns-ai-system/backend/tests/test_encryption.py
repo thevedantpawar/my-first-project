@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import sqlite3
 
 import pytest
@@ -77,12 +78,25 @@ def test_phi_is_ciphertext_at_rest(db, patient):
         connection.close()
 
     assert row is not None
-    blob = " ".join(part or "" for part in row)
-    assert "Jane" not in blob
-    assert "Doe" not in blob
-    assert "5551234567" not in blob
-    assert "jane@example.com" not in blob
-    assert blob.startswith("gAAAAA"), "expected Fernet tokens"
+    assert all(part for part in row), "every identifying column must be populated"
+
+    # Decode before searching.
+    #
+    # Searching the base64 *text* for a fragment of the plaintext looks like the
+    # same assertion and is not: base64 draws from a 64-character alphabet, so a
+    # three-letter needle like "Doe" turns up in random ciphertext roughly once
+    # in a few thousand runs. It did — CI produced the token
+    # "wJ96SMKJXBDoeo5QY0z..." and the suite failed with the encryption working
+    # perfectly. A test that fails at random gets re-run rather than read, which
+    # is the worst thing this particular test could become.
+    #
+    # The real claim is about the bytes on disk, so decode the token and look
+    # there. That also matches what an attacker with the file actually has.
+    for value in row:
+        assert value.startswith("gAAAAA"), f"expected a Fernet token, got {value[:16]!r}"
+        raw = base64.urlsafe_b64decode(value)
+        for secret in (b"Jane Doe", b"Jane", b"Doe", b"5551234567", b"jane@example.com"):
+            assert secret not in raw, f"{secret!r} is recoverable from the stored bytes"
 
 
 def test_orm_decrypts_transparently(db, patient):
