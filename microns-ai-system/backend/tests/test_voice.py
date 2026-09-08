@@ -451,3 +451,108 @@ def test_the_call_is_still_recorded_even_when_the_assistant_is_unconfigured(
 
     db.expire_all()
     assert db.query(VoiceCall).count() == before + 1
+
+
+# --------------------------------------------------------------------------- #
+# A caller names a wall-clock time, not an instant in UTC
+# --------------------------------------------------------------------------- #
+def test_a_spoken_time_is_booked_in_the_clinics_own_timezone(client, vapi_headers, db):
+    """"Two o'clock" means two o'clock where the clinic is.
+
+    A voice agent transcribing a spoken time has no offset to attach, so it
+    sends a naive timestamp. Reading that as UTC books an America/New_York
+    clinic four hours early: the caller asks for 2pm and the appointment lands
+    at 10am. Nothing about the stored row looks wrong — it is found when
+    somebody arrives to an empty waiting room.
+    """
+    from app.models.appointment import Appointment
+    from app.utils import to_clinic_time
+
+    response = client.post(
+        "/webhooks/vapi",
+        json=tool_payload(
+            "book_appointment",
+            {
+                "service": "botox",
+                "slot_start": "2099-09-15T14:00:00",
+                "patient_phone": "+15550001111",
+                "patient_name": "Wall Clock",
+            },
+        ),
+        headers=vapi_headers,
+    )
+    assert response.status_code == 200
+
+    appointment = (
+        db.query(Appointment).order_by(Appointment.created_at.desc()).first()
+    )
+    assert appointment is not None
+    local = to_clinic_time(appointment.scheduled_for)
+    assert local.hour == 14, (
+        f"caller asked for 14:00 clinic time, appointment is at {local.hour}:00 local"
+    )
+
+
+def test_an_explicit_offset_is_honoured_and_not_shifted_again(client, vapi_headers, db):
+    """The engine's own slot values carry a Z, so echoing one must round-trip."""
+    from app.models.appointment import Appointment
+
+    client.post(
+        "/webhooks/vapi",
+        json=tool_payload(
+            "book_appointment",
+            {
+                "service": "botox",
+                "slot_start": "2099-09-16T18:00:00Z",
+                "patient_phone": "+15550002222",
+                "patient_name": "Explicit Offset",
+            },
+        ),
+        headers=vapi_headers,
+    )
+
+    appointment = db.query(Appointment).order_by(Appointment.created_at.desc()).first()
+    assert appointment is not None
+    assert appointment.scheduled_for.hour == 18, (
+        "an explicit Z is already UTC and must not be shifted by the clinic offset"
+    )
+
+
+def test_the_model_is_given_the_slot_values_not_just_the_sentence(client, vapi_headers):
+    """Otherwise it has to invent a timestamp from prose when it books.
+
+    check_availability's spoken form is "I have Tuesday at 2pm or ...". If that
+    is all the model ever sees, the ISO string it sends to book_appointment is
+    reconstructed rather than echoed — and a reconstruction has no offset.
+    """
+    response = client.post(
+        "/webhooks/vapi",
+        json=tool_payload("check_availability", {"service": "botox"}),
+        headers=vapi_headers,
+    )
+    assert response.status_code == 200
+
+    shown = response.json()["results"][0]["result"]
+    assert isinstance(shown, str), "VAPI hands the model text"
+    # The machine-readable start of an offered slot has to be in there.
+    assert "start" in shown, (
+        "the model needs the slot's start value to echo back, not only its label"
+    )
+    assert "Z" in shown, "and it has to carry an explicit offset"
+
+
+def test_a_tool_call_id_is_never_null(client, vapi_headers):
+    """VAPI rejects a results entry whose toolCallId is null."""
+    response = client.post(
+        "/webhooks/vapi",
+        json={
+            "message": {
+                "type": "tool-calls",
+                "call": {"id": "call_test_1"},
+                "toolCalls": [{"function": {"name": "get_pricing", "arguments": {}}}],
+            }
+        },
+        headers=vapi_headers,
+    )
+    assert response.status_code == 200
+    assert response.json()["results"][0]["toolCallId"] == ""

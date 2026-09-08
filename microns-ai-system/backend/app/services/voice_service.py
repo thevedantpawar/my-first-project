@@ -42,7 +42,7 @@ from app.services.notifier import notify_voice_handoff
 from app.services import pricing_service
 from app.services.patient_service import find_by_phone, get_or_create_patient
 from app.services.sms_service import SMSService
-from app.utils import format_appointment_time, parse_datetime, utcnow
+from app.utils import format_appointment_time, parse_datetime, parse_wall_clock, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -220,7 +220,9 @@ class VoiceService:
         confirmed appointment on the calendar.
         """
         service = _normalise_service(parameters.get("service"))
-        start = parse_datetime(parameters.get("slot_start") or parameters.get("start"))
+        # A caller names a wall-clock time, not an instant in UTC — see
+        # parse_wall_clock. parse_datetime here books the clinic hours early.
+        start = parse_wall_clock(parameters.get("slot_start") or parameters.get("start"))
         phone = parameters.get("patient_phone") or parameters.get("phone")
         name = parameters.get("patient_name") or parameters.get("name")
 
@@ -350,7 +352,7 @@ class VoiceService:
         self, *, parameters: dict[str, Any], call_id: Optional[str]
     ) -> dict[str, Any]:
         appointment = self._resolve_appointment(parameters, call_id)
-        new_start = parse_datetime(parameters.get("new_slot_start") or parameters.get("slot_start"))
+        new_start = parse_wall_clock(parameters.get("new_slot_start") or parameters.get("slot_start"))
         if appointment is None:
             return {
                 "result": {"error": "not_found"},

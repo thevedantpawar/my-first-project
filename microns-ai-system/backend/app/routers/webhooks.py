@@ -9,6 +9,7 @@ URLs per event, this one if you want the default single-URL setup.
 
 from __future__ import annotations
 
+import json
 import logging
 from typing import Any, Optional
 from uuid import UUID
@@ -116,9 +117,22 @@ async def vapi_dispatch(
         result = service.handle_action(action=action_name, parameters=parameters, call_id=call_id)
         # VAPI reads `results` for tool calls and `result` for function calls;
         # returning both keeps this compatible with either assistant config.
+        #
+        # The structured data goes back to the model too, not just the sentence.
+        # Sending speech alone means the model only ever sees "Tuesday at 2pm"
+        # and has to reconstruct an ISO timestamp from prose when it books —
+        # which it does without an offset, in a clinic that is not on UTC. It
+        # can now echo the exact `start` value the engine offered.
+        spoken = result.get("speech") or ""
+        structured = result.get("result", {})
         return {
-            "results": [{"toolCallId": _first_tool_call_id(payload), "result": result.get("speech") or ""}],
-            "result": result.get("result", {}),
+            "results": [
+                {
+                    "toolCallId": _first_tool_call_id(payload) or "",
+                    "result": _tool_result_payload(spoken, structured),
+                }
+            ],
+            "result": structured,
             "speech": result.get("speech"),
         }
 
@@ -135,6 +149,29 @@ async def vapi_dispatch(
 
     logger.info("Ignoring VAPI event type: %s", event_type or "(none)")
     return {"status": "ignored", "type": event_type}
+
+
+def _tool_result_payload(spoken: str, structured: dict[str, Any]) -> str:
+    """What the model is shown after a tool call.
+
+    VAPI hands ``result`` to the model as text. The sentence is what it should
+    say; the JSON is what it must not invent — above all the machine-readable
+    ``start`` of each offered slot, so booking echoes a value instead of
+    reconstructing one from "Tuesday at 2pm".
+
+    Kept as one string rather than a dict because VAPI stringifies a dict
+    inconsistently across assistant configurations, and a silently mangled
+    payload here is a wrong appointment.
+    """
+    if not structured:
+        return spoken
+    try:
+        rendered = json.dumps(structured, default=str)
+    except (TypeError, ValueError):  # pragma: no cover - defensive
+        return spoken
+    if not spoken:
+        return rendered
+    return f"{spoken}\n\n[data] {rendered}"
 
 
 def _first_tool_call_id(payload: dict[str, Any]) -> Optional[str]:
