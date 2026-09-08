@@ -31,12 +31,10 @@ class Account(Base):
     created_at = Column(DateTime, default=utcnow, nullable=False)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
 
-    users = relationship(
-        "User", back_populates="account", cascade="all, delete-orphan", lazy="selectin"
-    )
-    clinics = relationship(
-        "Clinic", back_populates="account", cascade="all, delete-orphan", lazy="selectin"
-    )
+    # Loaded on access rather than eagerly: the common path by far is a
+    # session lookup, which needs the account's name and nothing else.
+    users = relationship("User", back_populates="account", cascade="all, delete-orphan")
+    clinics = relationship("Clinic", back_populates="account", cascade="all, delete-orphan")
     subscription = relationship(
         "Subscription",
         back_populates="account",

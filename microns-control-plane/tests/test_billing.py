@@ -365,3 +365,50 @@ def test_a_non_owner_cannot_reveal_the_key(client, db, entitled):
     db.commit()
 
     assert client.get(f"/api/clinics/{clinic.id}/encryption-key").status_code == 403
+
+
+def test_an_unreadable_clinic_secret_does_not_break_sign_in(client, db, entitled, monkeypatch):
+    """A key-rotation mistake must not lock everyone out of the console.
+
+    Sealed columns are deferred precisely so that unsealing failures surface on
+    the one endpoint that asks for a key, rather than on whatever query
+    happened to load a clinic row — sign-in among them, which reaches clinics
+    through the account relationship.
+    """
+    from cryptography.fernet import Fernet
+
+    from app.services import crypto
+    from app.services.provisioning import Provisioner
+
+    account = db.query(Account).one()
+    clinic = Clinic(account_id=account.id, name="Glow", slug="glow", integrations={})
+    db.add(clinic)
+    db.commit()
+    Provisioner(db, clinic, client=FakeRailway()).provision()
+    clinic_id = str(clinic.id)
+
+    # Rotate the master key without listing the old one — the mistake.
+    monkeypatch.setattr(crypto.settings, "master_key", Fernet.generate_key().decode())
+    monkeypatch.setattr(crypto.settings, "master_keys_old", [])
+    crypto.reset_sealer()
+
+    try:
+        client.cookies.clear()
+        signed_in = client.post(
+            "/api/auth/login",
+            json={"email": "dana@glow.example.com", "password": "a-sufficiently-long-password"},
+        )
+        assert signed_in.status_code == 200, "sign-in must not depend on clinic secrets"
+
+        # The console still works, so the operator can see what is wrong.
+        assert client.get("/api/clinics").status_code == 200
+        assert client.get(f"/api/clinics/{clinic_id}").status_code == 200
+
+        # Only the endpoint that actually needs the key fails. TestClient
+        # re-raises server exceptions rather than rendering the 500 the
+        # exception handler would return in production, so the failure is
+        # asserted as the exception itself.
+        with pytest.raises(crypto.SealingError):
+            client.get(f"/api/clinics/{clinic_id}/encryption-key")
+    finally:
+        crypto.reset_sealer()

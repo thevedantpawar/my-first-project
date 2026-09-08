@@ -1,0 +1,82 @@
+/*
+ * Design tokens. Nothing outside this file names a colour or a raw pixel value.
+ *
+ * The palette is the engine console's, so an owner moving between the two does
+ * not feel like they changed product: warm ivory ground, teal accent, and red
+ * reserved for things that have actually gone wrong.
+ */
+:root {
+  color-scheme: light;
+
+  /* Ground and surfaces */
+  --ground: #f8f7f4;
+  --surface: #ffffff;
+  --surface-sunken: #efece6;
+  --surface-raised: #ffffff;
+
+  /* Ink */
+  --text: #1a1a18;
+  --text-muted: #565650;
+  --text-faint: #6b6b64;
+  --text-inverse: #ffffff;
+
+  /* Lines */
+  --line: #e2ded5;
+  --line-strong: #cfc9bc;
+
+  /* Accent — teal, extended so it can whisper as well as shout */
+  --accent: #0f766e;
+  --accent-strong: #115e56;
+  --accent-soft: #e0f2f0;
+  --accent-line: #99d6cf;
+
+  /* States. Red means something is wrong, never merely "important". */
+  --danger: #b42318;
+  --danger-soft: #fef3f2;
+  --danger-line: #fecdca;
+  --warn: #b54708;
+  --warn-soft: #fffaeb;
+  --warn-line: #fedf89;
+  --ok: #067647;
+  --ok-soft: #ecfdf3;
+  --ok-line: #abefc6;
+
+  /* Type */
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --size-display: 2.25rem;
+  --size-h1: 1.5rem;
+  --size-h2: 1.125rem;
+  --size-body: 0.9375rem;
+  --size-small: 0.8125rem;
+  --size-tiny: 0.75rem;
+
+  /* Space */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --s8: 64px;
+
+  /* Radius and elevation */
+  --r1: 8px;
+  --r2: 12px;
+  --r3: 16px;
+  --r4: 20px;
+  --shadow-1: 0 1px 2px rgba(26, 26, 24, 0.06);
+  --shadow-2: 0 4px 12px rgba(26, 26, 24, 0.08);
+  --shadow-3: 0 12px 32px rgba(26, 26, 24, 0.12);
+
+  --motion: 160ms cubic-bezier(0.2, 0, 0.2, 1);
+  --focus: 0 0 0 3px var(--accent-line);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

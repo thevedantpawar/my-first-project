@@ -14,7 +14,7 @@ from __future__ import annotations
 import uuid
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import deferred, relationship
 
 from app.database import Base
 from app.models import GUID, JSONColumn, SealedString
@@ -81,11 +81,25 @@ class Clinic(Base):
     # Encrypted at rest under the control plane's master key. encryption_key in
     # particular decrypts this clinic's PHI; see services/crypto.py for why a
     # copy is held here rather than existing only as a Railway variable.
-    encryption_key = Column(SealedString, nullable=True)
-    fingerprint_secret = Column(SealedString, nullable=True)
-    internal_api_token = Column(SealedString, nullable=True)
-    staff_api_token = Column(SealedString, nullable=True)
-    vapi_webhook_secret = Column(SealedString, nullable=True)
+    #
+    # Deferred, so loading a clinic does not decrypt them. Two reasons, and the
+    # second is the important one:
+    #
+    # * Almost nothing needs them. The list and detail views, the billing
+    #   reconciler and the audit trail all load clinics and touch none of
+    #   these; decrypting five columns per row on every request is work done
+    #   for nobody.
+    # * Unsealing raises when the master key is wrong, and an eager column
+    #   turns that into a failure of whatever query happened to load the row —
+    #   including sign-in, which reaches clinics through the account
+    #   relationship. A key-rotation mistake would lock everyone out of the
+    #   console they would use to fix it. Deferred, the failure stays where it
+    #   belongs: on the one endpoint that asks for a key.
+    encryption_key = deferred(Column(SealedString, nullable=True))
+    fingerprint_secret = deferred(Column(SealedString, nullable=True))
+    internal_api_token = deferred(Column(SealedString, nullable=True))
+    staff_api_token = deferred(Column(SealedString, nullable=True))
+    vapi_webhook_secret = deferred(Column(SealedString, nullable=True))
 
     #: Non-secret integration state — which providers the clinic has connected,
     #: for display. Never holds a credential.
