@@ -21,7 +21,19 @@ from app import models  # noqa: F401
 
 config = context.config
 
-if config.config_file_name is not None:
+# Only when Alembic is driven from the command line.
+#
+# ``fileConfig`` defaults to ``disable_existing_loggers=True``: it disables
+# every logger that already exists and resets the root level to alembic.ini's
+# WARNING. Called from inside application startup — which is where migrations
+# actually run on Railway — that silences the application for the rest of the
+# process's life. The symptom is not an error; it is a service that logs its
+# startup warnings, runs its migrations, and then never says anything again,
+# which is indistinguishable in the deploy log from a process that hung.
+#
+# The app sets this attribute in ``_alembic_config`` because it has configured
+# logging already and does not want it taken away.
+if config.config_file_name is not None and config.attributes.get("configure_logging", True):
     fileConfig(config.config_file_name)
 
 # ``settings`` is a cached singleton read once at import, so it cannot see a

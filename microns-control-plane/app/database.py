@@ -50,7 +50,7 @@ def get_db() -> Generator[Session, None, None]:
         db.close()
 
 
-def _alembic_config(url: str | None = None) -> "Config":
+def _alembic_config(url: str | None = None, *, configure_logging: bool = False) -> "Config":
     """Alembic configuration pointed at this package's migration directory."""
     from alembic.config import Config
 
@@ -58,6 +58,11 @@ def _alembic_config(url: str | None = None) -> "Config":
     config = Config(str(root / "alembic.ini"))
     config.set_main_option("script_location", str(root / "alembic"))
     config.set_main_option("sqlalchemy.url", url or settings.sqlalchemy_url)
+    # Off by default because the common caller is application startup, where
+    # Alembic's fileConfig would disable the logging the app has already set up
+    # and drop the root level to WARNING, silencing the service for the rest of
+    # the process — see the note in alembic/env.py. The CLI turns it back on.
+    config.attributes["configure_logging"] = configure_logging
     return config
 
 

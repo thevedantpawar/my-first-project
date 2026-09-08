@@ -7,6 +7,7 @@ would notice a model changing without a migration until a deployment failed.
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 import pytest
@@ -63,3 +64,37 @@ def test_chain_is_linear():
     script = ScriptDirectory(str(ROOT / "alembic"))
     heads = script.get_heads()
     assert len(heads) == 1, f"Expected exactly one migration head, found {heads}"
+
+
+def test_migrating_at_startup_does_not_silence_the_application(tmp_path):
+    """Running the chain must not take the application's logging away.
+
+    ``fileConfig`` defaults to ``disable_existing_loggers=True`` and resets the
+    root level to alembic.ini's WARNING. Migrations run inside application
+    startup on Railway, so calling it there disables every logger the app has
+    already configured — for the rest of the process's life.
+
+    This cost a real debugging session: the deploy log showed the boot warnings,
+    then the migrations, then nothing at all, which reads exactly like a process
+    that hung. The service was serving traffic the whole time.
+    """
+    from app.database import _alembic_config
+
+    logging.basicConfig(level=logging.INFO, force=True)
+    logger = logging.getLogger("microns.control.canary")
+
+    command.upgrade(_alembic_config(f"sqlite:///{tmp_path / 'canary.db'}"), "head")
+
+    assert not logger.disabled, "the application's logger was disabled by Alembic"
+    assert logger.isEnabledFor(logging.INFO), (
+        "the root log level was dropped to alembic.ini's WARNING, so every "
+        "INFO line the application emits after its first migration is lost"
+    )
+
+
+def test_the_cli_still_gets_alembic_logging():
+    """Suppressing it at startup must not suppress it at a terminal too."""
+    from app.database import _alembic_config
+
+    assert _alembic_config(configure_logging=True).attributes["configure_logging"] is True
+    assert _alembic_config().attributes["configure_logging"] is False
