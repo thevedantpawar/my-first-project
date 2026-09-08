@@ -27,6 +27,37 @@ logging.basicConfig(
 )
 logger = logging.getLogger("microns.control")
 
+#: The platform liveness probe, exempt from host checking below.
+HEALTH_PATH = "/health"
+
+
+class HealthExemptTrustedHost(TrustedHostMiddleware):
+    """Host checking, minus the platform's own healthcheck.
+
+    Railway probes the healthcheck path from inside its network, with a Host
+    header of its choosing rather than the public hostname. Host checking
+    answers that probe 400, so the deployment never becomes healthy: it sits in
+    "Deploying" until the platform gives up and kills it, while the container is
+    in fact serving every real request correctly. Nothing in the deploy log says
+    "rejected host" — the request never reaches the application.
+
+    Exempting the probe is safe. ``/health`` is unauthenticated and returns no
+    tenant data, and it is already reachable by anyone who uses the correct
+    hostname, so nothing new is exposed. Every other path is still checked,
+    which is what the middleware is actually for: DNS rebinding and Host-header
+    poisoning.
+
+    Listing the platform's healthcheck hostname in ALLOWED_HOSTS would work too,
+    until the platform changes it — and then it fails this same silent way.
+    """
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http" and scope.get("path") == HEALTH_PATH:
+            await self.app(scope, receive, send)
+            return
+        await super().__call__(scope, receive, send)
+
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -59,7 +90,7 @@ app = FastAPI(
 )
 
 if settings.is_production and settings.allowed_hosts != ["*"]:
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.allowed_hosts)
+    app.add_middleware(HealthExemptTrustedHost, allowed_hosts=settings.allowed_hosts)
 
 app.add_middleware(
     CORSMiddleware,
