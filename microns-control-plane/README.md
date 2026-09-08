@@ -26,6 +26,14 @@ to be automated — which is most of what this service is.
 
 ---
 
+## Handing a clinic over
+
+`docs/HANDOVER.md` covers the whole flow: create, build, point a domain at it,
+reveal the sign-in details, back up the key. It also lists what does *not* work
+on day one — SMS needs A2P registration, bookings need calendar credentials —
+because "the texts are not going out yet" is a very different conversation
+before signature than after.
+
 ## Running it locally
 
 ```bash
