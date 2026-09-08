@@ -41,8 +41,15 @@ class ProvisioningStep:
     ASSIGN_DOMAIN = "assign_domain"
     VERIFY_HEALTH = "verify_health"
 
-    #: Executed in this order. ATTACH_VOLUME before DEPLOY_DATABASE is the
-    #: whole point of the sequence being explicit.
+    #: Executed in this order, and the order carries two load-bearing
+    #: constraints that the tests assert rather than trust:
+    #:
+    #: * ATTACH_VOLUME before DEPLOY_DATABASE — a Postgres that has already
+    #:   started without a volume is writing to ephemeral disk.
+    #: * SET_VARIABLES and ASSIGN_DOMAIN before DEPLOY_SERVICE — the engine
+    #:   reads its configuration at boot, and ALLOWED_HOSTS cannot name a
+    #:   domain that has not been issued yet. Deploying first would mean a
+    #:   clinic's first boot is a misconfigured one.
     ORDER = [
         CREATE_PROJECT,
         CREATE_DATABASE,
@@ -51,8 +58,8 @@ class ProvisioningStep:
         GENERATE_SECRETS,
         CREATE_SERVICE,
         SET_VARIABLES,
-        DEPLOY_SERVICE,
         ASSIGN_DOMAIN,
+        DEPLOY_SERVICE,
         VERIFY_HEALTH,
     ]
 
