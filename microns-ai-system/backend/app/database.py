@@ -52,7 +52,7 @@ def get_db() -> Generator[Session, None, None]:
 BASELINE_REVISION = "600c428b0614"
 
 
-def _alembic_config(url: str | None = None) -> "Config":
+def _alembic_config(url: str | None = None, *, configure_logging: bool = False) -> "Config":
     """Alembic configuration pointed at this package's migration directory.
 
     ``url`` overrides the configured database, which is how the provisioner
@@ -65,6 +65,10 @@ def _alembic_config(url: str | None = None) -> "Config":
     config = Config(str(backend_dir / "alembic.ini"))
     config.set_main_option("script_location", str(backend_dir / "alembic"))
     config.set_main_option("sqlalchemy.url", url or settings.sqlalchemy_url)
+    # Off by default because the common caller is application startup, where
+    # Alembic's fileConfig would disable the logging the app has already set up
+    # — see the note in alembic/env.py. The CLI turns it back on.
+    config.attributes["configure_logging"] = configure_logging
     return config
 
 

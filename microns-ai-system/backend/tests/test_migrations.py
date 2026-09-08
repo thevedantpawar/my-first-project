@@ -11,6 +11,7 @@ These tests are what notices.
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 import pytest
@@ -167,3 +168,31 @@ def test_bootstrap_is_idempotent(tmp_path):
     _bootstrap_migrations(target_engine=db)
     _bootstrap_migrations(target_engine=db)  # must not raise
     db.dispose()
+
+
+def test_migrating_at_startup_does_not_silence_the_engine(tmp_path):
+    """Running the chain must not take the engine's logging away.
+
+    ``fileConfig`` defaults to ``disable_existing_loggers=True`` and resets the
+    root level to alembic.ini's WARNING. The engine migrates inside application
+    startup on Railway, so calling it there disables every logger already
+    configured — for the rest of the process's life.
+
+    That matters more here than in the control plane: this is the service
+    handling patient records, and a clinic whose engine stops logging after its
+    first boot is one nobody can operate. The symptom is not an error either —
+    the deploy log shows the boot lines, the migrations, and then silence, which
+    reads exactly like a hung process.
+    """
+    from app.database import _alembic_config
+
+    logging.basicConfig(level=logging.INFO, force=True)
+    logger = logging.getLogger("microns.canary")
+
+    command.upgrade(_alembic_config(f"sqlite:///{tmp_path / 'canary.db'}"), "head")
+
+    assert not logger.disabled, "the engine's logger was disabled by Alembic"
+    assert logger.isEnabledFor(logging.INFO), (
+        "the root log level was dropped to alembic.ini's WARNING, so every "
+        "INFO line the engine emits after its first migration is lost"
+    )

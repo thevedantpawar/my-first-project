@@ -27,7 +27,8 @@ def migrate() -> int:
 
     from app.database import _alembic_config
 
-    command.upgrade(_alembic_config(), "head")
+    # Run from a terminal, so Alembic's own logging is wanted here.
+    command.upgrade(_alembic_config(configure_logging=True), "head")
     print("Schema is at head.")
     return 0
 
