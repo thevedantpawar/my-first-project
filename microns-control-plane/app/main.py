@@ -18,7 +18,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from app import __version__
 from app.config import settings
 from app.database import engine, init_db
-from app.routers import auth
+from app.routers import auth, billing, clinics
 from app.schemas import HealthResponse
 
 logging.basicConfig(
@@ -121,6 +121,8 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
 
 
 app.include_router(auth.router)
+app.include_router(clinics.router)
+app.include_router(billing.router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["health"])
