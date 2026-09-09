@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import secrets
 import sys
+from pathlib import Path
 from datetime import timedelta
 
 from sqlalchemy import func, select
@@ -98,6 +99,102 @@ def cmd_seed_demo(args) -> int:
         db.close()
 
 
+def cmd_demo(args) -> int:
+    """Seed, clear or inspect the Glow Aesthetics demonstration clinic.
+
+    Refuses to run in production — a fictional patient in a live clinic
+    database is a data-integrity incident, and no sales demo is worth one.
+    """
+    from app.database import SessionLocal, init_db
+    from app.services import demo_service
+
+    init_db()
+    db = SessionLocal()
+    try:
+        if args.action == "status":
+            state = demo_service.demo_state(db)
+            print(f"demo_mode:      {'on' if state['active'] else 'off'}")
+            print(f"seeded:         {'yes' if state['seeded'] else 'no'}")
+            print(f"demo patients:  {state['patients']}")
+            return 0
+
+        if args.action == "clear":
+            removed = demo_service.clear(db)
+            print("Cleared: " + ", ".join(f"{value} {key}" for key, value in removed.items()))
+            return 0
+
+        counts = demo_service.seed(db, replace=not args.keep)
+        print(f"Seeded {counts.pop('clinic')}:")
+        for key, value in counts.items():
+            print(f"  {value:>4} {key.replace('_', ' ')}")
+        print()
+        print("Set DEMO_MODE=true so the console badges this data as a demonstration.")
+        return 0
+    except demo_service.DemoModeRefused as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    finally:
+        db.close()
+
+
+def cmd_audit(args) -> int:
+    """Run a Leak Audit over a prospect's enquiry export.
+
+    Read-only and database-free by design: this reads someone else's
+    spreadsheet and prints arithmetic. It opens a session only to borrow the
+    real scoring function, so an audit and a live enquiry are scored by
+    exactly the same code.
+    """
+    from app.database import SessionLocal
+    from app.services import leak_audit
+    from app.services.lead_service import LeadService
+
+    path = Path(args.csv)
+    if not path.exists():
+        print(f"No such file: {path}", file=sys.stderr)
+        return 1
+
+    try:
+        text = path.read_text(encoding="utf-8-sig")
+    except UnicodeDecodeError:
+        # Clinic exports out of older spreadsheet tools are often cp1252.
+        text = path.read_text(encoding="cp1252", errors="replace")
+
+    db = SessionLocal()
+    try:
+        service = LeadService(db)
+        audit, rows = leak_audit.audit_csv(
+            text,
+            scorer=service.score_lead,
+            slow_hours=args.slow_hours,
+        )
+    finally:
+        db.close()
+
+    if not audit.total_rows:
+        print("No rows found in that file.", file=sys.stderr)
+        for warning in audit.warnings:
+            print(f"  {warning}", file=sys.stderr)
+        return 1
+
+    report = leak_audit.render_report(audit, args.clinic)
+    print(report)
+
+    if args.out:
+        Path(args.out).write_text(report + "\n", encoding="utf-8")
+        print(f"\nWritten to {args.out}", file=sys.stderr)
+
+    if args.json:
+        import json as _json
+
+        Path(args.json).write_text(
+            _json.dumps(audit.as_dict(), indent=2, default=str) + "\n", encoding="utf-8"
+        )
+        print(f"Figures written to {args.json}", file=sys.stderr)
+
+    return 0
+
+
 def cmd_rotate_phi(_args) -> int:
     """Re-encrypt every PHI field under the current ENCRYPTION_KEY.
 
@@ -178,6 +275,29 @@ def main(argv: list[str] | None = None) -> int:
     subparsers.add_parser("seed-demo", help="insert demo patients, appointments and leads").set_defaults(
         func=cmd_seed_demo
     )
+    demo_parser = subparsers.add_parser(
+        "demo", help="seed, clear or inspect the Glow Aesthetics demo clinic"
+    )
+    demo_parser.add_argument(
+        "action", choices=("seed", "clear", "status"), nargs="?", default="seed"
+    )
+    demo_parser.add_argument(
+        "--keep", action="store_true", help="add to existing demo data instead of replacing it"
+    )
+    demo_parser.set_defaults(func=cmd_demo)
+
+    audit_parser = subparsers.add_parser(
+        "audit", help="run a Leak Audit over a prospect's enquiry export"
+    )
+    audit_parser.add_argument("csv", help="path to the clinic's enquiry export")
+    audit_parser.add_argument("--clinic", default="this clinic", help="name for the report header")
+    audit_parser.add_argument(
+        "--slow-hours", type=float, default=4.0, help="what counts as a slow reply (default 4)"
+    )
+    audit_parser.add_argument("--out", help="also write the report to this file")
+    audit_parser.add_argument("--json", help="also write the raw figures to this JSON file")
+    audit_parser.set_defaults(func=cmd_audit)
+
     subparsers.add_parser("rotate-phi", help="re-encrypt PHI under the current key").set_defaults(
         func=cmd_rotate_phi
     )

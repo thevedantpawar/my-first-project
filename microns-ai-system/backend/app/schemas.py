@@ -29,7 +29,11 @@ class HealthResponse(BaseModel):
     environment: str
     version: str
     database: str
+    #: Booleans only, so existing consumers can keep treating it as a flag map.
     integrations: dict[str, bool]
+    #: Which language model is in use and what its retention terms are. Its own
+    #: field rather than a string smuggled into ``integrations``.
+    llm: dict[str, Any] = Field(default_factory=dict)
     warnings: list[str] = Field(default_factory=list)
 
 
@@ -47,6 +51,10 @@ class AppointmentCreate(BaseModel):
     source: str = "staff"
     sms_consent: bool = True
     notes: Optional[str] = None
+    #: What the clinic is charging for this appointment, in cents. Optional —
+    #: when omitted the clinic's service price list supplies an expected value
+    #: instead, and the console labels it as such.
+    price_cents: Optional[int] = Field(default=None, ge=0)
 
 
 class AppointmentOut(BaseModel):

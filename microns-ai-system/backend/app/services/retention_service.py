@@ -15,7 +15,7 @@ from datetime import timedelta
 from typing import Any, Optional
 from uuid import UUID
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, or_, select, update
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -122,11 +122,33 @@ class RetentionService:
         if not appointment.is_active:
             return {"status": "skipped", "reason": f"appointment_{appointment.status}"}
 
-        already_sent = (
-            appointment.reminder_24h_sent_at if kind == "24h" else appointment.reminder_2h_sent_at
-        )
+        field = "reminder_24h_sent_at" if kind == "24h" else "reminder_2h_sent_at"
+        column = getattr(Appointment, field)
+
+        already_sent = getattr(appointment, field)
         if already_sent is not None:
             return {"status": "skipped", "reason": "already_sent", "sent_at": already_sent.isoformat()}
+
+        # Claim the reminder *before* sending, in one conditional UPDATE, and
+        # commit the claim on its own.
+        #
+        # Marking it afterwards looks equivalent and is not: the send succeeds,
+        # then the commit fails or the process dies, and the next run finds no
+        # marker and texts the patient again. Read-then-write also lets a
+        # retried webhook through, because both reads see None before either
+        # writes. Duplicate reminders are the one failure here a patient
+        # actually notices, and the one with regulatory weight.
+        now = utcnow()
+        claimed = self.db.execute(
+            update(Appointment)
+            .where(Appointment.id == appointment.id, column.is_(None))
+            .values(**{field: now})
+        ).rowcount
+        if not claimed:
+            self.db.rollback()
+            return {"status": "skipped", "reason": "already_sent"}
+        self.db.commit()
+        self.db.refresh(appointment)
 
         patient = appointment.patient
         first_name = _first_name(patient)
@@ -141,11 +163,16 @@ class RetentionService:
             sms_consent=patient.sms_consent if patient else None,
         )
 
-        now = utcnow()
-        if kind == "24h":
-            appointment.reminder_24h_sent_at = now
-        else:
-            appointment.reminder_2h_sent_at = now
+        # A transient failure releases the claim so the next run retries. A
+        # suppressed message keeps it: no consent is a decision, not an outage,
+        # and re-deciding it every hour is how a patient who opted out gets
+        # texted anyway the moment consent is misread.
+        if result.status == "failed":
+            self.db.execute(
+                update(Appointment)
+                .where(Appointment.id == appointment.id)
+                .values(**{field: None})
+            )
 
         self.record_event(
             event_type=(
@@ -163,9 +190,20 @@ class RetentionService:
             },
         )
         self.db.commit()
+        # "suppressed" is not "failed". They now behave differently — a failure
+        # releases the claim and retries, a suppression keeps it — so reporting
+        # both as failed hides the difference from whoever is reading the run,
+        # and makes a clinic with no SMS consent look like a broken integration.
+        if result.ok:
+            status = "sent"
+        elif result.status == "suppressed":
+            status = "suppressed"
+        else:
+            status = "failed"
         return {
-            "status": "sent" if result.ok else "failed",
+            "status": status,
             "sms_status": result.status,
+            "reason": result.reason,
             "appointment_id": str(appointment.id),
             "kind": kind,
         }
@@ -236,6 +274,72 @@ class RetentionService:
             for row in rows
         ]
 
+    # ------------------------------------------------------------------ #
+    # Claiming a message before it is sent
+    # ------------------------------------------------------------------ #
+    def _claim(self, model, row_id, field: str, *, not_after=None) -> tuple[bool, Any]:
+        """Reserve the right to send, in one conditional UPDATE.
+
+        Every sender in this module used to read its "already sent" marker,
+        send, and then write the marker, committing both at the end. That looks
+        equivalent to claiming first and is not: the message reaches Twilio, the
+        commit then fails or the process dies, and the next scheduled run finds
+        no marker and texts the patient again. Read-then-write also lets a
+        retried webhook through, because both reads see the old value before
+        either writes.
+
+        Duplicate messages are the failure a patient actually notices, and the
+        one carrying regulatory weight.
+
+        Returns ``(claimed, previous_value)``; the previous value is what
+        :meth:`_release` restores if the send then fails, so a failed retry does
+        not erase a genuine earlier send date.
+        """
+        column = getattr(model, field)
+        previous = self.db.execute(
+            select(column).where(model.id == row_id)
+        ).scalar_one_or_none()
+
+        condition = column.is_(None)
+        if not_after is not None:
+            # Cooldown rather than once-ever: claim if never sent, or if the
+            # last send is older than the window.
+            condition = or_(column.is_(None), column < not_after)
+
+        claimed = self.db.execute(
+            update(model).where(model.id == row_id, condition).values(**{field: utcnow()})
+        ).rowcount
+        if not claimed:
+            self.db.rollback()
+            return False, previous
+        self.db.commit()
+        return True, previous
+
+    def _release(self, model, row_id, field: str, previous) -> None:
+        """Undo a claim whose message never went out.
+
+        Only for a transient failure. A suppressed message keeps its claim: no
+        consent is a decision, not an outage, and re-deciding it every run is
+        how somebody who opted out gets texted the first time consent is
+        misread.
+        """
+        self.db.execute(
+            update(model).where(model.id == row_id).values(**{field: previous})
+        )
+
+    @staticmethod
+    def _send_status(result) -> str:
+        """"sent", "suppressed" or "failed" — never two of those conflated.
+
+        They behave differently now: a failure releases the claim and retries, a
+        suppression keeps it. Reporting a suppressed message as failed makes a
+        clinic with no consent on file look like a broken integration, and
+        reporting a failure as suppressed hides an outage.
+        """
+        if result.ok:
+            return "sent"
+        return "suppressed" if result.status == "suppressed" else "failed"
+
     def send_reactivation(self, appointment_id: UUID) -> dict[str, Any]:
         appointment = self.db.get(Appointment, appointment_id)
         if appointment is None:
@@ -244,6 +348,10 @@ class RetentionService:
             return {"status": "skipped", "reason": "already_sent"}
         if self.has_rebooked(appointment):
             return {"status": "skipped", "reason": "already_rebooked"}
+
+        claimed, previous = self._claim(Appointment, appointment_id, "reactivation_sent_at")
+        if not claimed:
+            return {"status": "skipped", "reason": "already_sent"}
 
         patient = appointment.patient
         result = self.sms.send(
@@ -254,7 +362,8 @@ class RetentionService:
             sms_consent=patient.sms_consent if patient else None,
             marketing_consent=patient.marketing_consent if patient else None,
         )
-        appointment.reactivation_sent_at = utcnow()
+        if result.status == "failed":
+            self._release(Appointment, appointment_id, "reactivation_sent_at", previous)
         self.record_event(
             event_type=RetentionEventType.REACTIVATION_SENT,
             patient_id=appointment.patient_id,
@@ -262,7 +371,11 @@ class RetentionService:
             metadata={"sms_status": result.status, "suppressed_reason": result.reason},
         )
         self.db.commit()
-        return {"status": "sent" if result.ok else "suppressed", "sms_status": result.status}
+        return {
+            "status": self._send_status(result),
+            "sms_status": result.status,
+            "reason": result.reason,
+        }
 
     def send_credit_offer(self, appointment_id: UUID) -> dict[str, Any]:
         """The '$50 credit expires tomorrow' nudge, 3 days after a no-show."""
@@ -275,6 +388,10 @@ class RetentionService:
             return {"status": "skipped", "reason": "already_rebooked"}
 
         patient = appointment.patient
+        claimed, previous = self._claim(Appointment, appointment_id, "credit_offer_sent_at")
+        if not claimed:
+            return {"status": "skipped", "reason": "already_sent"}
+
         result = self.sms.send(
             to=patient.phone if patient else None,
             body=templates.no_show_credit_offer(first_name=_first_name(patient)),
@@ -283,7 +400,8 @@ class RetentionService:
             sms_consent=patient.sms_consent if patient else None,
             marketing_consent=patient.marketing_consent if patient else None,
         )
-        appointment.credit_offer_sent_at = utcnow()
+        if result.status == "failed":
+            self._release(Appointment, appointment_id, "credit_offer_sent_at", previous)
         self.record_event(
             event_type=RetentionEventType.CREDIT_OFFER_SENT,
             patient_id=appointment.patient_id,
@@ -295,7 +413,11 @@ class RetentionService:
             },
         )
         self.db.commit()
-        return {"status": "sent" if result.ok else "suppressed", "sms_status": result.status}
+        return {
+            "status": self._send_status(result),
+            "sms_status": result.status,
+            "reason": result.reason,
+        }
 
     def has_rebooked(self, appointment: Appointment) -> bool:
         """Did this patient book anything after the missed appointment?"""
@@ -354,6 +476,10 @@ class RetentionService:
             return {"status": "skipped", "reason": f"appointment_{appointment.status}"}
 
         patient = appointment.patient
+        claimed, previous = self._claim(Appointment, appointment_id, "review_requested_at")
+        if not claimed:
+            return {"status": "skipped", "reason": "already_requested"}
+
         result = self.sms.send(
             to=patient.phone if patient else None,
             body=templates.review_request(first_name=_first_name(patient)),
@@ -362,7 +488,8 @@ class RetentionService:
             sms_consent=patient.sms_consent if patient else None,
             marketing_consent=patient.marketing_consent if patient else None,
         )
-        appointment.review_requested_at = utcnow()
+        if result.status == "failed":
+            self._release(Appointment, appointment_id, "review_requested_at", previous)
         self.record_event(
             event_type=RetentionEventType.REVIEW_REQUESTED,
             patient_id=appointment.patient_id,
@@ -370,7 +497,11 @@ class RetentionService:
             metadata={"sms_status": result.status, "review_url": settings.clinic_review_url},
         )
         self.db.commit()
-        return {"status": "sent" if result.ok else "suppressed", "sms_status": result.status}
+        return {
+            "status": self._send_status(result),
+            "sms_status": result.status,
+            "reason": result.reason,
+        }
 
     def review_status(self, appointment_id: UUID) -> dict[str, Any]:
         appointment = self.db.get(Appointment, appointment_id)
@@ -453,7 +584,7 @@ class RetentionService:
             system=system,
             user=user,
             purpose="review_response_draft",
-            model=settings.openai_model_smart,
+            model=settings.llm_model_smart,
             temperature=0.6,
             max_tokens=200,
             audit=self.audit,
@@ -533,6 +664,12 @@ class RetentionService:
         ):
             return {"status": "skipped", "reason": "cooldown"}
 
+        claimed, previous = self._claim(
+            Patient, patient_id, "reactivation_sent_at", not_after=days_ago(cooldown_days)
+        )
+        if not claimed:
+            return {"status": "skipped", "reason": "cooldown"}
+
         result = self.sms.send(
             to=patient.phone,
             body=templates.dormant_reactivation(
@@ -543,14 +680,19 @@ class RetentionService:
             sms_consent=patient.sms_consent,
             marketing_consent=patient.marketing_consent,
         )
-        patient.reactivation_sent_at = utcnow()
+        if result.status == "failed":
+            self._release(Patient, patient_id, "reactivation_sent_at", previous)
         self.record_event(
             event_type=RetentionEventType.REACTIVATION_SENT,
             patient_id=patient.id,
             metadata={"sms_status": result.status, "trigger": "dormant", "suppressed_reason": result.reason},
         )
         self.db.commit()
-        return {"status": "sent" if result.ok else "suppressed", "sms_status": result.status}
+        return {
+            "status": self._send_status(result),
+            "sms_status": result.status,
+            "reason": result.reason,
+        }
 
     # ------------------------------------------------------------------ #
     # Dashboard

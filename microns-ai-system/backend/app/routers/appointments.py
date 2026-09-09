@@ -23,6 +23,7 @@ from app.schemas import (
 )
 from app.services.booking_service import get_booking_service
 from app.services.hipaa_audit import DataCategory, HIPAAAuditLogger
+from app.services import pricing_service
 from app.services.patient_service import get_or_create_patient
 from app.services.retention_service import RetentionService
 from app.utils import to_utc_naive, utcnow
@@ -102,6 +103,12 @@ def create_appointment(
         source=payload.source,
         encrypted_notes=payload.notes,
     )
+    # A price supplied by staff is evidence; the price list is only a
+    # fallback, and never overwrites what a human actually typed.
+    if payload.price_cents is not None:
+        pricing_service.mark_recorded_price(appointment, payload.price_cents)
+    else:
+        pricing_service.apply_expected_price(appointment)
     db.add(appointment)
     db.flush()
     audit.log_write(str(patient.id), DataCategory.APPOINTMENT, user, details={"source": payload.source})

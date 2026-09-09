@@ -339,3 +339,356 @@ def test_single_url_dispatcher_routes_by_message_type(client, vapi_headers):
     )
     assert ended.status_code == 200
     assert ended.json()["duration_seconds"] == 42
+
+
+# --------------------------------------------------------------------------- #
+# Rate limiting on the provider webhooks
+#
+# The shared secret is the real control; compare_digest removes the timing
+# signal but not the guessing rate. Without a limit, an attacker gets as many
+# attempts per minute as the network allows.
+# --------------------------------------------------------------------------- #
+def test_wrong_vapi_secret_is_eventually_rate_limited(client, monkeypatch):
+    from app.config import settings
+
+    monkeypatch.setattr(settings, "vapi_webhook_secret", "the-real-secret")
+
+    statuses = [
+        client.post(
+            "/voice/inbound",
+            json={"call_id": "c1", "caller_number": "+15550100"},
+            headers={"X-Vapi-Secret": f"guess-{n}"},
+        ).status_code
+        for n in range(140)
+    ]
+
+    assert 401 in statuses, "wrong secrets must be rejected"
+    assert 429 in statuses, "guessing must not be allowed at an unbounded rate"
+
+
+def test_the_limit_is_generous_enough_for_a_real_call(client, monkeypatch):
+    """A real assistant sends a handful of requests per call, not hundreds."""
+    from app.config import settings
+
+    monkeypatch.setattr(settings, "vapi_webhook_secret", "the-real-secret")
+
+    statuses = [
+        client.post(
+            "/voice/inbound",
+            json={"call_id": f"call-{n}", "caller_number": "+15550100"},
+            headers={"X-Vapi-Secret": "the-real-secret"},
+        ).status_code
+        for n in range(20)
+    ]
+    assert 429 not in statuses, "ordinary call traffic must not be throttled"
+
+
+# --------------------------------------------------------------------------- #
+# The assistant-request response has to be in VAPI's dialect, not ours
+# --------------------------------------------------------------------------- #
+def test_assistant_request_answers_in_the_shape_vapi_actually_reads(
+    client, vapi_headers, monkeypatch
+):
+    """``assistantOverrides``, camelCase, alongside an assistant id.
+
+    Returning the engine's own ``assistant_overrides`` is not an error VAPI
+    reports. It is ignored: the personalised greeting never applies and the
+    caller hears the assistant's static first message, which sounds exactly
+    like a working integration. The only way to notice is to read the body.
+    """
+    from app.config import settings
+
+    monkeypatch.setattr(settings, "vapi_assistant_id", "asst_live_123", raising=False)
+
+    response = client.post("/webhooks/vapi", json=inbound_payload(), headers=vapi_headers)
+    assert response.status_code == 200
+    body = response.json()
+
+    assert body["assistantId"] == "asst_live_123"
+    assert "assistantOverrides" in body, (
+        "VAPI reads assistantOverrides; assistant_overrides is silently dropped"
+    )
+    assert "assistant_overrides" not in body
+
+    overrides = body["assistantOverrides"]
+    assert overrides["firstMessage"], "the personalised greeting is the point of the call"
+    assert "variableValues" in overrides
+
+
+def test_assistant_request_declines_audibly_when_no_assistant_is_configured(
+    client, vapi_headers, monkeypatch
+):
+    """A half-configured number should say something, not drop the call.
+
+    VAPI only asks for an assistant when the phone number has none attached, so
+    an assistant-request with no VAPI_ASSISTANT_ID set means the number is
+    misconfigured. Returning an invalid body there fails the call with nothing
+    the caller or the log can act on.
+    """
+    from app.config import settings
+
+    monkeypatch.setattr(settings, "vapi_assistant_id", None, raising=False)
+
+    response = client.post("/webhooks/vapi", json=inbound_payload(), headers=vapi_headers)
+    assert response.status_code == 200
+    assert response.json()["error"], "VAPI needs an error string to speak to the caller"
+
+
+def test_the_call_is_still_recorded_even_when_the_assistant_is_unconfigured(
+    client, vapi_headers, monkeypatch, db
+):
+    """Declining the assistant must not lose the fact that someone rang.
+
+    A missed call from a misconfigured number is still a lead.
+    """
+    from app.config import settings
+    from app.models.voice_call import VoiceCall
+
+    monkeypatch.setattr(settings, "vapi_assistant_id", None, raising=False)
+    before = db.query(VoiceCall).count()
+
+    client.post("/webhooks/vapi", json=inbound_payload(), headers=vapi_headers)
+
+    db.expire_all()
+    assert db.query(VoiceCall).count() == before + 1
+
+
+# --------------------------------------------------------------------------- #
+# A caller names a wall-clock time, not an instant in UTC
+# --------------------------------------------------------------------------- #
+def test_a_spoken_time_is_booked_in_the_clinics_own_timezone(client, vapi_headers, db):
+    """"Two o'clock" means two o'clock where the clinic is.
+
+    A voice agent transcribing a spoken time has no offset to attach, so it
+    sends a naive timestamp. Reading that as UTC books an America/New_York
+    clinic four hours early: the caller asks for 2pm and the appointment lands
+    at 10am. Nothing about the stored row looks wrong — it is found when
+    somebody arrives to an empty waiting room.
+    """
+    from app.models.appointment import Appointment
+    from app.utils import to_clinic_time
+
+    response = client.post(
+        "/webhooks/vapi",
+        json=tool_payload(
+            "book_appointment",
+            {
+                "service": "botox",
+                "slot_start": "2099-09-15T14:00:00",
+                "patient_phone": "+15550001111",
+                "patient_name": "Wall Clock",
+            },
+        ),
+        headers=vapi_headers,
+    )
+    assert response.status_code == 200
+
+    appointment = (
+        db.query(Appointment).order_by(Appointment.created_at.desc()).first()
+    )
+    assert appointment is not None
+    local = to_clinic_time(appointment.scheduled_for)
+    assert local.hour == 14, (
+        f"caller asked for 14:00 clinic time, appointment is at {local.hour}:00 local"
+    )
+
+
+def test_an_explicit_offset_is_honoured_and_not_shifted_again(client, vapi_headers, db):
+    """The engine's own slot values carry a Z, so echoing one must round-trip."""
+    from app.models.appointment import Appointment
+
+    client.post(
+        "/webhooks/vapi",
+        json=tool_payload(
+            "book_appointment",
+            {
+                "service": "botox",
+                "slot_start": "2099-09-16T18:00:00Z",
+                "patient_phone": "+15550002222",
+                "patient_name": "Explicit Offset",
+            },
+        ),
+        headers=vapi_headers,
+    )
+
+    appointment = db.query(Appointment).order_by(Appointment.created_at.desc()).first()
+    assert appointment is not None
+    assert appointment.scheduled_for.hour == 18, (
+        "an explicit Z is already UTC and must not be shifted by the clinic offset"
+    )
+
+
+def test_the_model_is_given_the_slot_values_not_just_the_sentence(client, vapi_headers):
+    """Otherwise it has to invent a timestamp from prose when it books.
+
+    check_availability's spoken form is "I have Tuesday at 2pm or ...". If that
+    is all the model ever sees, the ISO string it sends to book_appointment is
+    reconstructed rather than echoed — and a reconstruction has no offset.
+    """
+    response = client.post(
+        "/webhooks/vapi",
+        json=tool_payload("check_availability", {"service": "botox"}),
+        headers=vapi_headers,
+    )
+    assert response.status_code == 200
+
+    shown = response.json()["results"][0]["result"]
+    assert isinstance(shown, str), "VAPI hands the model text"
+    # The machine-readable start of an offered slot has to be in there.
+    assert "start" in shown, (
+        "the model needs the slot's start value to echo back, not only its label"
+    )
+    assert "Z" in shown, "and it has to carry an explicit offset"
+
+
+def test_a_tool_call_id_is_never_null(client, vapi_headers):
+    """VAPI rejects a results entry whose toolCallId is null."""
+    response = client.post(
+        "/webhooks/vapi",
+        json={
+            "message": {
+                "type": "tool-calls",
+                "call": {"id": "call_test_1"},
+                "toolCalls": [{"function": {"name": "get_pricing", "arguments": {}}}],
+            }
+        },
+        headers=vapi_headers,
+    )
+    assert response.status_code == 200
+    assert response.json()["results"][0]["toolCallId"] == ""
+
+
+# --------------------------------------------------------------------------- #
+# The availability rules have to apply on the way in, not only on the way out
+# --------------------------------------------------------------------------- #
+def _book(client, headers, **params):
+    return client.post(
+        "/webhooks/vapi", json=tool_payload("book_appointment", params), headers=headers
+    )
+
+
+def test_the_same_slot_cannot_be_booked_twice(client, vapi_headers, db):
+    """Two callers, one slot. Both used to be told they were all set.
+
+    get_available_slots excluded booked windows, so the agent would not *offer*
+    a taken slot — but nothing checked on the way in, and a caller who names a
+    time directly never goes through the offer path.
+    """
+    from app.models.appointment import Appointment
+
+    first = _book(
+        client, vapi_headers,
+        service="botox", slot_start="2099-09-15T14:00:00",
+        patient_phone="+15550003333", patient_name="First Caller",
+    )
+    assert first.json()["result"].get("appointment_id"), first.json()
+
+    second = _book(
+        client, vapi_headers,
+        service="botox", slot_start="2099-09-15T14:00:00",
+        patient_phone="+15550004444", patient_name="Second Caller",
+    )
+    body = second.json()
+    assert body["result"].get("error") == "taken", body
+    assert "taken" in body["speech"].lower()
+
+    booked = (
+        db.query(Appointment)
+        .filter(Appointment.service == "botox")
+        .filter(Appointment.scheduled_for.isnot(None))
+        .all()
+    )
+    at_that_time = [a for a in booked if a.scheduled_for.hour == 18]
+    assert len(at_that_time) == 1, "the second caller must not get a row"
+
+
+def test_a_time_in_the_past_is_refused(client, vapi_headers):
+    body = _book(
+        client, vapi_headers,
+        service="botox", slot_start="2020-01-06T14:00:00",
+        patient_phone="+15550005555",
+    ).json()
+    assert body["result"]["error"] == "past", body
+    assert body["speech"]
+
+
+def test_a_time_outside_opening_hours_is_refused(client, vapi_headers):
+    """3am is not a bookable appointment, however clearly the caller said it."""
+    body = _book(
+        client, vapi_headers,
+        service="botox", slot_start="2099-09-15T03:00:00",
+        patient_phone="+15550006666",
+    ).json()
+    assert body["result"]["error"] == "closed", body
+
+
+def test_sunday_is_refused(client, vapi_headers):
+    body = _book(
+        client, vapi_headers,
+        service="botox", slot_start="2099-09-20T14:00:00",
+        patient_phone="+15550007777",
+    ).json()
+    assert body["result"]["error"] == "closed", body
+
+
+def test_a_refusal_always_offers_a_way_forward(client, vapi_headers):
+    """"That doesn't work" with no next step is where a call gets abandoned."""
+    for slot in ("2020-01-06T14:00:00", "2099-09-15T03:00:00", "2099-09-20T14:00:00"):
+        speech = _book(
+            client, vapi_headers, service="botox", slot_start=slot,
+            patient_phone="+15550008888",
+        ).json()["speech"]
+        assert "?" in speech, f"no question asked back for {slot}: {speech!r}"
+
+
+def test_rescheduling_onto_its_own_time_is_not_a_collision(client, vapi_headers, db):
+    """An appointment must not be found to collide with itself."""
+    from app.models.appointment import Appointment
+
+    created = _book(
+        client, vapi_headers,
+        service="botox", slot_start="2099-09-16T15:00:00",
+        patient_phone="+15550009999", patient_name="Mover",
+    ).json()
+    appointment_id = created["result"]["appointment_id"]
+
+    response = client.post(
+        "/webhooks/vapi",
+        json=tool_payload(
+            "reschedule_appointment",
+            {"appointment_id": appointment_id, "new_slot_start": "2099-09-16T15:00:00"},
+        ),
+        headers=vapi_headers,
+    )
+    body = response.json()
+    assert body["result"].get("error") != "taken", (
+        "moving an appointment to the time it already has is a no-op, not a clash"
+    )
+
+
+def test_rescheduling_onto_a_taken_slot_is_refused(client, vapi_headers):
+    from_one = _book(
+        client, vapi_headers,
+        service="botox", slot_start="2099-09-16T16:00:00",
+        patient_phone="+15550010001", patient_name="Holder",
+    ).json()
+    assert from_one["result"].get("appointment_id")
+
+    mover = _book(
+        client, vapi_headers,
+        service="botox", slot_start="2099-09-16T17:00:00",
+        patient_phone="+15550010002", patient_name="Mover Two",
+    ).json()
+
+    response = client.post(
+        "/webhooks/vapi",
+        json=tool_payload(
+            "reschedule_appointment",
+            {
+                "appointment_id": mover["result"]["appointment_id"],
+                "new_slot_start": "2099-09-16T16:00:00",
+            },
+        ),
+        headers=vapi_headers,
+    )
+    assert response.json()["result"].get("error") == "taken", response.json()

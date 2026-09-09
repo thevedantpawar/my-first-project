@@ -1,0 +1,99 @@
+/* ==========================================================================
+   The few patterns specific to one page. Everything else is in
+   components.css — if a rule here starts being useful twice, it moves.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Automations: the workflow flow diagram
+   -------------------------------------------------------------------------- */
+.flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.flow__step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.flow__node {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  font-size: var(--text-xs);
+  color: var(--ink-secondary);
+  white-space: nowrap;
+}
+
+.flow__index {
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: var(--accent-50);
+  color: var(--accent-ink);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  flex: none;
+}
+
+.flow__arrow {
+  color: var(--ink-faint);
+  flex: none;
+}
+
+@media (max-width: 700px) {
+  .flow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .flow__step {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .flow__node {
+    white-space: normal;
+  }
+
+  .flow__arrow {
+    transform: rotate(90deg);
+    align-self: center;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Conversations: two panels on desktop, stacked on a phone
+   -------------------------------------------------------------------------- */
+@media (max-width: 1000px) {
+  .conversations {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .conversations > .card--flush ul {
+    max-height: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Hero: the side metrics wrap under the headline on narrow screens rather
+   than shrinking into unreadable columns.
+   -------------------------------------------------------------------------- */
+@media (max-width: 760px) {
+  .hero {
+    padding: var(--space-5);
+  }
+
+  .hero__value {
+    font-size: 2.25rem;
+  }
+}
