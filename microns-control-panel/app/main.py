@@ -69,11 +69,11 @@ async def lifespan(app: FastAPI):
 
     init_db()
     logger.info(
-        "Microns Control Panel v%s ready (env=%s, railway=%s, stripe=%s)",
+        "Microns Control Panel v%s ready (env=%s, railway=%s, razorpay=%s)",
         __version__,
         settings.environment,
         "configured" if settings.railway_enabled else "not configured",
-        "configured" if settings.stripe_enabled else "not configured",
+        "configured" if settings.razorpay_enabled else "not configured",
     )
     yield
     logger.info("Shutting down")
@@ -172,7 +172,7 @@ def health() -> HealthResponse:
         database=database,
         integrations={
             "railway": settings.railway_enabled,
-            "stripe": settings.stripe_enabled,
+            "razorpay": settings.razorpay_enabled,
             "master_key_configured": bool(settings.master_key),
         },
         warnings=settings.startup_warnings(),

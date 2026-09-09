@@ -184,7 +184,21 @@ class CheckoutRequest(BaseModel):
 
 
 class CheckoutResponse(BaseModel):
+    """Where to send the customer to authorise the mandate.
+
+    Razorpay's hosted page rather than its Checkout widget — the widget is a
+    third-party script, and this origin reveals escrowed encryption keys.
+    """
+
     checkout_url: str
+    subscription_id: Optional[str] = None
+    plan: Optional[str] = None
+
+
+class CancelResponse(BaseModel):
+    status: Optional[str] = None
+    ends_at: Optional[datetime] = None
+    cancelled_at_cycle_end: bool = True
 
 
 # --------------------------------------------------------------------------- #

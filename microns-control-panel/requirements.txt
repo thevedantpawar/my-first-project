@@ -22,7 +22,6 @@ cryptography==50.0.0
 
 # --- External services ---
 httpx==0.28.1
-stripe==14.1.0
 tenacity==9.1.4
 
 # --- Test tooling ---

@@ -1,9 +1,9 @@
 """What the account pays, and whether it is currently paid up.
 
-Stripe is the source of truth for billing state; this row is a local cache of
-it, updated by webhook. Nothing here decides what Stripe charges — it decides
+Razorpay is the source of truth for billing state; this row is a local cache of
+it, updated by webhook. Nothing here decides what Razorpay charges — it decides
 whether a clinic's engine keeps serving traffic, which has to be answerable
-without a network call to Stripe on every request.
+without a network call to Razorpay on every request.
 """
 
 from __future__ import annotations
@@ -19,7 +19,12 @@ from app.utils import utcnow
 
 
 class SubscriptionStatus:
-    """Mirrors Stripe's subscription statuses, plus a local ``none``.
+    """This system's own statuses. Razorpay's are mapped onto them.
+
+    Kept independent of the processor deliberately: entitlement is a question
+    about this product, and Razorpay's vocabulary (``halted``, ``pending``,
+    ``authenticated``) does not answer it in the same words Stripe's did. The
+    mapping lives in ``billing.STATUS_FROM_RAZORPAY``.
 
     ``TRIALING`` and ``ACTIVE`` entitle service. ``PAST_DUE`` does too, for a
     grace period — a failed card should not take a clinic's phone line down the
@@ -46,9 +51,12 @@ class Subscription(Base):
         GUID, ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False, unique=True, index=True
     )
 
-    stripe_customer_id = Column(String(64), nullable=True, index=True)
-    stripe_subscription_id = Column(String(64), nullable=True, index=True)
-    stripe_price_id = Column(String(64), nullable=True)
+    # Provider-neutral names. These held Stripe ids and now hold Razorpay ones;
+    # naming them after whichever processor is current is how a column ends up
+    # called stripe_customer_id with a Razorpay value in it.
+    provider_customer_id = Column(String(64), nullable=True, index=True)
+    provider_subscription_id = Column(String(64), nullable=True, index=True)
+    provider_plan_id = Column(String(64), nullable=True)
 
     plan = Column(String(40), nullable=False, default="starter")
     status = Column(String(32), nullable=False, default=SubscriptionStatus.NONE, index=True)

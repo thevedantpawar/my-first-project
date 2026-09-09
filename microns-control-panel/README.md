@@ -44,7 +44,7 @@ uvicorn app.main:app --reload --port 8080
 ```
 
 Without `RAILWAY_API_TOKEN` the app runs fine and clinics can be created, but
-provisioning is refused with a clear message. Without Stripe, signup works and
+provisioning is refused with a clear message. Without Razorpay, signup works and
 nothing is billed. Both states are reported at boot and on `/health`.
 
 ```bash
@@ -115,18 +115,30 @@ every row already written unreadable.
 
 ## Billing
 
-Stripe owns the money; this service owns one question: should this account's
+Razorpay owns the money; this service owns one question: should this account's
 clinics still be serving traffic?
 
 A billing problem **suspends, it never destroys**. Losing entitlement scales the
 engine to zero and leaves the database, its volume and every record untouched;
 regaining it is one call back. `past_due` still entitles service — a card that
 failed this morning should not take a clinic's phone line down this afternoon,
-and Stripe's own dunning gets its retry window first.
+and Razorpay's own retry schedule gets its window first.
 
-Cancellation and card management live in Stripe's billing portal rather than
-being rebuilt here. Deprovisioning is a separate, deliberate operator action and
-is not something a failed payment can trigger.
+`past_due` here is Razorpay's `pending`, and `unpaid` is its `halted` — the
+point where retries are exhausted and service actually stops. The full mapping
+is in `billing.STATUS_FROM_RAZORPAY`, and every entry is asserted against the
+entitlement it grants, because getting one wrong either bills a cancelled
+account or takes a paying clinic offline.
+
+Razorpay has no billing portal, so cancellation is implemented here: at the end
+of the paid period, never immediately. Deprovisioning is a separate, deliberate
+operator action and is not something a failed payment can trigger.
+
+Customers authorise the mandate on Razorpay's own hosted page (the `short_url`
+on the subscription) rather than through its Checkout widget. The widget is a
+third-party script, and this origin serves the sign-in form and reveals
+escrowed encryption keys — the UI has no third-party requests anywhere else and
+taking a payment is not a good reason to start.
 
 ---
 
@@ -167,9 +179,9 @@ Required in production, or it refuses to boot:
 | `MASTER_KEY` | Unwraps every clinic secret. |
 | `SESSION_SECRET` | Signs session cookies. |
 
-Then set `RAILWAY_API_TOKEN`, `RAILWAY_WORKSPACE_ID`, the Stripe keys, and
-`ALLOWED_HOSTS` to the real host. Point Stripe's webhook at
-`/api/billing/webhook`.
+Then set `RAILWAY_API_TOKEN`, `RAILWAY_WORKSPACE_ID`, the Razorpay keys, and
+`ALLOWED_HOSTS` to the real host. Point Razorpay's webhook at
+`/api/billing/webhook` and subscribe it to the `subscription.*` events.
 
 ---
 
@@ -216,7 +228,8 @@ app/
   services/
     accounts.py     signup, sign-in, password lifecycle
     audit.py        the administrative trail
-    billing.py      Stripe, entitlement, suspend/resume
+    billing.py      Razorpay, entitlement, suspend/resume
+    razorpay_client.py  Razorpay's REST API
     crypto.py       envelope encryption for clinic secrets
     passwords.py    argon2id
     provisioning.py the ten-step build

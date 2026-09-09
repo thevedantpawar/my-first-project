@@ -344,3 +344,131 @@ def test_a_suppressed_message_is_not_retried_forever(db, service, patient, monke
     assert db.get(Appointment, appointment.id).reminder_24h_sent_at is not None
 
     assert service.send_reminder(appointment.id, kind="24h")["status"] == "skipped"
+
+
+# --------------------------------------------------------------------------- #
+# Every sender claims before it sends, not just the reminder
+# --------------------------------------------------------------------------- #
+def _explode_after_sending(service, monkeypatch, sent):
+    real_send = service.sms.send
+
+    def exploding(**kwargs):
+        real_send(**kwargs)
+        sent.append(kwargs)
+        raise RuntimeError("process died after the text went out")
+
+    monkeypatch.setattr(service.sms, "send", exploding)
+    return real_send
+
+
+def test_reactivation_is_not_sent_twice_after_a_crash(db, service, patient, monkeypatch):
+    appointment = make_appointment(db, patient, hours_from_now=-48,
+                                   status=AppointmentStatus.NO_SHOW)
+    sent = []
+    real_send = _explode_after_sending(service, monkeypatch, sent)
+
+    with pytest.raises(RuntimeError):
+        service.send_reactivation(appointment.id)
+
+    db.rollback()
+    monkeypatch.setattr(service.sms, "send", real_send)
+    assert service.send_reactivation(appointment.id)["status"] == "skipped"
+    assert len(sent) == 1, "the patient must not be texted a second time"
+
+
+def test_credit_offer_is_not_sent_twice_after_a_crash(db, service, patient, monkeypatch):
+    appointment = make_appointment(db, patient, hours_from_now=-72,
+                                   status=AppointmentStatus.NO_SHOW)
+    sent = []
+    real_send = _explode_after_sending(service, monkeypatch, sent)
+
+    with pytest.raises(RuntimeError):
+        service.send_credit_offer(appointment.id)
+
+    db.rollback()
+    monkeypatch.setattr(service.sms, "send", real_send)
+    assert service.send_credit_offer(appointment.id)["status"] == "skipped"
+    assert len(sent) == 1
+
+
+def test_a_review_request_is_not_sent_twice_after_a_crash(db, service, patient, monkeypatch):
+    appointment = make_appointment(db, patient, hours_from_now=-24,
+                                   status=AppointmentStatus.COMPLETED)
+    sent = []
+    real_send = _explode_after_sending(service, monkeypatch, sent)
+
+    with pytest.raises(RuntimeError):
+        service.request_review(appointment.id, force=True)
+
+    db.rollback()
+    monkeypatch.setattr(service.sms, "send", real_send)
+    assert service.request_review(appointment.id, force=True)["status"] == "skipped"
+    assert len(sent) == 1
+
+
+def test_a_failed_reactivation_is_retried(db, service, patient, monkeypatch):
+    from app.services.sms_service import SMSResult
+
+    appointment = make_appointment(db, patient, hours_from_now=-48,
+                                   status=AppointmentStatus.NO_SHOW)
+
+    monkeypatch.setattr(service.sms, "send",
+                        lambda **kw: SMSResult(delivered=False, status="failed",
+                                               reason="ConnectionError"))
+    assert service.send_reactivation(appointment.id)["status"] == "failed"
+
+    db.expire_all()
+    assert db.get(Appointment, appointment.id).reactivation_sent_at is None, (
+        "a claim that never became a message must be released"
+    )
+
+    monkeypatch.setattr(service.sms, "send",
+                        lambda **kw: SMSResult(delivered=True, status="sent", message_sid="SM1"))
+    assert service.send_reactivation(appointment.id)["status"] == "sent"
+
+
+def test_a_suppressed_message_is_never_reported_as_failed(db, service, patient, monkeypatch):
+    """They retry differently now, so conflating them hides which happened."""
+    from app.services.sms_service import SMSResult
+
+    appointment = make_appointment(db, patient, hours_from_now=-48,
+                                   status=AppointmentStatus.NO_SHOW)
+    monkeypatch.setattr(service.sms, "send",
+                        lambda **kw: SMSResult(delivered=False, status="suppressed",
+                                               reason="no_consent"))
+
+    result = service.send_reactivation(appointment.id)
+    assert result["status"] == "suppressed"
+    assert result["reason"] == "no_consent"
+
+    db.expire_all()
+    assert db.get(Appointment, appointment.id).reactivation_sent_at is not None, (
+        "no consent is a decision, not an outage — it keeps its claim"
+    )
+
+
+def test_a_failed_dormant_reactivation_restores_the_previous_send_date(
+    db, service, patient, monkeypatch
+):
+    """Releasing a claim must not erase a genuine earlier send.
+
+    The dormant nudge is a cooldown rather than a once-ever marker, so
+    releasing it to NULL would forget that the patient was contacted a month
+    ago — and then contact them again immediately.
+    """
+    from app.services.sms_service import SMSResult
+    from app.utils import days_ago
+
+    earlier = days_ago(60)
+    patient.reactivation_sent_at = earlier
+    db.commit()
+
+    monkeypatch.setattr(service.sms, "send",
+                        lambda **kw: SMSResult(delivered=False, status="failed",
+                                               reason="ConnectionError"))
+    service.send_dormant_reactivation(patient.id, cooldown_days=30)
+
+    db.expire_all()
+    restored = db.get(Patient, patient.id).reactivation_sent_at
+    assert restored is not None, "the earlier send date must not be erased"
+    assert abs((restored - earlier).total_seconds()) < 2

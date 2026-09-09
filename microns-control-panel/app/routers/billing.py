@@ -1,4 +1,4 @@
-"""Plans, checkout, the billing portal, and Stripe's webhook."""
+"""Plans, checkout, cancellation, and Razorpay's webhook."""
 
 from __future__ import annotations
 
@@ -10,7 +10,12 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.dependencies import current_user, get_audit, require_owner
 from app.models.user import User
-from app.schemas import CheckoutRequest, CheckoutResponse, SubscriptionResponse
+from app.schemas import (
+    CancelResponse,
+    CheckoutRequest,
+    CheckoutResponse,
+    SubscriptionResponse,
+)
 from app.services import billing
 from app.services.audit import AuditAction, AuditLogger
 
@@ -49,8 +54,9 @@ def start_checkout(
     db: Session = Depends(get_db),
     user: User = Depends(require_owner),
 ) -> CheckoutResponse:
+    """Create the Razorpay subscription the browser will open Checkout with."""
     try:
-        url = billing.create_checkout_session(
+        handle = billing.create_checkout_session(
             db, user.account, plan=payload.plan, email=user.email
         )
     except billing.BillingNotConfigured as exc:
@@ -59,52 +65,60 @@ def start_checkout(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
 
     db.commit()
-    return CheckoutResponse(checkout_url=url)
+    return CheckoutResponse(**handle)
 
 
-@router.post("/portal", response_model=CheckoutResponse)
-def open_portal(
+@router.post("/cancel", response_model=CancelResponse)
+def cancel(
     db: Session = Depends(get_db),
     user: User = Depends(require_owner),
-) -> CheckoutResponse:
-    """A link to Stripe's billing portal — cards, invoices, cancellation."""
+    audit: AuditLogger = Depends(get_audit),
+) -> CancelResponse:
+    """Cancel at the end of the paid period.
+
+    Razorpay has no billing portal to hand this off to, so it lives here. The
+    account keeps its clinics until the period Razorpay has already charged for
+    runs out.
+    """
     try:
-        url = billing.create_portal_session(db, user.account)
+        result = billing.cancel_subscription(db, user.account)
     except billing.BillingNotConfigured as exc:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc))
     except billing.BillingError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
 
+    audit.log(AuditAction.SUBSCRIPTION_CANCELLED, user=user)
     db.commit()
-    return CheckoutResponse(checkout_url=url)
+    return CancelResponse(**result)
 
 
 @router.post("/webhook", include_in_schema=False)
-async def stripe_webhook(
+async def razorpay_webhook(
     request: Request,
-    stripe_signature: str | None = Header(default=None, alias="Stripe-Signature"),
+    razorpay_signature: str | None = Header(default=None, alias="X-Razorpay-Signature"),
     db: Session = Depends(get_db),
 ) -> dict:
-    """Receive a Stripe event.
+    """Receive a Razorpay event.
 
     The signature is verified against the raw body before anything is parsed.
     Without that check, anyone who learns this URL can post a fabricated
-    ``subscription.updated`` and grant themselves service indefinitely.
+    ``subscription.activated`` and grant themselves service indefinitely.
 
-    A verified event that we do not handle still returns 200: a non-2xx makes
-    Stripe retry, and retrying an event nobody wants achieves nothing.
+    A verified event we do not handle still returns 200: a non-2xx makes
+    Razorpay retry for hours, and retrying an event nobody wants achieves
+    nothing.
     """
     payload = await request.body()
 
     try:
-        event = billing.verify_webhook(payload, stripe_signature)
+        event = billing.verify_webhook(payload, razorpay_signature)
     except billing.BillingNotConfigured as exc:
-        logger.error("Stripe webhook received but not configured: %s", exc)
+        logger.error("Razorpay webhook received but not configured: %s", exc)
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc))
     except billing.BillingError as exc:
-        logger.warning("Rejected a Stripe webhook: %s", exc)
+        logger.warning("Rejected a Razorpay webhook: %s", exc)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
 
-    result = billing.handle_event(db, dict(event))
-    logger.info("Stripe event %s handled=%s", result["type"], result["handled"])
+    result = billing.handle_event(db, event)
+    logger.info("Razorpay event %s handled=%s", result["type"], result["handled"])
     return {"received": True, **result}
