@@ -262,9 +262,17 @@ def _console_dir() -> Path:
 
 
 def _widget_dir() -> Path:
+    """Where the embeddable chat widget is served from.
+
+    Inside the backend rather than a sibling ``frontend/`` directory, because
+    the backend is what serves it and what gets built. Railway's build context
+    is this directory, so anything outside it simply is not in the image — the
+    widget silently failed to mount in production for exactly that reason,
+    while working fine locally where the whole repo is on disk.
+    """
     if settings.widget_dir:
         return Path(settings.widget_dir)
-    return Path(__file__).resolve().parents[2] / "frontend" / "chat-widget"
+    return Path(__file__).resolve().parents[1] / "widget"
 
 
 _widget_path = _widget_dir()

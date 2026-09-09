@@ -58,7 +58,7 @@ services:
       # Hot reload for development. Drop these three mounts in production and
       # rely on what is baked into the image.
       - ./backend:/app
-      - ./frontend/chat-widget:/app/widget:ro
+      - ./backend/widget:/app/widget:ro
       - ./voice-agent:/app/voice-agent:ro
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     ports:

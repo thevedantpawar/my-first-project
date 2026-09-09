@@ -115,7 +115,7 @@ microns-ai-system/
 │   ├── vapi-config.json        # assistant config incl. 8 tool definitions
 │   ├── price-list.json
 │   └── system-prompts/         # booking-agent.txt · faq-agent.txt
-└── frontend/chat-widget/       # microns-chat.js (no dependencies) + demo.html
+└── backend/widget/             # microns-chat.js (no dependencies) + demo.html
 ```
 
 ---
