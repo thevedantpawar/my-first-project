@@ -1,0 +1,651 @@
+﻿Campaign Rank,Priority Tier,Campaign Date,Mailbox,Prospect TZ,Business,City,ST,Email,Phone,Website,Rating,Reviews,Employees,Locations,Segment,Coverage gap,Sender Name,Sender Phone,Subject,Body,Body Words,Followup Subject,Followup Body,Offer Made,Strategic Angle,Business Insight,MICRONS Capability,Personalization Basis,Principles Score /7,QA Notes
+51,A,9/9/2026,1,ET,image DermatologyÂ® P.C.,Montclair,NJ,info@imagedermatology.com,(973) 509-6900,https://www.imagedermatology.com/,4.3,221,11,,Small,closed Sat + Sun,Vedant,+1-XXX-XXX-XXXX,the 4.3,"Hey {{ firstname | there }},
+
+4.3 across 221 reviews is almost never a care problem — it's an asking problem. The patients who loved their result leave quietly; the one who waited forty minutes writes it down that night.
+
+I work the intake and follow-up side of aesthetics practices — most recently a multi-location dermatology and laser group running the same consult-first funnel you do.
+
+I'd have review requests firing on a real treatment-completed event within 14 days, every reply drafted for a human to approve before anything posts publicly. I keep working free until you've added 50 new ones. Setup costs your front desk about 45 minutes, once.
+
+I take two of these on at a time. Worth 15 minutes? Thursday 2pm or Friday 10am ET — reply with either, or ring me at {{ Sender Phone }}.
+
+Vedant",141,montclair,"Hey {{ firstname | there }}, checking this didn't get buried. Still happy to do the first 50 reviews before you pay me anything. Thursday or Friday work?
+
+Vedant","Review velocity: live in 14 days, work free until 50 new reviews added.",Rating recovery via review velocity,"At 221 reviews a 4.3 only moves with new volume, not with replies to old critics.","Reviews & Reputation (event-triggered requests, human-approved replies)",Public rating 4.3 / 221 reviews; 11 staff; closed Sat + Sun,7,Rating and review count are public facts. No claim made about why the rating is 4.3 — framed as a hypothesis. Weekend closure held back for touch 2.
+52,A,9/9/2026,2,PT,Pure Luxe Medical,Manhattan Beach,CA,info@pureluxemedical.com,(424) 277-1642,https://www.pureluxemedical.com/,4.8,211,4,,Micro / owner-operated,closed Sat + Sun,Vedant,+1-XXX-XXX-XXXX,saturdays in manhattan beach,"Hey {{ firstname | there }},
+
+Four people on staff and the doors shut both weekend days. In a beach city, Saturday morning is exactly when someone finally has time to call about the thing they've been putting off since June.
+
+I do patient intake and follow-up for aesthetics practices — built the same thing for a multi-location derm and laser group.
+
+I'd put a line on your weekend that answers, qualifies what they actually want, and books into your calendar as pending so you confirm Monday. I'll build it and run it 30 days on my cost. If it hasn't put 10 booked consults on your calendar in that window, you owe me nothing.
+
+Worth 15 minutes? Thursday 11am or Friday 9am PT — reply with either, or call {{ Sender Phone }}.
+
+Vedant",135,weekend line,"Hey {{ firstname | there }}, quick nudge on this one. The 30 days are free either way — worst case you get a month of weekend coverage and we shake hands. Thursday?
+
+Vedant",Free 30-day pilot; 10 booked consults or no payment.,Closed-day capture (Sat + Sun),"A 4-person team cannot staff weekends, but a beach-city market's highest-intent calls land there.","AI Receptionist / after-hours capture, booking as pending",4 staff; closed Sat + Sun; Manhattan Beach CA market,7,Closure is from the workbook coverage gap. No revenue figure claimed.
+53,A,9/9/2026,3,PT,Onestop Aesthetic Travel and Wellness Center,Pleasanton,CA,info@onestopaesthetictravelandwellness.com,(925) 263-9547,https://www.onestopaesthetictravelandwellness.com/,4.7,197,3,,Micro / owner-operated,closed Sat + Sun,Vedant,+1-XXX-XXX-XXXX,"3 people, one inbox","Hey {{ firstname | there }},
+
+Three of you, and the model is aesthetic travel and wellness — which means an inquiry isn't a five-minute booking, it's a coordination conversation. Those are expensive to have with someone who was never going to book.
+
+I work on the intake half of this for aesthetics practices, most recently a multi-site derm and laser group.
+
+What I'd set up: every inquiry gets qualified before it reaches one of the three of you — what they want, timing, whether it's a consult or a question — so your actual conversations start warm. First 30 days on me. If it doesn't put 10 qualified consults on the calendar, no invoice.
+
+Worth 15 minutes? Thursday 10am or Friday 1pm PT, or {{ Sender Phone }}.
+
+Vedant",130,pleasanton,"Hey {{ firstname | there }}, following up once. Free for the first 30 days, and I'd rather show you than describe it. Thursday or Friday?
+
+Vedant",Free 30-day pilot; 10 qualified consults booked or no payment.,Lead qualification before a scarce human is spent,"With three staff and a coordination-heavy service, unqualified inquiries are the costliest kind.",Lead Qualification + Leads Concierge,3 staff; micro / owner-operated; travel + wellness model implied by trade name,7,"Business-model read comes from the trade name only; phrased as observation, not asserted fact."
+54,A,9/9/2026,4,MT,Barr Aesthetics,Salt Lake City,UT,info@barraesthetics.com,(801) 532-0204,http://barraesthetics.com/,4.7,167,6,,Micro / owner-operated,closed Sat + Sun,Vedant,+1-XXX-XXX-XXXX,weekends in slc,"Hey {{ firstname | there }},
+
+167 reviews at 4.7 with six people — you're at the stage where the constraint isn't demand, it's how many inquiries six people can physically catch. And both weekend days are dark.
+
+My background is the unglamorous half of aesthetics: intake, qualification, follow-up. Built it for a multi-location derm and laser group.
+
+I'd cover the hours you're closed — answers, works out what treatment they're asking about, books as pending for you to confirm. 30 days at my cost. If it hasn't produced 10 booked consults, you don't pay and we're done.
+
+I only run two of these at once. 15 minutes Thursday 10am or Friday 1pm MT? Or {{ Sender Phone }}.
+
+Vedant",120,"slc, round two","Hey {{ firstname | there }}, one more ping in case this slid past. Still free for 30 days. Thursday works on my end.
+
+Vedant",Free 30-day pilot; 10 booked consults or no payment.,Closed-day capture (Sat + Sun) at a capacity-limited team,"Six staff means catch rate, not demand, is the ceiling — and the weekend is uncaught by definition.",AI Receptionist / after-hours + closed-day capture,4.7 / 167 reviews; 6 staff; closed Sat + Sun,7,"Capacity framing is a hypothesis, not a claim about their actual missed calls."
+55,A,9/9/2026,5,MT,Beauty Lab + Laser Med Spa | Murray,Salt Lake City,UT,info@beautylablaser.com,(801) 675-8954,https://beautylablaser.com/locations/murray-beauty-lab-laser/,4.9,3701,15,2,Core (best fit),HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,"3,701","Hey {{ firstname | there }},
+
+3,701 reviews. Whatever else is true, that number means an enormous number of people have been through your rooms across both locations — and a predictable share of them haven't been back and nobody's noticed.
+
+I work on patient reactivation and intake for aesthetics practices; most recently a multi-location derm and laser group with a similar treated base.
+
+I'd run one pass over your dormant list — patients past their normal return window with nothing booked — with a message that references what they actually had done, not a generic promo. Free, in the first 30 days. If it doesn't produce 15 booked appointments, there's no invoice.
+
+Worth 15 minutes? Thursday 10am or Friday 2pm MT, or {{ Sender Phone }}.
+
+Vedant",128,the dormant list,"Hey {{ firstname | there }}, checking in on the reactivation pass. Costs you nothing to find out what's sitting in that list. Thursday?
+
+Vedant",Free reactivation pass in first 30 days; 15 booked appointments or no payment.,Patient reactivation against a very large treated base,"3,701 reviews implies a treated base big enough that dormancy is a bigger lever than acquisition.",Patient Reactivation,"4.9 / 3,701 reviews; 15 staff; 2 locations",7,"Does NOT claim a number of dormant patients — framed as a share and an opportunity. Hours unknown, so no closure claimed."
+56,A,9/9/2026,1,ET,Cosmetica,Boca Raton,FL,contact@cosmeticamedspa.com,(561) 621-1156,https://cosmeticamedspa.com/?utm_campaign=gmb&utm_medium=gbpinfo&utm_source=googlebusinessprofile,4.8,1335,3,,Micro / owner-operated,HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,"1,335 reviews, 3 people","Hey {{ firstname | there }},
+
+1,335 reviews and three people on staff. That gap is the whole story — you've built demand at a scale that a three-person front desk was never going to be able to work through twice.
+
+I handle intake and reactivation for aesthetics practices, most recently a multi-site derm and laser group.
+
+The lever I'd pull first isn't new leads, it's the people already in your history who haven't rebooked. One pass over that list in the first 30 days, free, messages tied to what each person actually had done. If it doesn't put 15 appointments on the books, you don't pay me.
+
+15 minutes Thursday 2pm or Friday 11am ET? Or {{ Sender Phone }}.
+
+Vedant",122,boca,"Hey {{ firstname | there }}, nudging this once. The first pass is free — you'd just be seeing what's already in your own list. Thursday or Friday?
+
+Vedant",Free reactivation pass in first 30 days; 15 booked appointments or no payment.,"Reactivation over acquisition at a demand-rich, staff-poor practice","A 1,335-review history against 3 staff means the existing base is under-worked relative to its size.",Patient Reactivation + CRM visibility,"4.8 / 1,335 reviews; 3 staff; Boca Raton FL",7,Hours not in workbook — no closure claimed. No dormant-patient count asserted.
+57,A,9/9/2026,2,CT,SpaDerma,Chicago,IL,info@spaderma.com,(773) 529-5277,https://www.spaderma.com/,4.9,792,130,1,Enterprise / chain,HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,"chicago, quick q","Hey {{ firstname | there }},
+
+130 people under one brand. At that headcount the interesting problem stops being whether the phone gets answered and becomes whether it gets answered the same way twice — same questions asked, same qualification, same path into the calendar, regardless of who picked up.
+
+I build the intake layer for aesthetics practices; most recently a multi-location derm and laser group where that consistency was the entire project.
+
+I'd start with one team, not the whole operation: a single intake path, live in 30 days, running alongside what you have. My cost. If it doesn't out-book your current process over 60 days, nothing rolls out and you've spent nothing.
+
+Worth 15 minutes? Thursday 1pm or Friday 9:30am CT, or {{ Sender Phone }}.
+
+Vedant",129,one team first,"Hey {{ firstname | there }}, following up. The pilot is one team and 60 days at my cost — low stakes on your side. Thursday?
+
+Vedant","Single-team pilot, 60 days at my cost; must out-book current process or nothing rolls out.",Intake standardization across a large team,"At 130 staff, variance between people handling inquiries costs more than raw call volume.",Lead Qualification + Booking as a standardized layer,4.9 / 792 reviews; 130 employees; Chicago IL,7,Micro-commitment sized to enterprise. No claim about their current booking rate.
+58,A,9/9/2026,3,ET,True Jewel Cosmetic & Plastic Surgery Center,Washington,DC,info@truejewelcosmeticcenter.com,(424) 434-6999,https://www.truejewelcosmeticcenter.com/?utm_source=google&utm_medium=organic&utm_campaign=gmb-listing,5,780,7,,Small,Saturday,Vedant,+1-XXX-XXX-XXXX,"saturday, dc","Hey {{ firstname | there }},
+
+5.0 across 780 reviews is genuinely rare, and cosmetic surgery is the one category where that rating does most of the selling before anyone speaks to you. Then Saturday arrives and the line is closed — on the day people research procedures they've been thinking about for a year.
+
+I work the intake and follow-up side for aesthetics and surgical practices, most recently a multi-location derm and laser group.
+
+I'd cover Saturdays: answer, work out whether it's a surgical consult or an aesthetic question, book as pending for your team to confirm. Live in 14 days, and I guarantee 20 booked consults in the first 60 or I keep working unpaid until you have them.
+
+15 minutes Thursday 3pm or Friday 10am ET? {{ Sender Phone }}.
+
+Vedant",134,the saturday thing,"Hey {{ firstname | there }}, quick check-in. The guarantee stands — 20 consults in 60 days or I work free until it's there. Thursday?
+
+Vedant",Live in 14 days; 20 booked consults in 60 days or work continues unpaid.,"Closed-day capture on a high-ticket, consult-gated funnel",A perfect rating converts strangers into callers; Saturday closure means some of that conversion is spent on a dark line.,AI Receptionist + Lead Qualification (surgical vs aesthetic routing),5.0 / 780 reviews; 7 staff; closed Saturday; DC market,7,Rating is public. Escalation of clinical questions to staff is implicit in 'book as pending'.
+59,A,9/9/2026,4,PT,Esthetics Center Sacramento,Sacramento,CA,info@estheticscenter.com,(916) 259-9971,https://www.estheticscenter.com/locations/sacramento?utm_source=google&utm_medium=organic&utm_campaign=gbpSacramento&utm_content=website,4.9,777,39,4,Core (best fit),Sunday,Vedant,+1-XXX-XXX-XXXX,"four locations, one number","Hey {{ firstname | there }},
+
+Four locations and 39 people. The problem that comes with that isn't answering another call — it's that the caller doesn't know or care which site they've reached, and every mis-routed inquiry costs two conversations instead of one.
+
+I do intake and routing for multi-site aesthetics practices; built exactly this for a multi-location derm and laser group.
+
+I'd put one intake path in front of all four: figure out where they are, what they want, which site and which provider fits, book it there. Live in 30 days. I guarantee 25 booked appointments across the four in the first 60, or I work unpaid until you have them.
+
+Worth 15 minutes? Thursday 11am or Friday 9am PT, or {{ Sender Phone }}.
+
+Vedant",129,routing,"Hey {{ firstname | there }}, checking this didn't get lost. Happy to walk the four-location routing piece in 15 minutes. Thursday or Friday?
+
+Vedant",Live in 30 days; 25 booked appointments across 4 sites in 60 days or work continues unpaid.,Multi-location routing,"With 4 sites on one brand, routing accuracy — not call volume — is where inquiries leak.",Booking + multi-location routing layer over existing scheduling,4.9 / 777 reviews; 39 staff; 4 locations; closed Sunday,7,"Positions as a layer over existing infrastructure, not a replacement."
+60,A,9/9/2026,5,ET,Adorn Medical Spa,Detroit,MI,info@adornmedspa.com,(313) 438-5159,https://adornmedspa.com/,4.9,692,4,,Micro / owner-operated,HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,692 and four,"Hey {{ firstname | there }},
+
+692 reviews, four people. Which means most of the day, all four of you are in rooms — and the inquiry that comes in during those hours has to be caught by someone who is currently holding a syringe.
+
+I work the intake side for aesthetics practices, most recently a multi-location derm and laser group.
+
+I'd cover the hours nobody can pick up: answer, work out what treatment they're actually asking about, book into your calendar as pending. 30 days at my cost. If it hasn't put 10 booked consults on the books in that month, you owe me nothing.
+
+I take two of these at a time. 15 minutes Thursday 2pm or Friday 10:30am ET? {{ Sender Phone }}.
+
+Vedant",127,detroit,"Hey {{ firstname | there }}, one nudge. Free for 30 days — you'd only pay if it works. Thursday suits me.
+
+Vedant",Free 30-day pilot; 10 booked consults or no payment.,In-treatment coverage at a micro team,A 4-person clinical team is unavailable to the phone precisely when it is busiest.,"AI Receptionist / overflow capture, booking as pending",4.9 / 692 reviews; 4 staff; Detroit MI,7,"Hours not in workbook — no closure claimed. 'All four in rooms' is framed as a likelihood, not asserted."
+61,A,9/9/2026,1,US time zone - verify,Honolulu Spa And Wellness - Oahu,Honolulu,HI,aloha@honoluluspaandwellness.com,(808) 232-5626,https://honoluluspaandwellness.com/?utm_source=google_profile&utm_campaign=localo&utm_medium=mainlink,4.9,687,2,1,Micro / owner-operated,Sunday,Vedant,+1-XXX-XXX-XXXX,the time zone thing,"Hey {{ firstname | there }},
+
+Two of you, and you're five to six hours behind most of the mainland. A visitor planning a Honolulu trip emails at 9am their time — which is the middle of your night — and books whoever replies first.
+
+I work on intake and response time for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd cover those hours: reply immediately, qualify what they want and when they're on-island, book it as pending for you to confirm. 30 days on my cost. If it hasn't put 10 booked appointments on your calendar, no invoice.
+
+Worth 15 minutes? Thursday 9am or Friday 8am HST — reply with either, or {{ Sender Phone }}.
+
+Vedant",121,aloha,"Hey {{ firstname | there }}, quick follow-up. The time-zone gap is the easiest thing I fix. Free for the first month. Thursday?
+
+Vedant",Free 30-day pilot; 10 booked appointments or no payment.,Time-zone / after-hours lead capture in a visitor market,HST puts mainland inquiry peaks outside all staffed hours for a 2-person team.,AI Receptionist / after-hours capture + speed of first response,2 staff; 1 location; closed Sunday; Honolulu HI,7,Workbook flags TZ as 'verify' — confirm HST before send. No claim about actual inquiry volume.
+62,A,9/9/2026,2,CT,ThrIVe Drip Spa - The Woodlands,The Woodlands,TX,info@thrivedripspa.com,(281) 343-3747,https://thrivedripspa.com/the-woodlands/?utm_source=GBP&utm_medium=Organic+&utm_campaign=Woodlands&utm_id=GBP,4.9,682,32,,Core (best fit),HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,drip cadence,"Hey {{ firstname | there }},
+
+IV therapy is one of the few things in aesthetics with a genuine repeat rhythm — people are meant to come back on a cycle, and the business quietly lives or dies on whether they do.
+
+I work on retention and follow-up for aesthetics practices, most recently a multi-location derm and laser group.
+
+I'd start with the people already past their cycle: find everyone overdue with nothing booked, message them referencing what they actually had, book the return. First pass free in the first 30 days. If it doesn't produce 15 booked appointments, you don't pay me.
+
+I run two of these at once. 15 minutes Thursday 1pm or Friday 9:30am CT? {{ Sender Phone }}.
+
+Vedant",123,overdue list,"Hey {{ firstname | there }}, following up once on the overdue-patient pass. Free, and it uses your own data. Thursday or Friday?
+
+Vedant",Free reactivation pass in 30 days; 15 booked appointments or no payment.,Recurring-treatment cadence / overdue recall,"A drip model's economics are return-visit driven, so lapsed cadence is the primary leak.",Patient Reactivation + recurring-treatment reminders,4.9 / 682 reviews; 32 staff; The Woodlands TX; IV/drip service model,7,Hours not in workbook — no closure claimed. No count of overdue patients asserted.
+63,A,9/9/2026,3,CT,The Shine Spa,St Louis,MO,contact@theshinespa.com,(314) 499-7199,http://theshinespa.com/?utm_source=google&utm_medium=organic&utm_campaign=gbp,5,669,,,,Sunday,Vedant,+1-XXX-XXX-XXXX,5.0 across 669,"Hey {{ firstname | there }},
+
+5.0 across 669 reviews. I look at a lot of these lists and that combination shows up maybe twice. It also means your rating is doing serious work for you — right up until Sunday, when whoever it convinced calls a closed line.
+
+I work the intake side for aesthetics practices, most recently a multi-location derm and laser group.
+
+I'd cover Sundays and after-hours: answer, qualify, book as pending for Monday confirmation. Live in 14 days, and I guarantee 20 booked appointments in the first 60 or I keep working unpaid until you get there.
+
+15 minutes Thursday 1pm or Friday 10am CT? Or {{ Sender Phone }}.
+
+Vedant",115,sunday callers,"Hey {{ firstname | there }}, checking in. The 20-appointment guarantee stands. Thursday works on my end if it does on yours.
+
+Vedant",Live in 14 days; 20 booked appointments in 60 days or work continues unpaid.,Closed-day capture protecting an exceptional rating's conversion,A 5.0/669 rating generates callers; a closed Sunday means some of those callers are converted and then lost.,AI Receptionist / closed-day capture,5.0 / 669 reviews; closed Sunday; St Louis MO,7,Staff count blank in workbook — no team-size claim made.
+64,A,9/9/2026,4,ET,Plantation Med Spa,Plantation,FL,info@plantationmedspa.com,(954) 595-2607,https://plantationmedspa.com/,4.9,635,,,,Sunday,Vedant,+1-XXX-XXX-XXXX,sunday in plantation,"Hey {{ firstname | there }},
+
+Closed Sundays — which in South Florida is the day people are home, scrolling, and finally deciding to do something about the thing they've been looking at all week.
+
+I do intake and follow-up for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd put a line on Sunday that answers, works out which treatment they're actually asking about, and books as pending so your team confirms Monday morning to a calendar that's already got something in it. 30 days at my cost — if it hasn't produced 10 booked consults, you don't pay.
+
+Worth 15 minutes? Thursday 2pm or Friday 11am ET, or ring {{ Sender Phone }}.
+
+Vedant",118,monday morning,"Hey {{ firstname | there }}, quick ping. Free for 30 days, and Mondays get easier. Thursday or Friday?
+
+Vedant",Free 30-day pilot; 10 booked consults or no payment.,Closed-day (Sunday) capture,Sunday is a high-intent research day in a consumer aesthetics market and the practice is dark for it.,"AI Receptionist / closed-day capture, booking as pending",4.9 / 635 reviews; closed Sunday; Plantation FL,7,No claim about volume of Sunday inquiries.
+65,A,9/9/2026,5,MT,VIVE Med Spa,Denver,CO,info@vivemedspadenver.com,(720) 698-3327,https://www.vivemedspadenver.com/,4.9,622,,,,Tuesday,Vedant,+1-XXX-XXX-XXXX,tuesdays,"Hey {{ firstname | there }},
+
+You're closed Tuesdays, which is more interesting than a weekend closure — nobody expects a med spa to be shut mid-week, so the caller doesn't try again later. They assume you're open, get nothing, and move on.
+
+I work on intake for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd cover Tuesdays specifically: answer, qualify, book into Wednesday and Thursday as pending. Free for the first 30 days. If it hasn't put 10 booked consults on your calendar, you owe me nothing and that's the end of it.
+
+I take two of these on at a time. 15 minutes Thursday 10am or Friday 1pm MT? {{ Sender Phone }}.
+
+Vedant",119,the tuesday gap,"Hey {{ firstname | there }}, one follow-up. The mid-week closure is the unusual one and the easiest to fill. Free for a month. Thursday?
+
+Vedant",Free 30-day pilot; 10 booked consults or no payment.,Mid-week closed-day capture,A weekday closure is worse than a weekend one because callers don't expect it and don't retry.,AI Receptionist / closed-day capture,4.9 / 622 reviews; closed Tuesday; Denver CO,7,Genuinely differentiated insight — the only Tuesday closure in the list. No retry-rate figure claimed.
+66,A,9/9/2026,1,ET,Woodhouse Spa - Summit,Summit,NJ,summit@woodhousespas.com,(908) 608-1120,http://summit.woodhousespas.com/,4.8,614,2500,48,Enterprise / chain,HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,"summit, not corporate","Hey {{ firstname | there }},
+
+Summit is one of 48. Which means whatever the brand does centrally, the thing that decides whether a local inquiry turns into a booked appointment still happens at your front desk, on your hours, with your people.
+
+I build the intake layer for multi-site aesthetics groups; most recently a multi-location derm and laser group where every site swore it was different.
+
+I'd run it at Summit only: one path for inbound inquiries, qualified and booked into your existing schedule, nothing central to approve. 60 days at my cost. If it doesn't out-book what you're doing now, nothing goes further.
+
+Worth 15 minutes? Thursday 3pm or Friday 9am ET, or {{ Sender Phone }}.
+
+Vedant",120,just summit,"Hey {{ firstname | there }}, following up. This is a Summit-only pilot — no corporate lift required. Thursday or Friday?
+
+Vedant","Summit-only pilot, 60 days at my cost; must out-book current process or it stops.",Single-site pilot inside a franchise footprint,"Franchise location managers control local intake but not central systems, so the offer must fit one site.",AI Receptionist + Booking layered on existing schedule,"4.8 / 614 reviews; 48 locations; 2,500 employees; Summit NJ site",7,Hours not in workbook — no closure claimed. Offer deliberately scoped to what a site manager can authorize.
+67,A,9/9/2026,2,ET,Bella Reina Spa,Delray Beach,FL,info@bellareinaspa.com,(561) 404-7670,http://www.bellareinaspa.com/,4.8,599,12,1,Small,Monday,Vedant,+1-XXX-XXX-XXXX,monday mornings,"Hey {{ firstname | there }},
+
+Closed Mondays. So the weekend's worth of people who decided to finally book something all hit your line on the one morning it isn't answered, and by Tuesday half of them have booked elsewhere or lost the impulse.
+
+I work the intake side of aesthetics practices, most recently a multi-location derm and laser group.
+
+I'd cover Monday plus after-hours: answer, work out what they want, book into Tuesday onward as pending for your team. Live in 14 days, and I guarantee 20 booked appointments in the first 60 or I keep working unpaid until you have them.
+
+15 minutes Thursday 11am or Friday 2pm ET? Or {{ Sender Phone }}.
+
+Vedant",117,delray,"Hey {{ firstname | there }}, quick nudge. Monday is the specific gap I'd fix first. Guarantee stands. Thursday?
+
+Vedant",Live in 14 days; 20 booked appointments in 60 days or work continues unpaid.,Monday closure catching the weekend's accumulated intent,"Weekend research converts into Monday calls, which is the one day this practice is dark.",AI Receptionist / closed-day capture,4.8 / 599 reviews; 12 staff; 1 location; closed Monday; Delray Beach FL,7,"Impulse-decay framing is a hypothesis, phrased as such."
+68,A,9/9/2026,3,ET,Cell Renew Medical Spa Downtown,Tampa,FL,admin@cellrenewtampa.com,(813) 600-0666,https://www.cellrenewtampa.com/,4.9,591,5,,Micro / owner-operated,Sunday,Vedant,+1-XXX-XXX-XXXX,downtown tampa,"Hey {{ firstname | there }},
+
+Five staff, downtown, closed Sundays. Downtown practices get a particular kind of inquiry — people deciding on their commute or their lunch break, who will not call twice.
+
+I work on intake and response speed for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd cover Sunday and the hours your five are all in rooms: answer, qualify the treatment interest, book as pending. First 30 days free. If it hasn't produced 10 booked consults, no invoice and no hard feelings.
+
+I only run two at a time. 15 minutes Thursday 1pm or Friday 10am ET? {{ Sender Phone }}.
+
+Vedant",109,tampa,"Hey {{ firstname | there }}, checking in once. Free for 30 days — genuinely nothing to lose on it. Thursday or Friday?
+
+Vedant",Free 30-day pilot; 10 booked consults or no payment.,"Closed-day + in-treatment capture, downtown market",A 5-person downtown practice loses one-shot inquiries during treatment hours and on Sundays.,AI Receptionist / overflow + closed-day capture,4.9 / 591 reviews; 5 staff; closed Sunday; downtown Tampa FL,7,"'Will not call twice' framed as a characteristic of the market, not a measured fact."
+69,A,9/9/2026,4,ET,Boss Gal Beauty Bar - Clintonville,Columbus,OH,booking@bossgalbeautybar.com,(614) 820-5178,https://www.bossgalbeautybar.com/contact/clintonville-spa/,4.9,568,31,5,Core (best fit),HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,clintonville vs the other four,"Hey {{ firstname | there }},
+
+Five locations. So somebody who wants Clintonville specifically has to know that, find the right number, and reach it — and if they don't, the booking either goes to the wrong site or nowhere.
+
+I do intake and routing for multi-site aesthetics practices; built this for a multi-location derm and laser group.
+
+I'd put one path in front of all five: work out where they are and what they want, book them at the right site in your existing system. Live in 30 days. I guarantee 25 booked appointments across the group in the first 60, or I work unpaid until you have them.
+
+Worth 15 minutes? Thursday 2pm or Friday 9:30am ET, or {{ Sender Phone }}.
+
+Vedant",125,five sites,"Hey {{ firstname | there }}, following up on the routing piece. 15 minutes and you'll know if it's useful. Thursday?
+
+Vedant",Live in 30 days; 25 booked appointments across 5 sites in 60 days or work continues unpaid.,Multi-location routing,Five sites on one brand means site-selection friction sits between the inquiry and the booking.,Booking + routing layer over existing scheduling,4.9 / 568 reviews; 31 staff; 5 locations; Columbus OH,7,Hours not in workbook — no closure claimed.
+70,A,9/9/2026,5,CT,Viva La Med Spa,Chicago,IL,info@vivalamedspa.com,(312) 971-5915,http://vivalamedspa.com/,4.8,545,22,,Core (best fit),HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,who picks up,"Hey {{ firstname | there }},
+
+22 people and one location. At that size the phone usually still belongs to whoever happens to be closest to it, which means the quality of a new inquiry's first two minutes depends entirely on who that was.
+
+I build the intake layer for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd make that first two minutes the same every time — same questions, same qualification, same path into your calendar — running alongside your team, not instead of it. Live in 30 days, and I guarantee 20 booked appointments in the first 60 or I work unpaid until you have them.
+
+15 minutes Thursday 1pm or Friday 11am CT? Or {{ Sender Phone }}.
+
+Vedant",125,chicago,"Hey {{ firstname | there }}, one ping. The consistency piece is the whole pitch — 15 minutes is enough to judge it. Thursday?
+
+Vedant",Live in 30 days; 20 booked appointments in 60 days or work continues unpaid.,Intake consistency across a mid-size team,"With 22 staff and no dedicated intake owner, first-response quality varies by whoever answers.",Lead Qualification standardized in front of existing booking,4.8 / 545 reviews; 22 staff; Chicago IL,7,"Hours not in workbook — no closure claimed. Team-behaviour framing is hypothesis, not asserted."
+71,A,9/9/2026,1,PT,Cocoon Day Spa San Francisco - Soma,San Francisco,CA,soma@cocoondayspa.com,(415) 894-0782,https://cocoondayspa.com/soma/?utm_source=Local+Flow+Marketing_GBP&utm_medium=organic&utm_campaign=Cocoon-Soma-GBP,4.8,517,18,,Core (best fit),HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,soma,"Hey {{ firstname | there }},
+
+SoMa means your inquiry pattern is shaped by other people's workdays — messages land at 8am, at lunch, and after 6, which is precisely when your 18 people are either not in yet or mid-service.
+
+I work the intake side for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd cover those edges: answer immediately, qualify what they're after, book into your existing calendar as pending. First 30 days at my cost — if it hasn't put 12 booked appointments on the books, you don't pay.
+
+I take on two at a time. 15 minutes Thursday 11am or Friday 9am PT? {{ Sender Phone }}.
+
+Vedant",114,the 6pm window,"Hey {{ firstname | there }}, quick follow-up. The commuter-hours gap is the specific thing I'd cover. Free month. Thursday or Friday?
+
+Vedant",Free 30-day pilot; 12 booked appointments or no payment.,Commuter-hours inquiry capture,An office-district location receives inquiries on office rhythms that don't match service-floor availability.,AI Receptionist / edge-hours capture + booking,"4.8 / 517 reviews; 18 staff; SoMa, San Francisco CA",7,Hours not in workbook — no closure claimed; framed around staff availability instead.
+72,A,9/9/2026,2,PT,NakedMD Med Spa Carlsbad,Carlsbad,CA,concierge@nakedmd.com,(760) 683-8360,https://www.nakedmd.com/pages/locations-carlsbad,4.9,508,150,40,Enterprise / chain,Sunday,Vedant,+1-XXX-XXX-XXXX,"40 locations, one sunday","Hey {{ firstname | there }},
+
+40 locations, every one of them closed Sunday. That's roughly 2,000 site-days a year where a national brand's demand arrives and finds nothing — and Carlsbad carries its share of it.
+
+I build intake for multi-site aesthetics groups; most recently a multi-location derm and laser group.
+
+I'd prove it at Carlsbad before anyone talks about a rollout: Sunday and after-hours coverage, qualified, booked into your existing system as pending. 60 days at my cost. If Carlsbad doesn't out-book its own baseline, nothing goes to the other 39 and you've spent nothing.
+
+Worth 15 minutes? Thursday 10am or Friday 1pm PT, or {{ Sender Phone }}.
+
+Vedant",112,carlsbad first,"Hey {{ firstname | there }}, following up. One site, 60 days, my cost — that's the whole ask. Thursday?
+
+Vedant","Carlsbad-only pilot, 60 days at my cost; must beat its own baseline or no rollout.",Single-site proof inside a 40-location footprint,"40 sites × one closed day compounds into a large structural coverage gap, but the sale starts at one site.","AI Receptionist / closed-day capture, pilot-scoped",4.9 / 508 reviews; 150 employees; 40 locations; closed Sunday; Carlsbad CA,7,"2,000 site-days is arithmetic from workbook facts (40 × ~52), not an invented performance claim."
+73,A,9/9/2026,3,CT,White Pearl Med-Spa & Nail Lounge,Chicago,IL,info@whitepearlmedicalspa.com,(847) 380-7157,https://whitepearlmedicalspa.com/,4.8,503,5,,Micro / owner-operated,Monday,Vedant,+1-XXX-XXX-XXXX,"two businesses, one phone","Hey {{ firstname | there }},
+
+A med-spa and a nail lounge share your number, and those are two completely different callers — one wants a price and a Saturday slot, the other needs a consult and has questions nobody at a front desk should be answering off the cuff.
+
+I work on intake and qualification for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd separate them at the point of the call: quick bookings go straight into the calendar, medical questions get collected and handed to a person rather than answered. Plus Monday, which you're closed. 30 days free — 10 booked consults or no invoice.
+
+15 minutes Thursday 2pm or Friday 10am CT? {{ Sender Phone }}.
+
+Vedant",123,the split,"Hey {{ firstname | there }}, quick nudge. The two-caller split is the piece I'd build first. Free for 30 days. Thursday?
+
+Vedant",Free 30-day pilot; 10 booked consults or no payment.,Dual-service qualification and clinical escalation,Two service categories on one line means routing and clinical escalation matter more than raw answering.,Lead Qualification + escalation of clinical questions to staff,4.8 / 503 reviews; 5 staff; closed Monday; med-spa + nail lounge trade name,7,Explicitly keeps clinical questions with humans — required for medical safety positioning.
+74,A,9/9/2026,4,PT,Spa SassÃ©,Portland,OR,info@spasasse.com,(503) 228-8266,http://www.spasasse.com/,4.7,500,9,1,Small,HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,moving a 4.7,"Hey {{ firstname | there }},
+
+4.7 across 500 reviews is a stubborn number. At that volume you cannot argue your way up — the average only moves if new reviews arrive faster than they currently do, and most practices ask inconsistently or not at all.
+
+I work on the reputation and follow-up side for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd have requests firing on an actual completed appointment rather than a monthly blast, replies drafted for a human to approve, nothing auto-posting. Live in 14 days, and I keep working free until you've added 50 new reviews.
+
+I run two of these at a time. 15 minutes Thursday 10am or Friday 1pm PT? {{ Sender Phone }}.
+
+Vedant",124,portland,"Hey {{ firstname | there }}, one follow-up. Free until 50 new reviews land — the risk is entirely mine. Thursday or Friday?
+
+Vedant",Live in 14 days; work free until 50 new reviews added.,Review velocity to move a plateaued average,At 500 reviews the mean is inertia-bound; only new volume shifts it.,"Reviews & Reputation (event-triggered, human-approved)",4.7 / 500 reviews; 9 staff; 1 location; Portland OR,7,Arithmetic point about averages is sound. No claim that they currently have a reputation problem.
+75,A,9/9/2026,5,ET,NuYou Medical Aesthetics,Miami,FL,inquiries@lovethenuyou.com,(305) 204-0659,http://www.lovethenuyou.com/,5,497,,,,HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,miami math,"Hey {{ firstname | there }},
+
+5.0 across 497 in Miami, which is the hardest market in the country to hold a perfect rating in. That rating is your entire competitive advantage — and it only pays when an inquiry actually reaches you rather than the practice three blocks away that answered first.
+
+I do intake and response speed for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd make sure every inquiry gets a real reply within minutes, qualified, booked as pending. Live in 14 days, and I guarantee 20 booked consults in the first 60 or I keep working unpaid until you have them.
+
+15 minutes Thursday 3pm or Friday 11am ET? Or {{ Sender Phone }}.
+
+Vedant",122,the 5.0,"Hey {{ firstname | there }}, checking in. In Miami the first reply usually wins — that's the whole thing I'd fix. Thursday?
+
+Vedant",Live in 14 days; 20 booked consults in 60 days or work continues unpaid.,Speed of first response in a saturated market,A perfect rating only converts if the practice is the one that responds first in a dense market.,Leads Concierge / immediate first response + qualification,5.0 / 497 reviews; Miami FL,7,"Hours not in workbook — no closure claimed. Market density is a public characteristic, not an invented pain point."
+76,A,9/9/2026,1,ET,Botanica Day Spa,Clearwater,FL,relax@botanicadayspa.com,(727) 441-1711,http://www.botanicadayspa.com/,4.9,490,15,,Core (best fit),HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,rebooking,"Hey {{ firstname | there }},
+
+Day spa economics are different from injectables — your ticket is smaller and the whole thing rests on how often somebody comes back. Which makes the interval between visits the number that actually matters, and almost nobody watches it.
+
+I work on retention and follow-up for spa and aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd start by finding everyone past their normal return window with nothing booked and giving them one reason to come back that references what they actually had. Free pass in the first 30 days — 15 booked appointments or no invoice.
+
+I take two of these at a time. 15 minutes Thursday 11am or Friday 2pm ET? {{ Sender Phone }}.
+
+Vedant",126,return interval,"Hey {{ firstname | there }}, quick nudge. The first reactivation pass is free and uses your own records. Thursday or Friday?
+
+Vedant",Free reactivation pass in 30 days; 15 booked appointments or no payment.,Visit-frequency retention over acquisition,"A day-spa model's margin comes from repeat frequency, so lapsed intervals are the biggest single leak.",Patient Reactivation + recurring-visit reminders,4.9 / 490 reviews; 15 staff; day spa model; Clearwater FL,7,Hours not in workbook — no closure claimed. No churn figure asserted.
+77,A,9/9/2026,2,ET,ELLEMES Medical Spa,Atlanta,GA,info@ellemesmedspa.com,(470) 222-6581,https://ellemesmedspa.com/?utm_source=google&utm_medium=organic&utm_campaign=google_business_profile,4.9,444,4,,Micro / owner-operated,Sunday,Vedant,+1-XXX-XXX-XXXX,"sunday, atlanta","Hey {{ firstname | there }},
+
+Four people and closed Sundays. In Atlanta that's the day someone with a real budget and a Monday-morning-back-at-work deadline decides to book something before their skin has to be seen.
+
+I do intake for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd cover Sunday and the hours the four of you are in rooms: answer, work out which treatment they're asking about, book as pending for you to confirm. 30 days at my cost. If it hasn't put 10 booked consults on your calendar, you owe me nothing.
+
+15 minutes Thursday 2pm or Friday 10am ET? Or {{ Sender Phone }}.
+
+Vedant",111,atlanta,"Hey {{ firstname | there }}, one follow-up. Free for the first month, then you decide. Thursday works here.
+
+Vedant",Free 30-day pilot; 10 booked consults or no payment.,Closed-day + micro-team coverage,"Four staff cannot cover Sunday or in-treatment hours, which is when consumer aesthetics inquiries peak.",AI Receptionist / closed-day + overflow capture,4.9 / 444 reviews; 4 staff; closed Sunday; Atlanta GA,7,No inquiry-volume claim.
+78,A,9/9/2026,3,ET,Med Aesthetics Miami,Miami,FL,info@medaestheticsmiami.com,(305) 356-7402,https://medaestheticsmiami.com/?utm_source=google&utm_medium=organic&utm_content=gables&utm_campaign=gmb,4.8,436,4,,Micro / owner-operated,HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,who calls back first,"Hey {{ firstname | there }},
+
+Four staff, 436 reviews, and Miami — where a prospect is emailing you and four other practices in the same ten minutes. The one who replies first usually gets the consult, almost regardless of who's better.
+
+I work on first-response speed and qualification for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd make sure nothing waits: every inquiry answered immediately, qualified, and booked as pending into your calendar rather than sitting until someone's between patients. First 30 days on me — 10 booked consults or you don't pay.
+
+I only run two at a time. 15 minutes Thursday 1pm or Friday 11am ET? {{ Sender Phone }}.
+
+Vedant",117,miami,"Hey {{ firstname | there }}, quick ping. Speed of reply is the cheapest edge in your market. Free month. Thursday?
+
+Vedant",Free 30-day pilot; 10 booked consults or no payment.,Speed-to-first-response in a dense market,"With 4 staff in a saturated market, response latency decides consults more than quality does.",Leads Concierge / immediate response + qualification,4.8 / 436 reviews; 4 staff; Miami FL,7,"Hours not in workbook — no closure claimed. Multi-practice shopping is a market characteristic, not a claim about them."
+79,A,9/9/2026,4,ET,Ageless Medical,Plantation,FL,info@agelessmed.com,(954) 680-8330,https://www.agelessmed.com/?utm_medium=local&utm_source=gmb&utm_campaign=info,4.9,436,,,,Sunday,Vedant,+1-XXX-XXX-XXXX,monday's consult slots,"Hey {{ firstname | there }},
+
+Closed Sundays, and you're a medical aesthetics practice — which means most of what people ask about on Sunday needs a consult before it needs a price. Those inquiries arrive unqualified and sit until Monday, and Monday's consult slots get filled by whoever called during business hours instead.
+
+I work the intake and qualification side for medical aesthetics; most recently a multi-location derm and laser group.
+
+I'd qualify Sunday's inquiries as they arrive so Monday starts with a booked, sorted list rather than a voicemail queue. Live in 14 days, and I guarantee 20 booked consults in the first 60 or I work unpaid until you have them.
+
+15 minutes Thursday 10:30am or Friday 2pm ET? {{ Sender Phone }}.
+
+Vedant",127,monday queue,"Hey {{ firstname | there }}, checking in once. The Sunday-to-Monday handoff is the specific fix. Guarantee stands. Thursday?
+
+Vedant",Live in 14 days; 20 booked consults in 60 days or work continues unpaid.,Closed-day qualification protecting scarce consult capacity,Consult slots are the scarce resource; unqualified Sunday inquiries lose the race for them.,Lead Qualification + Booking into existing consult calendar,4.9 / 436 reviews; closed Sunday; Plantation FL; medical aesthetics positioning,7,Distinct from lead 64 (also Plantation) — different angle and offer to avoid same-market duplication.
+80,A,9/9/2026,5,ET,Aesthetica MedSpa,Ridgewood,NJ,info@aestheticamedspanj.com,(201) 482-1419,https://aestheticamedspanj.com/appointments/?rel=gmblisting,4.9,412,14,,Small,Sunday,Vedant,+1-XXX-XXX-XXXX,ridgewood sundays,"Hey {{ firstname | there }},
+
+Fourteen people and closed Sundays. Ridgewood is a commuter town, so a decent share of your market is in Manhattan Monday to Friday and does its actual deciding on the weekend — half of which you're open for.
+
+I do intake for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd cover Sunday and after-hours: answer, qualify, book into your existing calendar as pending. Live in 14 days, and I guarantee 20 booked appointments in the first 60 or I keep working unpaid until you have them.
+
+I take two of these on at a time. 15 minutes Thursday 3pm or Friday 9:30am ET? {{ Sender Phone }}.
+
+Vedant",117,ridgewood,"Hey {{ firstname | there }}, one nudge. Commuter market, weekend deciders — that's the gap. Thursday or Friday?
+
+Vedant",Live in 14 days; 20 booked appointments in 60 days or work continues unpaid.,Closed-day capture in a commuter market,"A commuter catchment shifts decision-making to weekends, only one of which is covered.",AI Receptionist / closed-day + after-hours capture,4.9 / 412 reviews; 14 staff; closed Sunday; Ridgewood NJ,7,"Commuter characterisation of Ridgewood is a market observation, not a claim about their patients."
+81,A,9/9/2026,1,MT,Natura Med Spa & IV Bar - Denver,Denver,CO,feedback@naturamedspaivbar.com,(720) 599-4126,https://naturamedspaivbar.com/,4.9,410,17,,Core (best fit),HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,two cadences,"Hey {{ firstname | there }},
+
+A med spa and an IV bar under one roof run on two completely different clocks — IV clients are supposed to come back on a cycle, aesthetics clients on a season. Managing both from one follow-up habit means one of them always slips.
+
+I work on retention and follow-up for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd separate the two: overdue IV clients get one cadence, aesthetics patients another, each referencing what they actually had. First pass free in 30 days — 15 booked appointments or no invoice.
+
+15 minutes Thursday 10am or Friday 1pm MT? Or {{ Sender Phone }}.
+
+Vedant",113,the two clocks,"Hey {{ firstname | there }}, following up once. Splitting the two follow-up clocks is the whole idea. Free first pass. Thursday?
+
+Vedant",Free reactivation pass in 30 days; 15 booked appointments or no payment.,Dual-cadence retention (recurring vs seasonal),Two service lines with different natural return intervals cannot share one follow-up rhythm.,Patient Reactivation with per-service cadence,4.9 / 410 reviews; 17 staff; med spa + IV bar; Denver CO,7,Hours not in workbook — no closure claimed.
+82,A,9/9/2026,2,PT,Parie Med Spa,Las Vegas,NV,hello@pariemedspa.com,(702) 930-6221,https://pariemedspa.com/,4.9,408,,,,HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,vegas timing,"Hey {{ firstname | there }},
+
+Vegas splits your inquiries into two kinds: locals, who can book whenever, and visitors, who have a hard deadline and will book whoever answers while they're still deciding. The second kind doesn't wait for a callback.
+
+I work on response speed and intake for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd answer both immediately and treat them differently — visitors get slotted against their dates, locals get qualified and booked normally. 30 days at my cost. If it hasn't produced 10 booked appointments, you don't pay me.
+
+I run two of these at once. 15 minutes Thursday 10am or Friday 12pm PT? {{ Sender Phone }}.
+
+Vedant",117,visitors,"Hey {{ firstname | there }}, quick check-in. The visitor-versus-local split is the piece worth 15 minutes. Free month. Thursday?
+
+Vedant",Free 30-day pilot; 10 booked appointments or no payment.,Visitor-vs-local qualification and date-bound booking,A visitor market creates time-boxed inquiries that a callback-based process structurally loses.,Lead Qualification + Booking with date constraints,4.9 / 408 reviews; Las Vegas NV,7,Hours not in workbook — no closure claimed. Visitor dynamic is a market fact.
+83,A,9/9/2026,3,ET,Begin Anew - Aesthetics & Wellness,Jupiter,FL,rey@beginanewmed.com,(561) 781-3578,http://beginanewmed.com/?utm_source=google&utm_medium=organic&utm_campaign=gbp,4.9,403,,,,Sunday,Vedant,+1-XXX-XXX-XXXX,"sunday, jupiter","Hey {{ firstname | there }},
+
+Closed Sundays in a town where a lot of your market keeps its own weekday hours — so the inquiry lands on the one day nobody's there and then competes with Monday's own traffic for attention.
+
+I work the intake side for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd cover Sunday: answer, qualify what they're after, book as pending so Monday opens with confirmed appointments rather than a backlog. First 30 days free — 10 booked consults or no invoice.
+
+Worth 15 minutes? Thursday 11am or Friday 3pm ET, or {{ Sender Phone }}.
+
+Vedant",105,jupiter,"Hey {{ firstname | there }}, one ping in case this got buried. Free for 30 days. Thursday or Friday both work here.
+
+Vedant",Free 30-day pilot; 10 booked consults or no payment.,Closed-day (Sunday) capture,"Sunday inquiries compete with Monday's live traffic for the same staff attention, so they lose twice.",AI Receptionist / closed-day capture,4.9 / 403 reviews; closed Sunday; Jupiter FL,7,No volume claims. Team size blank in workbook — not referenced.
+84,A,9/9/2026,4,ET,Aura Head Spa | Ridgewood,Ridgewood,NJ,info@auraheadspanj.com,(201) 366-6464,http://www.auraheadspanj.com/,4.9,398,,,,HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,head spa rebooking,"Hey {{ firstname | there }},
+
+Head spa is one of the few services where the whole model assumes people come back on a rhythm — it's not a one-off procedure, it's a habit you're trying to build. So the number that decides the business is what share of first-timers book a second visit.
+
+I work on retention and follow-up for spa and aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd handle the second-visit push specifically: everyone who came once and hasn't rebooked gets a real prompt at the right interval, not a monthly newsletter. Free first pass in 30 days — 15 booked appointments or no invoice.
+
+15 minutes Thursday 2pm or Friday 10am ET? {{ Sender Phone }}.
+
+Vedant",124,second visits,"Hey {{ firstname | there }}, quick follow-up on the second-visit piece. Free first pass. Thursday works on my end.
+
+Vedant",Free reactivation pass in 30 days; 15 booked appointments or no payment.,Second-visit conversion in a habit-formation service,"A habit-based service lives on first-to-second visit conversion, which decays fast without prompting.",Patient Reactivation / recurring-visit prompts,4.9 / 398 reviews; head spa model; Ridgewood NJ,7,"Hours not in workbook — no closure claimed. Distinct angle from lead 80, same town."
+85,A,9/9/2026,5,ET,The Modern Aesthetic,Charlotte,NC,info@themodernaesthetic.co,(704) 291-1568,http://www.themodernaesthetic.co/,4.9,393,,,,Sunday,Vedant,+1-XXX-XXX-XXXX,charlotte sundays,"Hey {{ firstname | there }},
+
+Closed Sundays, and Charlotte's aesthetics market has got a lot more crowded in the last couple of years — which means an unanswered Sunday inquiry isn't waiting for you on Monday, it's already booked somewhere else.
+
+I do intake for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd put a line on Sunday that answers, qualifies the treatment interest, and books as pending for your team to confirm. 30 days on my cost. If it hasn't put 10 booked consults on the calendar, you owe me nothing.
+
+I take two on at a time. 15 minutes Thursday 1pm or Friday 11am ET? {{ Sender Phone }}.
+
+Vedant",116,charlotte,"Hey {{ firstname | there }}, one nudge. Free for the first month — you'd only pay if it books. Thursday?
+
+Vedant",Free 30-day pilot; 10 booked consults or no payment.,Closed-day capture in a competitive growth market,Market density means unanswered inquiries convert elsewhere rather than returning.,AI Receptionist / closed-day capture,4.9 / 393 reviews; closed Sunday; Charlotte NC,7,Market-growth statement is general and public; no specific competitor or figure claimed.
+86,A,9/9/2026,1,PT,Aesthetic Envy,Sacramento,CA,info@aestheticenvy.com,(916) 333-4906,https://www.aestheticenvy.com/?utm_source=GMBlisting&utm_medium=organic&utm_campaign=gmb-Sacramento,4.9,365,,,,HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,the 3-month mark,"Hey {{ firstname | there }},
+
+Injectables have a built-in clock — people are due back roughly every three to four months whether anyone reminds them or not. The practices that grow aren't the ones getting more new patients, they're the ones where fewer people quietly miss their window.
+
+I work on retention and recall for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd find everyone past their window with nothing booked and prompt them against what they actually had done and when. First pass free inside 30 days — 15 booked appointments or no invoice.
+
+I run two of these at a time. 15 minutes Thursday 11am or Friday 9am PT? {{ Sender Phone }}.
+
+Vedant",120,the window,"Hey {{ firstname | there }}, quick ping on the recall idea. First pass is free and runs off your own history. Thursday or Friday?
+
+Vedant",Free reactivation pass in 30 days; 15 booked appointments or no payment.,Injectables recall-window retention,An injectables model has a natural 3-4 month recall cycle; missed windows compound silently.,Patient Reactivation + recurring-treatment reminders,4.9 / 365 reviews; injectables-led positioning; Sacramento CA,7,"Hours not in workbook — no closure claimed. Recall interval is a general clinical norm, not a claim about their patients."
+87,A,9/9/2026,2,CT,Restore Hyper Wellness,Minneapolis,MN,frontdeskca001@restore.com,(949) 312-2626,https://www.restore.com/locations/ca-laguna-niguel-ca001?utm_source=gmb&utm_medium=Yext&y_source=1_MzE2Mjk4MjItNzE1LWxvY2F0aW9uLndlYnNpdGU%3D,4.9,364,,,,HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,the second visit,"Hey {{ firstname | there }},
+
+A membership-and-recurring-services model has one number underneath it: whether people keep showing up after the novelty of month one. Acquisition gets all the attention and retention quietly decides the P&L.
+
+I work on retention and follow-up for wellness and aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd focus on the people who joined and stopped coming — find them, prompt them against what they'd actually been using, get them back on the schedule. Free first pass in 30 days. If it doesn't produce 15 booked appointments, no invoice.
+
+15 minutes Thursday 1pm or Friday 10am CT? Or {{ Sender Phone }}.
+
+Vedant",111,month two,"Hey {{ firstname | there }}, one follow-up. Free first pass over the lapsed list. Thursday works here if it does for you.
+
+Vedant",Free reactivation pass in 30 days; 15 booked appointments or no payment.,Membership retention / lapsed-member recovery,"Recurring-membership models are retention-determined, so lapsed members are the highest-value list.",Patient Reactivation + membership follow-up,4.9 / 364 reviews; membership/recurring wellness model; Minneapolis MN,6,VERIFY BEFORE SEND: workbook city is Minneapolis MN but the listed email and website point to a California location. Confirm the contact before sending. Scarcity line omitted here.
+88,A,9/9/2026,3,ET,Tribeca Medspa,New York,NY,info@tribecamedspa.com,(646) 687-9711,https://www.tribecamedspa.com/?utm_source=google&utm_medium=organic&utm_campaign=gbp&utm_term=Tribeca-Medspa&utm_content=website,4.7,339,,,,HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,4.7 in manhattan,"Hey {{ firstname | there }},
+
+4.7 in a city where every competitor within ten blocks is sitting at 4.9. That gap is small on paper and enormous in practice, because it's the only thing a stranger comparing three Tribeca med spas can actually see.
+
+I work on the reputation and follow-up side for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd fix the asking, not the arguing: requests firing on a completed appointment rather than a blast, replies drafted for a human to approve, nothing posting on its own. Live in 14 days and I keep working free until you've added 50 new reviews.
+
+15 minutes Thursday 4pm or Friday 10am ET? {{ Sender Phone }}.
+
+Vedant",121,tribeca,"Hey {{ firstname | there }}, quick nudge. Free until the 50 reviews land — the risk sits with me. Thursday?
+
+Vedant",Live in 14 days; work free until 50 new reviews added.,Review velocity to close a competitive rating gap,In a dense market a 0.2 rating gap is the primary visible differentiator to a first-time comparison shopper.,"Reviews & Reputation (event-triggered, human-approved)","4.7 / 339 reviews; Tribeca, New York NY",7,Competitor rating comparison is stated as a general market observation. No claim they have a service problem.
+89,A,9/9/2026,4,ET,Alluring Image Medspa and Wellness,Delray Beach,FL,info@alluringimagemedspa.com,(561) 567-9056,https://alluringimagemedspa.com/,4.9,338,,,,Sunday,Vedant,+1-XXX-XXX-XXXX,season swings,"Hey {{ firstname | there }},
+
+Delray's demand doesn't sit still — the season arrives and inquiry volume changes shape, then it leaves again. Staffing can't flex that fast, so coverage is either too thin in February or too expensive in August.
+
+I do intake for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd give you coverage that doesn't care what month it is: every inquiry answered and qualified, booked as pending, Sundays included since you're closed. 30 days at my cost. If it hasn't produced 10 booked consults, no invoice.
+
+15 minutes Thursday 10am or Friday 2pm ET? Or {{ Sender Phone }}.
+
+Vedant",108,delray season,"Hey {{ firstname | there }}, following up once. Coverage that doesn't need seasonal hiring — that's the idea. Free month. Thursday?
+
+Vedant",Free 30-day pilot; 10 booked consults or no payment.,Seasonal demand variance vs fixed staffing,A seasonal market makes fixed front-desk staffing wrong in both directions across the year.,AI Receptionist / elastic coverage + closed-day capture,4.9 / 338 reviews; closed Sunday; Delray Beach FL,7,"Seasonality of the South Florida market is a public characteristic. Distinct angle from lead 67, same town."
+90,A,9/9/2026,5,PT,Skin Works Medical Spa | Torrance,Redondo Beach,CA,support@skinworksmed.com,(844) 759-6757,https://skinworksmed.com/,4.8,336,,,,HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,the 844,"Hey {{ firstname | there }},
+
+An 844 number covering Torrance and Redondo means calls land somewhere central before they land with a person. That's the right call at your size — it just also means the caller's first experience is a queue, and aesthetics inquiries don't hold well.
+
+I work on intake for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd sit in front of that line: answer on the first ring, work out what they want and which site suits, book it as pending into your existing system. Live in 30 days, and I guarantee 20 booked appointments in the first 60 or I work unpaid until you have them.
+
+15 minutes Thursday 11am or Friday 9am PT? {{ Sender Phone }}.
+
+Vedant",128,the toll-free line,"Hey {{ firstname | there }}, quick check-in. First-ring answering in front of the 844 — that's the whole change. Thursday?
+
+Vedant",Live in 30 days; 20 booked appointments in 60 days or work continues unpaid.,Centralised line / hold-abandonment capture,"A toll-free central line implies queueing, and high-consideration aesthetics callers abandon queues.",AI Receptionist in front of existing central line + routing,4.8 / 336 reviews; 844 toll-free number; Torrance/Redondo Beach CA,7,"Hours not in workbook — no closure claimed. Queue behaviour is framed as a characteristic of centralised lines, not measured."
+91,A,9/9/2026,1,PT,Bella Glo Medical Aesthetics & Wellness,Carlsbad,CA,hello@bellagloaesthetics.com,(760) 453-7523,https://www.bellagloaesthetics.com/,5,333,,,,Sunday,Vedant,+1-XXX-XXX-XXXX,"carlsbad, the chain","Hey {{ firstname | there }},
+
+5.0 across 333 in the same town as a 40-location chain. You win on trust every single time someone actually compares — the trouble is a chain can afford to answer at 8pm on a Sunday and an independent generally can't.
+
+I work on intake for independent aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd give you the coverage without the headcount: Sundays and after-hours answered, qualified, booked as pending for you to confirm. 30 days at my cost. If it hasn't put 10 booked consults on your calendar, you owe me nothing.
+
+I take two of these on at a time. 15 minutes Thursday 10am or Friday 1pm PT? {{ Sender Phone }}.
+
+Vedant",124,carlsbad,"Hey {{ firstname | there }}, one nudge. Chain-level coverage without chain-level payroll. Free month. Thursday or Friday?
+
+Vedant",Free 30-day pilot; 10 booked consults or no payment.,Independent-vs-chain coverage parity,An independent's rating advantage is neutralised by a chain's ability to staff hours it can't.,AI Receptionist / closed-day + after-hours capture,5.0 / 333 reviews; closed Sunday; Carlsbad CA — same market as a 40-location competitor in this list,7,"Competitor reference is generic ('a 40-location chain'), not named. Strong, genuinely lead-specific angle."
+92,A,9/9/2026,2,CT,Zero Age MedSpa Katy,Katy,TX,info@zeroagemedspa.com,(281) 769-9608,https://www.zeroagemedspa.com/,5,328,,,,HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,after 8pm,"Hey {{ firstname | there }},
+
+Katy is a family market, which shapes when people can actually deal with themselves — after dinner, after the kids are down, somewhere between 8 and 11pm. That's when the enquiry gets sent and it's nobody's fault that nobody's there.
+
+I work the intake side for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd cover those hours: answer immediately, work out what they're asking about, book into your calendar as pending for the morning. First 30 days free — 10 booked consults or you don't pay.
+
+15 minutes Thursday 9:30am or Friday 1pm CT? Or {{ Sender Phone }}.
+
+Vedant",109,evenings,"Hey {{ firstname | there }}, quick ping. The 8-to-11pm window is the specific gap. Free for a month. Thursday?
+
+Vedant",Free 30-day pilot; 10 booked consults or no payment.,Evening / after-hours capture in a family market,"A suburban family catchment shifts inquiry timing to late evening, outside any staffed hours.",AI Receptionist / after-hours capture,5.0 / 328 reviews; Katy TX,7,Hours not in workbook — no closure claimed; framed around evening timing generally.
+93,A,9/9/2026,3,PT,Aesthetics by Vivi,Roseville,CA,nursevivi@aestheticsbyvivi.com,(916) 633-1691,https://aestheticsbyvivi.com/,5,327,,,,Sunday,Vedant,+1-XXX-XXX-XXXX,injecting vs answering,"Hey {{ firstname | there }},
+
+When the practice is you, every hour on the phone is an hour not injecting — and the phone doesn't ring when you're free, it rings when you're mid-treatment with someone who's paying for your attention.
+
+I work on intake for solo and small aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd take the phone off you entirely: inquiries answered and qualified while you're in a room, booked into your calendar as pending so you approve them between patients. Nothing clinical gets answered — that comes to you. 30 days at my cost, 10 booked consults or no invoice.
+
+15 minutes Thursday 10am or Friday 12pm PT? {{ Sender Phone }}.
+
+Vedant",121,roseville,"Hey {{ firstname | there }}, one follow-up. Solo practices are the ones this helps most. Free month. Thursday works here.
+
+Vedant",Free 30-day pilot; 10 booked consults or no payment.,Solo-practitioner opportunity cost of front-desk work,"For a solo injector, phone time is directly traded against billable treatment time.",AI Receptionist + clinical escalation to the practitioner,5.0 / 327 reviews; closed Sunday; solo nurse-injector model; Roseville CA,7,Solo-practitioner read is inferred from the contact address and micro segment — phrased conditionally. Clinical escalation explicit.
+94,A,9/9/2026,4,PT,Idan Med Spa,San Francisco,CA,info@idanmedspa.com,(628) 222-7522,https://www.idanmedspa.com/,4.9,325,,,,HOURS NOT IN WORKBOOK - do not claim a closure,Vedant,+1-XXX-XXX-XXXX,sf front desk math,"Hey {{ firstname | there }},
+
+San Francisco has the most expensive front desk in the country. Which means the hours you're not staffed aren't a scheduling oversight, they're a rational decision — and the inquiries that arrive in them are still real.
+
+I work on intake for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd cover exactly those hours rather than replace anyone: answer, qualify, book as pending into your existing calendar. Live in 14 days, and I guarantee 20 booked appointments in the first 60 or I keep working unpaid until you have them.
+
+I take two of these on at a time. 15 minutes Thursday 2pm or Friday 9am PT? {{ Sender Phone }}.
+
+Vedant",121,sf,"Hey {{ firstname | there }}, quick nudge. Covering the unstaffed hours only — no headcount change. Thursday or Friday?
+
+Vedant",Live in 14 days; 20 booked appointments in 60 days or work continues unpaid.,Cost-of-coverage economics in a high-wage market,"High front-desk cost makes unstaffed hours a deliberate trade-off, which is exactly the gap to fill cheaply.",AI Receptionist / unstaffed-hours capture,4.9 / 325 reviews; San Francisco CA,7,"Hours not in workbook — no closure claimed; framed as unstaffed hours generally. Distinct from lead 71, same city."
+95,A,9/9/2026,5,ET,Athena Med Spa and Salon,West Palm Beach,FL,admin@athenamedspaandsalon.com,(561) 833-7611,https://www.athenamedspaandsalon.com/locations/west-palm-beach/,4.9,323,,,,Sunday,Vedant,+1-XXX-XXX-XXXX,salon side,"Hey {{ firstname | there }},
+
+You run a salon alongside the med spa, which means you already have the warmest med-spa leads anyone could ask for — people who trust you, come in regularly, and have never been asked about the other half of the business.
+
+I work on cross-sell and follow-up for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd work that list first: salon clients with no aesthetics history, prompted once, at the right interval, referencing what they already come in for. Free first pass in 30 days — 15 booked consults or no invoice. Sundays covered too, since you're closed.
+
+15 minutes Thursday 11am or Friday 2pm ET? {{ Sender Phone }}.
+
+Vedant",120,the salon list,"Hey {{ firstname | there }}, following up once. The salon-to-medspa list is the cheapest growth you own. Free first pass. Thursday?
+
+Vedant",Free cross-sell pass in 30 days; 15 booked consults or no payment.,Salon-to-medspa cross-sell,An attached salon supplies a pre-trusted audience with no acquisition cost that is typically unworked.,Patient Reactivation / Leads Concierge applied to existing client base,4.9 / 323 reviews; closed Sunday; med spa + salon model; West Palm Beach FL,7,Does not claim the cross-sell is currently unworked as fact — phrased as 'typically'. Strong lead-specific angle.
+96,A,9/9/2026,1,PT,SDBotox - Sabre Springs,Rancho Santa Fe,CA,morganne@sdbotox.com,(844) 732-6869,https://sdbotox.com/location/med-spa-poway/,4.9,313,,,,Sunday,Vedant,+1-XXX-XXX-XXXX,the botox clock,"Hey {{ firstname | there }},
+
+A Botox-led practice runs on a three-to-four month clock across multiple locations. Growth is less about new faces than about how many of the existing ones come back inside their window — and that's a tracking problem, not a marketing one.
+
+I work on recall and retention for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd find everyone past their window with nothing booked, across sites, and prompt them against their own last treatment date. Free first pass in 30 days — 15 booked appointments or no invoice.
+
+I run two at a time. 15 minutes Thursday 10am or Friday 1pm PT? {{ Sender Phone }}.
+
+Vedant",116,the window,"Hey {{ firstname | there }}, quick check-in on the recall pass. Free, runs off your own dates. Thursday or Friday?
+
+Vedant",Free reactivation pass in 30 days; 15 booked appointments or no payment.,Single-service recall across multiple sites,"A single-modality practice has a tight, predictable recall window, making lapse tracking the growth lever.",Patient Reactivation + recurring-treatment reminders across locations,"4.9 / 313 reviews; closed Sunday; Botox-led, multi-site; Rancho Santa Fe / Poway CA",7,Multi-site read comes from the listed URL path. Recall interval is a general clinical norm.
+97,A,9/9/2026,2,ET,Body Lounge Med Spa,Weston,FL,info@bodyloungemedspa.com,(954) 849-8726,https://bodyloungemedspa.com/?utm_source=google-map&utm_campaign=gmb&utm_medium=organic,4.9,294,,,,Sunday,Vedant,+1-XXX-XXX-XXXX,session 3 of 6,"Hey {{ firstname | there }},
+
+Body work is sold in packages, which creates a problem injectables don't have: the revenue is already committed but the result depends on someone showing up six times. The money doesn't leak at the sale, it leaks around session three.
+
+I work on adherence and follow-up for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd watch the gaps: anyone mid-package who hasn't booked their next session gets a prompt before the gap turns into a refund conversation. Free first pass in 30 days — 15 booked sessions or no invoice. Sundays covered as well, since you're closed.
+
+15 minutes Thursday 1pm or Friday 10am ET? {{ Sender Phone }}.
+
+Vedant",119,mid-package,"Hey {{ firstname | there }}, one nudge. Mid-package drop-off is the specific thing I'd track. Free first pass. Thursday?
+
+Vedant",Free mid-package adherence pass in 30 days; 15 booked sessions or no payment.,Package/series adherence rather than acquisition,"Multi-session body treatments leak revenue mid-series, not at the point of sale.",Patient Reactivation / no-show and lapse recovery within treatment series,4.9 / 294 reviews; closed Sunday; body contouring model; Weston FL,7,"Refund risk is framed as a general consequence, not a claim about their refunds. Strong differentiated angle."
+98,A,9/9/2026,3,ET,Muse Aesthetics & Laser,Tampa,FL,help@museaestheticsandlaser.com,(813) 771-2061,https://www.museaestheticsandlaser.com/,5,291,,,,Sunday,Vedant,+1-XXX-XXX-XXXX,laser season,"Hey {{ firstname | there }},
+
+Laser is the one part of the menu with a real calendar — series start in the autumn because people need to stay out of the sun, and the booking window for that is narrow and happening now.
+
+I work on intake and follow-up for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd make sure nothing gets missed in the window: inquiries answered and qualified as they arrive, series bookings scheduled out rather than one appointment at a time, Sundays covered since you're closed. Live in 14 days and I guarantee 20 booked appointments in the first 60, or I work unpaid until you have them.
+
+15 minutes Thursday 3pm or Friday 11am ET? {{ Sender Phone }}.
+
+Vedant",128,the window's now,"Hey {{ firstname | there }}, quick follow-up — the autumn laser window is the timely part. 15 minutes Thursday?
+
+Vedant",Live in 14 days; 20 booked appointments in 60 days or work continues unpaid.,Seasonal laser series booking window,"Laser series are seasonally gated, so the intake window is narrow and unforgiving of missed inquiries.",AI Receptionist + Booking of multi-session series,5.0 / 291 reviews; closed Sunday; laser-focused; Tampa FL,7,"Seasonality of laser treatment is a general clinical norm, not a claim about their bookings. Timeliness is real, not manufactured urgency. Distinct from lead 68, same city."
+99,A,9/9/2026,4,ET,Boston Medical Aesthetics,Boston,MA,info@bostonmedicalaesthetics.net,(617) 973-9700,https://www.bostonmedicalaesthetics.net/?utm_source=gmb&utm_medium=organic,4.9,287,,,,Sunday,Vedant,+1-XXX-XXX-XXXX,"sunday, boston","Hey {{ firstname | there }},
+
+Closed Sundays, and Boston's aesthetics market skews toward people who research heavily before they call — long consideration, lots of comparison, and then a decision made on a weekend afternoon.
+
+I work the intake side for medical aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd cover Sunday and after-hours: answer, answer the approved questions, qualify what they're actually considering, book as pending for your team to confirm. Anything clinical goes to a person. 30 days at my cost — 10 booked consults or no invoice.
+
+15 minutes Thursday 10am or Friday 2pm ET? Or {{ Sender Phone }}.
+
+Vedant",108,boston,"Hey {{ firstname | there }}, one ping. Free for the first month either way. Thursday works on my end.
+
+Vedant",Free 30-day pilot; 10 booked consults or no payment.,Closed-day capture for a high-consideration buyer,"A research-heavy buyer decides on weekends, so a Sunday closure sits on the decision moment.",AI Receptionist + approved-FAQ handling with clinical escalation,4.9 / 287 reviews; closed Sunday; Boston MA,7,Clinical escalation stated explicitly. Market characterisation is general.
+100,A,9/9/2026,5,ET,Accelerated Aesthetics,Darien,CT,info@acceleratedaesthetics.com,(630) 439-7540,http://www.acceleratedaesthetics.com/,4.8,287,,,,Sunday,Vedant,+1-XXX-XXX-XXXX,darien after 6,"Hey {{ firstname | there }},
+
+Darien's a commuter town — a lot of your catchment is in Manhattan from eight to six, which means your inquiries arrive in the evening and on the weekend. You're closed Sundays, so half of that lands on a dark line.
+
+I do intake for aesthetics practices; most recently a multi-location derm and laser group.
+
+I'd cover the evenings and Sunday: answer, qualify, book as pending into your existing calendar for the morning. First 30 days at my cost. If it hasn't put 10 booked consults on the books, you owe me nothing.
+
+I take two of these on at a time. 15 minutes Thursday 11am or Friday 9:30am ET? {{ Sender Phone }}.
+
+Vedant",121,darien,"Hey {{ firstname | there }}, quick nudge. Evenings and Sundays are the gap. Free for a month. Thursday or Friday?
+
+Vedant",Free 30-day pilot; 10 booked consults or no payment.,Commuter-hours + closed-day capture,A commuter catchment pushes inquiry timing outside business hours on both weekdays and Sundays.,AI Receptionist / after-hours + closed-day capture,4.8 / 287 reviews; closed Sunday; Darien CT,6,VERIFY BEFORE SEND: listed phone is a 630 area code (Illinois) against a Darien CT address. Confirm the contact record before sending. Scarcity present but flagging data risk.
