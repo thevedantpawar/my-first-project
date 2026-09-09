@@ -1,0 +1,853 @@
+﻿firstname,Email,Subject,Body,Business,City,ST,Phone,Website,Campaign Rank,Priority Tier,Campaign Date,Mailbox,Prospect TZ,Rating,Reviews,Employees,Locations,Segment,Coverage gap,Body Words,Offer Made,Strategic Angle,Business Insight,MICRONS Capability,Research / Personalization Basis,Research Depth,QA Notes
+Jeanine,info@imagedermatology.com,your patient stories,"Hey {{ firstname | there }},
+
+I was looking through image Dermatology's patient stories and the Meet the Team page — you've already built a strong system for capturing patients talking about their experience, from feeling comfortable and heard to seeing results from treatment.
+
+There's an obvious next step I'd test: turning those same positive treatment experiences into a consistent Google-review workflow.
+
+I'd connect a treatment-completed event to an automated review request at the appropriate point in the patient journey, then route responses back to your team so nothing gets posted publicly without human approval.
+
+The goal isn't to replace your front desk — it's to remove the manual follow-up they shouldn't have to remember.
+
+I'll build it, monitor it, and keep working at no additional cost until it produces 50 additional reviews. Your team only needs to approve the workflow once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 2 pm or Friday at 10 am ET — just reply with either.
+
+Vedant",image DermatologyÂ® P.C.,Montclair,NJ,(973) 509-6900,https://www.imagedermatology.com/,51,A,9/9/2026,1,ET,4.3,221,11,,Small,closed Sat + Sun,169,Build + monitor free until 50 additional reviews; team approves workflow once.,Review velocity from existing treatment moments,A 34-year practice already generates the experiences; the gap is asking for them consistently.,"Reviews & Reputation - event-triggered requests, human-approved replies","Patient stories + Meet the Team pages; Dr. Jeanine Downie, board-certified, 34 years; medical + cosmetic + dermatologic surgery",Verified - owner/founder named,Verified via public listings and site pages. No claim made about current review handling.
+Dinah,info@pureluxemedical.com,el segundo,"Hey {{ firstname | there }},
+
+I was reading how you built Pure Luxe — opening on Main Street in 2016 and growing it into the place the Beach Cities drive to, with Dr. Henry as medical director behind the injectable work.
+
+There's an obvious next step I'd test: catching the inquiries that arrive when all four of you are with patients.
+
+I'd put an intake layer on your phone and forms that answers the routine questions, works out which treatment someone is asking about, and books them into your calendar as pending for you to confirm.
+
+The goal isn't to replace anyone — it's to stop a small team from having to choose between the person in the chair and the person on the phone.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 25 consultations you'd otherwise have missed. You only need to approve the answers it's allowed to give, once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 11 am or Friday at 9 am PT — just reply with either.
+
+Vedant",Pure Luxe Medical,Manhattan Beach,CA,(424) 277-1642,https://www.pureluxemedical.com/,52,A,9/9/2026,2,PT,4.8,211,4,,Micro / owner-operated,closed Sat + Sun,186,Build + monitor free until 25 consultations booked from missed inquiries; approve approved-answer list once.,In-treatment inquiry capture for a micro team,Four staff means the phone competes directly with billable chair time.,"AI Receptionist + Lead Qualification, booking as pending",Founding provider Dinah Manalo CNP; Medical Director Dr. Michelle Henry; opened March 2016; El Segundo/Main St serving Beach Cities,Verified - owner/founder named,"NOTE: business is in EL SEGUNDO, not Manhattan Beach as the workbook says. Email reflects the correct city."
+Anuja,info@onestopaesthetictravelandwellness.com,the I-693 side,"Hey {{ firstname | there }},
+
+I was looking at how Onestop is put together — primary care, aesthetics, weight management, travel health and USCIS I-693 physicals under one roof. That's four completely different kinds of caller dialling the same number.
+
+There's an obvious next step I'd test: sorting them before they reach one of the three of you.
+
+I'd put a qualification layer in front of your line and forms that identifies which service someone is asking about, answers the approved logistics questions for that path, and books into Vagaro accordingly. Anything clinical goes straight to you, untouched.
+
+The goal isn't to screen patients — it's to make sure an immigration-physical question and a filler consult don't cost you the same twenty minutes.
+
+I'll build it, monitor it, and keep working at no additional cost until it correctly routes and books 40 inquiries. You only need to confirm the routing rules once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 10 am or Friday at 1 pm PT — just reply with either.
+
+Vedant",Onestop Aesthetic Travel and Wellness Center,Pleasanton,CA,(925) 263-9547,https://www.onestopaesthetictravelandwellness.com/,53,A,9/9/2026,3,PT,4.7,197,3,,Micro / owner-operated,closed Sat + Sun,180,Build + monitor free until 40 inquiries correctly routed and booked; confirm routing rules once.,Multi-service intent routing,"Five distinct service lines on one phone number make triage, not answering, the real cost.",Lead Qualification + Booking over existing Vagaro scheduling,"Dr. Anuja Garg, owner; primary care + aesthetics + weight loss + travel health + USCIS I-693; Vagaro booking; 3 staff",Verified - owner/founder named,Service mix verified from site and directory listings. Clinical escalation stated explicitly.
+Chase,info@barraesthetics.com,friday at five,"Hey {{ firstname | there }},
+
+I was looking at Barr Aesthetics — facial plastic surgery alongside injectables, lasers and hair restoration is a wider range than most six-person practices attempt, and the surgical side means a lot of your inquiries need a real consult before anything else.
+
+There's an obvious next step I'd test: covering the window between Friday at five and Monday at nine.
+
+I'd have inquiries that land over the weekend answered immediately, qualified for whether they're asking about surgery or an in-office treatment, and booked into Monday as pending for your team to confirm.
+
+The goal isn't to make anyone work weekends — it's to make sure Monday opens with a filled consult calendar instead of a voicemail queue.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 25 consultations from hours you're closed. Your team only needs to approve the intake questions once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 10 am or Friday at 1 pm MT — just reply with either.
+
+Vedant",Barr Aesthetics,Salt Lake City,UT,(801) 532-0204,http://barraesthetics.com/,54,A,9/9/2026,4,MT,4.7,167,6,,Micro / owner-operated,closed Sat + Sun,181,Build + monitor free until 25 consultations booked from closed hours; approve intake questions once.,Weekend capture feeding a surgical consult calendar,Mon-Fri 9-5 hours leave the weekend uncovered for a practice whose surgical inquiries need consults.,AI Receptionist + Lead Qualification (surgical vs in-office),Led by Chase and Dr. Barr; facial plastic surgery + injectables + lasers + hair restoration; hours M-F 9-5 (verified),Verified - owner/founder named,"Closure verified independently - listings confirm M-F 9-5, matching workbook's Sat+Sun gap."
+Heather,info@beautylablaser.com,"3,701","Hey {{ firstname | there }},
+
+I was looking at what you and Andrea have built across Murray and Riverton — 3,701 reviews is not a number a normal med spa reaches, and it means an enormous number of people have been through your rooms.
+
+There's an obvious next step I'd test: the ones who haven't been back.
+
+I'd run a pass over your patient history to find everyone past their usual return window with nothing on the books, then send each of them one message that references the treatment they actually had rather than a generic promo blast.
+
+The goal isn't to add another marketing channel — it's to work a list you already own and that nobody currently has time to sort through.
+
+I'll build it, monitor it, and keep working at no additional cost until it brings 30 past patients back onto the schedule. Your team only needs to hand over the treatment history once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 10 am or Friday at 2 pm MT — just reply with either.
+
+Vedant",Beauty Lab + Laser Med Spa | Murray,Salt Lake City,UT,(801) 675-8954,https://beautylablaser.com/locations/murray-beauty-lab-laser/,55,A,9/9/2026,5,MT,4.9,3701,15,2,Core (best fit),HOURS NOT IN WORKBOOK - do not claim a closure,185,Build + monitor free until 30 past patients rebooked; hand over treatment history once.,Reactivation against an unusually large treated base,"3,701 reviews implies a treated base where dormancy outweighs acquisition as a growth lever.",Patient Reactivation with treatment-specific messaging,"Founders Heather Gay + Andrea Robinson; Murray + Riverton UT; 4.9/3,701 reviews; 15 staff",Verified - owner/founder named,Does NOT assert a dormant-patient count. Hours unknown - no closure claimed.
+Dina,contact@cosmeticamedspa.com,since 2020,"Hey {{ firstname | there }},
+
+I was looking at how far Cosmetica has come since you opened in 2020 — PDO threads, PRP, hair restoration and hormone work alongside the injectable menu is a serious range to cover, and 1,335 reviews says East Boca has noticed.
+
+There's an obvious next step I'd test: the patients from that history who haven't rebooked.
+
+I'd pass over your records to find everyone past their normal return interval with nothing scheduled, then reach out referencing the specific treatment they came in for — a filler patient and a PRP patient are on completely different clocks.
+
+The goal isn't to run a promo — it's to make a three-person team's follow-up automatic instead of something that happens when things are quiet.
+
+I'll build it, monitor it, and keep working at no additional cost until it brings 30 patients back. Your team only needs to hand over the history once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 2 pm or Friday at 11 am ET — just reply with either.
+
+Vedant",Cosmetica,Boca Raton,FL,(561) 621-1156,https://cosmeticamedspa.com/?utm_campaign=gmb&utm_medium=gbpinfo&utm_source=googlebusinessprofile,56,A,9/9/2026,1,ET,4.8,1335,3,,Micro / owner-operated,HOURS NOT IN WORKBOOK - do not claim a closure,182,Build + monitor free until 30 patients rebooked; hand over history once.,Treatment-specific reactivation across differing return intervals,A wide treatment menu means one follow-up cadence cannot fit all patients.,Patient Reactivation with per-treatment cadence,"Owner Dina Sipovich; established 2020; East Boca; PDO threads, PRP, P-Shot/O-Shot, TRT, hair restoration; 3 staff; 4.8/1,335",Verified - owner/founder named,Hours not verified - no closure claimed. No dormant count asserted.
+,info@spaderma.com,the points balance,"Hey {{ firstname | there }},
+
+I was looking at how SpaDerma runs its rewards programme — points on treatments, pre-bookings and product, cashing out at a hundred dollars for every thousand. Across five locations and two decades that's a genuinely well-built retention mechanic.
+
+There's an obvious next step I'd test: the members sitting on a points balance who haven't booked in a while.
+
+I'd find everyone with meaningful points and no upcoming appointment, then send one message that tells them what their balance is actually worth and offers the next slot at their usual location.
+
+The goal isn't to bolt on another campaign — it's to make an asset you've already built do the reminding by itself.
+
+I'll build it, monitor it, and keep working at no additional cost until it brings 40 lapsed members back onto the schedule. Your team only needs to connect the rewards data once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 1 pm or Friday at 9.30 am CT — just reply with either.
+
+Vedant",SpaDerma,Chicago,IL,(773) 529-5277,https://www.spaderma.com/,57,A,9/9/2026,2,CT,4.9,792,130,1,Enterprise / chain,HOURS NOT IN WORKBOOK - do not claim a closure,177,Build + monitor free until 40 lapsed members rebooked; connect rewards data once.,Rewards-balance reactivation across a multi-site brand,An unredeemed points balance is a standing reason to return that goes unused without prompting.,Patient Reactivation tied to existing loyalty programme + multi-location routing,"Rewards: points on treatments/pre-bookings/purchases, $100 gift card per 1,000 points; 5 Chicago locations (Lincoln Park, West Loop, Lakeview, Wicker Park, North Shore); 20+ years",Verified - business detail,Rewards mechanics verified from site. No claim about member behaviour.
+Amirali,info@truejewelcosmeticcenter.com,culver city,"Hey {{ firstname | there }},
+
+I was reading your background — Berkeley, Toronto, general surgery at Calgary, then facial cosmetic training in Bellevue before opening True Jewel. That path shows up in how the practice is positioned, and a five-star rating across 780 reviews is not an accident.
+
+There's an obvious next step I'd test: what happens to a surgical inquiry that arrives on a Saturday.
+
+I'd have those answered as they land, qualified for whether the person is asking about a procedure or an in-office treatment, and booked into your consult calendar as pending for your team to confirm. Anything clinical is collected and passed to a person rather than answered.
+
+The goal isn't to sell for you — it's to make sure a high-consideration inquiry gets a reply while the person is still deciding.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 20 consultations from hours you're closed. Your team only needs to approve what it's allowed to say, once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 3 pm or Friday at 10 am PT — just reply with either.
+
+Vedant",True Jewel Cosmetic & Plastic Surgery Center,Washington,DC,(424) 434-6999,https://www.truejewelcosmeticcenter.com/?utm_source=google&utm_medium=organic&utm_campaign=gmb-listing,58,A,9/9/2026,3,ET,5,780,7,,Small,Saturday,197,Build + monitor free until 20 consultations booked from closed hours; approve permitted answers once.,Closed-day capture on a high-ticket surgical funnel,Surgical inquiries are high-consideration and time-sensitive; a dark Saturday sits on the decision moment.,AI Receptionist + Lead Qualification with clinical escalation,Founder Dr. Amirali ShakouriPartovi; training path Berkeley/Toronto/Calgary/Bellevue; 5.0/780 reviews; Fresha booking,"Verified - DATA ISSUE, see QA Notes","IMPORTANT: practice is in CULVER CITY, CA (424 area code), not Washington DC as the workbook states. CTA uses PT accordingly."
+,info@estheticscenter.com,"four locations, one number","Hey {{ firstname | there }},
+
+I was looking at how the Esthetics Center is set up — Sacramento in University Village, Fair Oaks, and a surgeon-led model with Dr. Rice behind the aesthetic work. Down to the complimentary valet, the in-person experience is clearly deliberate.
+
+There's an obvious next step I'd test: making the first phone call match it.
+
+I'd put one intake path in front of all four locations that works out where the caller is, what they're asking about and which provider fits, then books them at the right site in your existing system.
+
+The goal isn't to centralise your front desks — it's to stop a caller having to know your org chart before they can get an appointment.
+
+I'll build it, monitor it, and keep working at no additional cost until it routes and books 40 inquiries to the correct location. Your team only needs to confirm the routing rules once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 11 am or Friday at 9 am PT — just reply with either.
+
+Vedant",Esthetics Center Sacramento,Sacramento,CA,(916) 259-9971,https://www.estheticscenter.com/locations/sacramento?utm_source=google&utm_medium=organic&utm_campaign=gbpSacramento&utm_content=website,59,A,9/9/2026,4,PT,4.9,777,39,4,Core (best fit),Sunday,183,Build + monitor free until 40 inquiries routed and booked to the correct site; confirm rules once.,Multi-location routing matched to a deliberate in-person experience,Four sites and a curated experience make the first call the weakest link in an otherwise controlled journey.,Booking + routing layer over existing scheduling,"Dr. Rice (facial plastic & reconstructive, Loma Linda); Sacramento University Village + Fair Oaks + more; complimentary valet; 39 staff, 4 locations",Verified - business detail,Layer-not-replacement framing used per positioning rules.
+Liz,info@adornmedspa.com,nine years in,"Hey {{ firstname | there }},
+
+I was looking at Adorn — nine years in aesthetics on top of fourteen as a nurse is a longer runway than most injectors have, and it shows in how the practice reads. You've also already got online booking running through Aesthetic Record.
+
+There's an obvious next step I'd test: the gap between an inquiry arriving and someone getting to it.
+
+I'd have new inquiries answered the moment they land, qualified for what they're actually asking about, and pushed into your existing booking rather than sitting until you're between patients.
+
+The goal isn't to replace the booking system you've already set up — it's to make sure every inquiry reaches it.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 25 appointments that would otherwise have waited. You only need to approve the answers it can give, once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 2 pm or Friday at 10.30 am ET — just reply with either.
+
+Vedant",Adorn Medical Spa,Detroit,MI,(313) 438-5159,https://adornmedspa.com/,60,A,9/9/2026,5,ET,4.9,692,4,,Micro / owner-operated,HOURS NOT IN WORKBOOK - do not claim a closure,177,Build + monitor free until 25 appointments booked that would otherwise have waited; approve answers once.,Response-latency capture layered on existing online booking,Existing booking infrastructure is only as good as the share of inquiries that reach it.,Leads Concierge / immediate response feeding existing Aesthetic Record booking,"Injector Liz K - 9 years aesthetics, 14 years nursing, 8 as NP; Aesthetic Record online booking; HALO, Morpheus8, invisa-RED",Verified - owner/founder named,"Explicitly positions around existing infrastructure. Practice address is Dearborn, MI (workbook says Detroit)."
+,aloha@honoluluspaandwellness.com,the mainland clock,"Hey {{ firstname | there }},
+
+I was looking at Honolulu Spa and Wellness — ten years at Ala Moana, and a treatment list that's noticeably more clinical than most day spas, with nano microneedling and Hydrafacial MD alongside the massage and waxing side.
+
+There's an obvious next step I'd test: the inquiries that arrive on mainland time.
+
+Someone planning a trip emails at nine in the morning their time, which is the middle of your night, and books whoever replies first. I'd have those answered immediately, qualified for what they want and which days they're actually on-island, and booked as pending for you to confirm.
+
+The goal isn't to have anyone up at 3 am — it's to stop a five-hour time difference deciding who gets the booking.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 25 appointments from outside your hours. You only need to approve what it's allowed to answer, once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 9 am or Friday at 8 am HST — just reply with either.
+
+Vedant",Honolulu Spa And Wellness - Oahu,Honolulu,HI,(808) 232-5626,https://honoluluspaandwellness.com/?utm_source=google_profile&utm_campaign=localo&utm_medium=mainlink,61,A,9/9/2026,1,US time zone - verify,4.9,687,2,1,Micro / owner-operated,Sunday,188,Build + monitor free until 25 appointments booked from outside hours; approve permitted answers once.,Time-zone lead capture in a visitor market,HST places mainland inquiry peaks entirely outside a two-person team's staffed hours.,AI Receptionist / after-hours capture + date-aware booking,"Established 2015; Ala Moana Center / Ala Moana Medical Building; Hydrafacial MD, nano microneedling, LED, peels; hours M-Sat 9-8, closed Sunday (verified)",Verified - business detail,Hours independently verified. Workbook TZ flagged 'verify' - HST confirmed.
+,info@thrivedripspa.com,rollover credits,"Hey {{ firstname | there }},
+
+I was reading how your memberships work — services that roll over month to month, cancel with two weeks' notice, a birthday drip. That's a fairer structure than most wellness memberships and it's clearly built to keep people rather than trap them.
+
+There's an obvious next step I'd test: members who are quietly accumulating rollover credits and not coming in.
+
+I'd flag anyone whose credits are stacking up with nothing booked, and send one message telling them what they have waiting and offering the next slot at Market Street.
+
+The goal isn't to chase people — it's to make sure a membership designed to be generous doesn't turn into a quiet subscription nobody uses before they cancel.
+
+I'll build it, monitor it, and keep working at no additional cost until it brings 30 members back in. Your team only needs to connect the membership data once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 1 pm or Friday at 9.30 am CT — just reply with either.
+
+Vedant",ThrIVe Drip Spa - The Woodlands,The Woodlands,TX,(281) 343-3747,https://thrivedripspa.com/the-woodlands/?utm_source=GBP&utm_medium=Organic+&utm_campaign=Woodlands&utm_id=GBP,62,A,9/9/2026,2,CT,4.9,682,32,,Core (best fit),HOURS NOT IN WORKBOOK - do not claim a closure,179,Build + monitor free until 30 members return; connect membership data once.,Rollover-credit membership retention,Rollover credits accumulate silently; unused value predicts cancellation before it happens.,Patient Reactivation + membership follow-up,"Memberships $129/mo (1 premium IV + booster) and $229/mo (2 IV + booster), services roll over, 2-week cancellation, birthday drip; Market Street, 9595 Six Pines; RN-delivered, plastic-surgeon overseen; Emsculpt NEO",Verified - business detail,Membership mechanics verified from site. No churn figure asserted. Hours unknown - no closure claimed.
+Melanie,contact@theshinespa.com,back in st louis,"Hey {{ firstname | there }},
+
+I was reading how you built The Shine Spa — training alongside plastic surgeons in California and then bringing that back to Clayton, with the aesthetics side and the hormone and metabolic work running together.
+
+There's an obvious next step I'd test: the weight-loss and hormone patients specifically.
+
+Those programmes only work if people come back on schedule, and they're the easiest appointments to quietly drift out of. I'd flag anyone overdue for their next visit and send a prompt tied to where they actually are in their programme, booking straight into Square.
+
+The goal isn't to add admin — it's to stop the treatments with the longest arcs from depending on someone remembering to chase.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 30 follow-up visits. Your team only needs to hand over the schedule once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 1 pm or Friday at 10 am CT — just reply with either.
+
+Vedant",The Shine Spa,St Louis,MO,(314) 499-7199,http://theshinespa.com/?utm_source=google&utm_medium=organic&utm_campaign=gbp,63,A,9/9/2026,3,CT,5,669,,,,Sunday,177,Build + monitor free until 30 follow-up visits booked; hand over schedule once.,Programme-adherence follow-up for hormone and weight-loss patients,"Longitudinal programmes leak between visits, not at the sale.",Patient Reactivation / recurring-visit prompts over existing Square booking,"Founder Melanie Murray FNP, 13+ years, trained with CA plastic surgeons; Clayton Rd; Square booking; CareCredit; Tirzepatide, hormone/metabolic services",Verified - owner/founder named,Programme structure verified. No adherence rate claimed.
+,info@plantationmedspa.com,the consult step,"Hey {{ firstname | there }},
+
+I was looking at Plantation Med Spa — the menu is deliberately non-invasive, and you carry basically every neurotoxin on the market, Daxxify and Jeuveau included. That's a practice that expects patients to ask informed questions before they book.
+
+There's an obvious next step I'd test: answering those questions the moment they're asked.
+
+I'd have inquiries answered immediately with the product and process questions your team has pre-approved, qualified for what they're considering, then booked as pending for you to confirm. Anything clinical gets collected and handed to a person.
+
+The goal isn't to give medical advice — it's to make sure someone comparing four neurotoxins doesn't go quiet because nobody got back to them for a day.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 25 consultations. Your team only needs to approve the answers once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 2 pm or Friday at 11 am ET — just reply with either.
+
+Vedant",Plantation Med Spa,Plantation,FL,(954) 595-2607,https://plantationmedspa.com/,64,A,9/9/2026,4,ET,4.9,635,,,,Sunday,177,Build + monitor free until 25 consultations booked; approve answers once.,"Approved-FAQ speed for an informed, comparison-driven buyer",A broad neurotoxin menu attracts comparison shoppers whose questions decay fast if unanswered.,AI Receptionist / approved-FAQ handling with clinical escalation,"Non-invasive positioning; Botox, Dysport, Xeomin, Daxxify, Jeuveau, lip services; microneedling, LHR; 100 NW 82nd Ave",Verified - business detail,Clinical escalation stated explicitly. Hours not verified - no closure claimed.
+Julie,info@vivemedspadenver.com,the booking fee,"Hey {{ firstname | there }},
+
+I was looking at how Vive is run — a non-refundable booking fee to hold an appointment and a 48-hour reschedule window is a stricter policy than most Denver med spas are willing to enforce, and it tells me no-shows have already cost you enough to act on.
+
+There's an obvious next step I'd test: the reminder layer in front of that policy.
+
+I'd have every booking confirmed on the day it's made, reminded at 72 and 24 hours with a one-tap reschedule inside the window, and anyone who does drop off followed up automatically to rebook.
+
+The goal isn't to replace the policy — it's to make sure you're collecting appointments rather than booking fees.
+
+I'll build it, monitor it, and keep working at no additional cost until it recovers 20 appointments that would otherwise have been no-shows. Your team only needs to connect the calendar once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 10 am or Friday at 1 pm MT — just reply with either.
+
+Vedant",VIVE Med Spa,Denver,CO,(720) 698-3327,https://www.vivemedspadenver.com/,65,A,9/9/2026,5,MT,4.9,622,,,,Tuesday,181,Build + monitor free until 20 would-be no-shows recovered; connect calendar once.,No-show prevention layered on an existing deposit policy,A non-refundable booking fee is a symptom of a no-show problem; reminders address the cause rather than the penalty.,No-Show Recovery + appointment reminders,"Led by Julie Kim, permanent makeup artist; nano brows, injectables, weight management; non-refundable booking fee, 48-hour cancellation policy (verified from site)",Verified - owner/founder named,Policy is public and verifiable. Does NOT claim a no-show rate - infers only that the policy exists.
+Veeren,summit@woodhousespas.com,just summit,"Hey {{ firstname | there }},
+
+I was looking at the Summit location specifically — the Calming Retreat and the HydraFacial tiers are Woodhouse's, but the booking, the phones and the hours are yours, and mood care only lands if the first contact matches it.
+
+There's an obvious next step I'd test: the inquiries that arrive when the front desk is with a guest.
+
+I'd have those answered immediately, qualified for which service and which time they're after, and booked into your existing schedule as pending for your team to confirm.
+
+The goal isn't anything corporate has to approve — it's one location, running alongside what you already do.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 30 appointments from inquiries that would otherwise have waited. Your team only needs to approve the intake questions once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 3 pm or Friday at 9 am ET — just reply with either.
+
+Vedant",Woodhouse Spa - Summit,Summit,NJ,(908) 608-1120,http://summit.woodhousespas.com/,66,A,9/9/2026,1,ET,4.8,614,2500,48,Enterprise / chain,HOURS NOT IN WORKBOOK - do not claim a closure,170,Build + monitor free until 30 appointments booked from delayed inquiries; approve intake questions once.,Single-site pilot scoped to franchisee authority,"A franchisee controls local intake but not central systems, so the offer must fit one location.",AI Receptionist + Booking layered on existing schedule,"Franchise owner Veeren Reddy (Divine Escape LLC, since 2013); 420 Springfield Ave; brand signature services HydraFacial Classic/Deluxe, Calming Retreat; 'mood care' positioning",Verified - owner/founder named,Deliberately scoped to what a site owner can authorise. Hours not verified - no closure claimed.
+Nancy,info@bellareinaspa.com,"43,000 facials","Hey {{ firstname | there }},
+
+I was reading about Bella Reina — forty-three thousand facials and a Best Day Spa in North America win is a body of work almost nobody in this industry can point to, and you've been doing it in Delray since 2009.
+
+There's an obvious next step I'd test: the clients inside those forty-three thousand who haven't been back.
+
+I'd run a pass over your history to find everyone past their normal interval with nothing booked, and reach out referencing what they actually came in for — an acne facial client and a HydraFacial client are on different rhythms entirely.
+
+The goal isn't to run a promotion — it's to make sure the size of your history works for you instead of just sitting there.
+
+I'll build it, monitor it, and keep working at no additional cost until it brings 30 clients back onto the schedule. Your team only needs to hand over the treatment history once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 11 am or Friday at 2 pm ET — just reply with either.
+
+Vedant",Bella Reina Spa,Delray Beach,FL,(561) 404-7670,http://www.bellareinaspa.com/,67,A,9/9/2026,2,ET,4.8,599,12,1,Small,Monday,189,Build + monitor free until 30 clients rebooked; hand over treatment history once.,Reactivation against a very large documented client history,"43,000 recorded facials is an unusually large owned audience relative to a 12-person team's follow-up capacity.",Patient Reactivation with treatment-specific cadence,"Founder Nancy Reagan, Biological Aesthetician, est 2009, 30+ years, 43,000+ facials, Best Day Spa in North America; HydraFacial MD, HIFU, acne facials, Dazzle Dry pedicures",Verified - owner/founder named,"43,000 figure is the practice's own published claim, used as such. No dormant count asserted."
+Wendy,admin@cellrenewtampa.com,one room,"Hey {{ firstname | there }},
+
+I was reading how Cell Renew started — one small room, then a real downtown space with Dr. Hernandez as medical director. That's the kind of growth that happens because the work is good, not because the marketing was.
+
+There's an obvious next step I'd test: Sundays and the hours the five of you are all in treatment.
+
+I'd have inquiries that land then answered immediately, qualified for what they're asking about, and booked into Fresha as pending for you to confirm on Monday.
+
+The goal isn't to replace your front desk — it's to make sure a practice that grew on word of mouth isn't losing the people that word of mouth sends.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 25 appointments from hours you're closed. Your team only needs to approve what it can answer, once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 1 pm or Friday at 10 am ET — just reply with either.
+
+Vedant",Cell Renew Medical Spa Downtown,Tampa,FL,(813) 600-0666,https://www.cellrenewtampa.com/,68,A,9/9/2026,3,ET,4.9,591,5,,Micro / owner-operated,Sunday,179,Build + monitor free until 25 appointments booked from closed hours; approve permitted answers once.,Closed-day and in-treatment capture for a referral-driven practice,"Word-of-mouth demand arrives on the referred person's schedule, not the practice's.",AI Receptionist / closed-day capture over existing Fresha booking,"Founded by Master Aesthetician Wendy Aguilar (10+ yrs) from a single room; husband Dr. Mario Hernandez is Medical Director; Fresha booking; hours M-F 10-6, Sat 10-4, closed Sunday (verified)",Verified - owner/founder named,Closure independently verified. Origin story is the practice's own published account.
+,booking@bossgalbeautybar.com,the beauty bank,"Hey {{ firstname | there }},
+
+I was looking at the Boss Gal Beauty Bank — a free facial and fifteen per cent off, framed as a way to make self-care fit a budget rather than as a discount grab. Across Clintonville, Grandview and Easton that's a genuinely good retention structure.
+
+There's an obvious next step I'd test: members who joined and then drifted.
+
+I'd flag anyone with an active membership and no upcoming booking, then send one message reminding them what's sitting unused and offering the next slot at their home location.
+
+The goal isn't to add another email list — it's to make sure a membership built to be used doesn't quietly become a subscription people cancel.
+
+I'll build it, monitor it, and keep working at no additional cost until it brings 30 members back in. Your team only needs to connect the membership data once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 2 pm or Friday at 9.30 am ET — just reply with either.
+
+Vedant",Boss Gal Beauty Bar - Clintonville,Columbus,OH,(614) 820-5178,https://www.bossgalbeautybar.com/contact/clintonville-spa/,69,A,9/9/2026,4,ET,4.9,568,31,5,Core (best fit),HOURS NOT IN WORKBOOK - do not claim a closure,175,Build + monitor free until 30 members return; connect membership data once.,Membership utilisation across multiple sites,An unused membership benefit is the strongest available predictor of cancellation.,Patient Reactivation + membership follow-up with location routing,"'Boss Gal Beauty Bank' membership: free facial ($69 value) + 15% off products and services; locations Clintonville, Grandview, Easton Town Center; 31 staff",Verified - business detail,Membership named and verified from site. No churn figure asserted. Hours unknown - no closure claimed.
+,info@vivalamedspa.com,old town,"Hey {{ firstname | there }},
+
+I was reading how Viva La came about — leaving sales and marketing, finishing top of the class at Universal Spa Training Academy, and opening on Wells Street in 2022. Three years in with twenty-two people is fast.
+
+There's an obvious next step I'd test: keeping the first two minutes of every inquiry consistent.
+
+At twenty-two staff the phone tends to belong to whoever is nearest it, which means a new patient's first impression depends on who that was. I'd put one intake path in front of it — same questions, same qualification, same route into your calendar, every time.
+
+The goal isn't to take the phone off your team — it's to make sure the standard doesn't move depending on who picks up.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 30 appointments through that path. Your team only needs to approve the script once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 1 pm or Friday at 11 am CT — just reply with either.
+
+Vedant",Viva La Med Spa,Chicago,IL,(312) 971-5915,http://vivalamedspa.com/,70,A,9/9/2026,5,CT,4.8,545,22,,Core (best fit),HOURS NOT IN WORKBOOK - do not claim a closure,186,Build + monitor free until 30 appointments booked through the intake path; approve script once.,Intake consistency during fast headcount growth,Rapid growth to 22 staff without a dedicated intake owner makes first-response quality vary by person.,Lead Qualification standardised in front of existing booking,"Founded 2022, 1657 N Wells St, Old Town; owner moved from sales & marketing, ranked #1 at Universal Spa Training Academy; medical + day spa services; 22 staff",Verified - business detail,NOTE: verified as OPEN 7 DAYS (Sun 9-4) - no closure claimed anywhere in this email.
+,soma@cocoondayspa.com,the boutique,"Hey {{ firstname | there }},
+
+I was looking at Cocoon — eighteen years, three locations, and a boutique at SoMa carrying SkinCeuticals and Eminence next to Free People. Most spas treat retail as an afterthought; you clearly don't.
+
+There's an obvious next step I'd test: connecting what someone buys to when they come back.
+
+Someone who leaves with a SkinCeuticals serum is on a predictable replenishment cycle, and so is their next facial. I'd tie those together — a prompt at the right interval that offers the refill and the appointment in the same message.
+
+The goal isn't to push product — it's to use a purchase you already have on record as the reason to book the next visit.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 30 return appointments. Your team only needs to connect the client history once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 11 am or Friday at 9 am PT — just reply with either.
+
+Vedant",Cocoon Day Spa San Francisco - Soma,San Francisco,CA,(415) 894-0782,https://cocoondayspa.com/soma/?utm_source=Local+Flow+Marketing_GBP&utm_medium=organic&utm_campaign=Cocoon-Soma-GBP,71,A,9/9/2026,1,PT,4.8,517,18,,Core (best fit),HOURS NOT IN WORKBOOK - do not claim a closure,176,Build + monitor free until 30 return appointments booked; connect client history once.,Retail-purchase-triggered rebooking,"Product replenishment cycles are a known, dated signal that predicts the next service visit.",Patient Reactivation triggered by purchase history + recurring-visit prompts,"Established 2007; 3 locations - SoMa (330 1st St), Noe Valley, Rockridge; boutique stocks SkinCeuticals, Eminence Organics, Cosabella, Free People; Endermologie, Hydrafacial, microblading",Verified - business detail,Retail detail verified from site. Hours unknown - no closure claimed.
+,concierge@nakedmd.com,carlsbad first,"Hey {{ firstname | there }},
+
+I was looking at NakedMD — a hundred thousand patients since 2022 across forty-plus locations is a serious operation, and the TOX membership is the part that makes the model work rather than just the volume.
+
+There's an obvious next step I'd test, at one site before anywhere else: members whose next tox appointment has slipped.
+
+Neurotoxin has a hard three-to-four month clock. I'd flag members who are past due with nothing booked and prompt them against their own last treatment date, booking straight into Carlsbad's calendar.
+
+The goal isn't a rollout conversation — it's one location, running quietly, so you can see whether the numbers move before anyone else has to care.
+
+I'll build it, monitor it, and keep working at no additional cost until it rebooks 40 members at Carlsbad. Your team only needs to connect that location's data once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 10 am or Friday at 1 pm PT — just reply with either.
+
+Vedant",NakedMD Med Spa Carlsbad,Carlsbad,CA,(760) 683-8360,https://www.nakedmd.com/pages/locations-carlsbad,72,A,9/9/2026,2,PT,4.9,508,150,40,Enterprise / chain,Sunday,175,Build + monitor free at Carlsbad until 40 members rebooked; connect one location's data once.,Single-site membership recall pilot inside a large chain,A neurotoxin membership depends on adherence to a tight recall window; lapses compound silently at scale.,"Patient Reactivation / recurring-treatment recall, pilot-scoped to one site","40+ locations across CA/AZ/NV/TX/TN; 100,000+ patients since 2022; Medical Director Steven Chao; TOX membership programme; expert nurse injectors",Verified - business detail,Micro-commitment scoped to one site per enterprise sales logic. Recall interval is a general clinical norm.
+Tamie,info@whitepearlmedicalspa.com,two front desks,"Hey {{ firstname | there }},
+
+I was looking at White Pearl — a licensed aesthetician since 2012 and laser certified since 2020, running nails and medical aesthetics under one roof with Dr. Conrardy as medical director.
+
+There's an obvious next step I'd test: separating the two kinds of caller before they reach you.
+
+Someone booking a pedicure and someone asking about microneedling need completely different conversations, and right now both land on the same line. I'd sort them at the point of contact — quick bookings go straight through, anything medical gets its questions collected and handed to you rather than answered.
+
+The goal isn't to filter people out — it's to stop a nail appointment and a filler consult costing the same amount of your attention.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 30 appointments across both sides. You only need to approve the sorting rules once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 2 pm or Friday at 10 am CT — just reply with either.
+
+Vedant",White Pearl Med-Spa & Nail Lounge,Chicago,IL,(847) 380-7157,https://whitepearlmedicalspa.com/,73,A,9/9/2026,3,CT,4.8,503,5,,Micro / owner-operated,Monday,184,Build + monitor free until 30 appointments booked across both service lines; approve sorting rules once.,Dual-service qualification with clinical escalation,Two service categories with very different value and risk profiles share one intake channel.,Lead Qualification + escalation of clinical questions to staff,"Owner Tamie Lai, licensed aesthetician since 2012, certified laser technician since 2020; Medical Director Dr. Philip G. Conrardy; nails + microneedling + injectables + PRF/PRP",Verified - owner/founder named,"NOTE: practice is in DES PLAINES, IL, not Chicago as the workbook states. Clinical escalation explicit."
+,info@spasasse.com,since 1982,"Hey {{ firstname | there }},
+
+I was looking at Spa Sassé — locally and woman-owned since 1982, five thousand square feet a block off Pioneer Square, with Vichy showers and Thalasso baths alongside CoolSculpting and RF microneedling. Forty-three years in downtown Portland is its own kind of proof.
+
+There's an obvious next step I'd test: your spa packages.
+
+Packages are the highest-value thing on your menu and the hardest to sell over the phone, because they need explaining. I'd have package inquiries answered as they arrive with the details your team has approved, then booked as pending for you to confirm.
+
+The goal isn't to automate the experience you've spent four decades building — it's to make sure the enquiry about your best-margin service gets a same-hour reply.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 25 package appointments. Your team only needs to approve the package answers once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 10 am or Friday at 1 pm PT — just reply with either.
+
+Vedant",Spa SassÃ©,Portland,OR,(503) 228-8266,http://www.spasasse.com/,74,A,9/9/2026,4,PT,4.7,500,9,1,Small,HOURS NOT IN WORKBOOK - do not claim a closure,184,Build + monitor free until 25 package appointments booked; approve package answers once.,High-value package inquiry response,"Packages carry the best margin and the highest explanation burden, so they suffer most from delayed replies.",AI Receptionist / approved-FAQ handling + Booking over existing Vagaro scheduling,"Locally and woman-owned since 1982; 630 SW Alder St, 5,000+ sq ft, one block from Pioneer Square; Vichy shower, Thalasso hydro baths, CoolSculpting, RF microneedling; dedicated Spa Packages page; Vagaro booking",Verified - business detail,Hours not claimed. Longevity verified from site.
+Nicole,inquiries@lovethenuyou.com,the pricing page,"Hey {{ firstname | there }},
+
+I was looking at NuYou — publishing a full pricing page is rare in Miami aesthetics, and it changes who calls you. People arrive already knowing the number, which means the conversation starts at whether it's right for them rather than what it costs.
+
+There's an obvious next step I'd test: how fast those people get an answer.
+
+A pre-qualified inquiry in Miami is worth a lot and it goes to whoever replies first. I'd have every one answered within minutes, qualified for what they're considering, and booked as pending for you to confirm. Anything clinical is collected and passed to you.
+
+The goal isn't to sell harder — it's to make sure the transparency you've already committed to converts before someone else calls them back.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 25 consultations. You only need to approve what it can say, once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 3 pm or Friday at 11 am ET — just reply with either.
+
+Vedant",NuYou Medical Aesthetics,Miami,FL,(305) 204-0659,http://www.lovethenuyou.com/,75,A,9/9/2026,5,ET,5,497,,,,HOURS NOT IN WORKBOOK - do not claim a closure,186,Build + monitor free until 25 consultations booked; approve permitted answers once.,"Speed-to-response on pre-qualified, price-aware inquiries","Published pricing pre-qualifies inquiries, which raises the cost of a slow first reply.",Leads Concierge / immediate first response + qualification with clinical escalation,"Founder Nicole Habib, MMS, PA-C; 888 Biscayne Blvd; public pricing page; NAD+ Beauty Dose; Sculptra, Renuva, non-surgical rhinoplasty, PRP hair restoration",Verified - owner/founder named,Pricing page verified. Hours unknown - no closure claimed.
+Gen,relax@botanicadayspa.com,the rose quartz,"Hey {{ firstname | there }},
+
+I was looking at Botanica — twenty-five years in Clearwater, twelve licensed staff across skin, nails, massage and makeup, and a Rose Quartz Facial people specifically ask for by name. Having a signature treatment that travels by word of mouth is harder to build than the spa itself.
+
+There's an obvious next step I'd test: what happens after someone has it.
+
+Day-spa economics live on how often people come back, and the interval between visits is the number nobody watches. I'd flag anyone past their usual return window with nothing booked and send one prompt referencing the treatment they actually had.
+
+The goal isn't to market at your clients — it's to make the second visit as automatic as the first one was memorable.
+
+I'll build it, monitor it, and keep working at no additional cost until it brings 30 clients back onto the schedule. Your team only needs to hand over the visit history once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 11 am or Friday at 2 pm ET — just reply with either.
+
+Vedant",Botanica Day Spa,Clearwater,FL,(727) 441-1711,http://www.botanicadayspa.com/,76,A,9/9/2026,1,ET,4.9,490,15,,Core (best fit),HOURS NOT IN WORKBOOK - do not claim a closure,189,Build + monitor free until 30 clients rebooked; hand over visit history once.,Visit-frequency retention around a signature service,"Day-spa margin is frequency-driven, making the inter-visit interval the key unwatched metric.",Patient Reactivation + recurring-visit prompts,Owner Gen (also practising esthetician); 25 years as Clearwater's leading day spa; 12 licensed staff; signature Rose Quartz Facial; 700 Court St; Meet the Staff page,Verified - owner/founder named,NOTE: verified as OPEN 7 DAYS (Sun 10-3) - no closure claimed. Workbook's 'hours unknown' respected and corrected.
+Lauren,info@ellemesmedspa.com,provider-owned,"Hey {{ firstname | there }},
+
+I was reading how you and Mark position ELLEMES — provider-owned, for people who care about long-term skin health rather than a one-off result. That's a deliberate filter, and it changes the kind of patient you want on the phone.
+
+There's an obvious next step I'd test: making sure the long-term ones actually come back on schedule.
+
+Skin health programmes only work in sequence, and a missed third appointment quietly undoes the first two. I'd flag anyone mid-course who hasn't rebooked and prompt them against where they are in their plan, booking into Fresha directly.
+
+The goal isn't to chase people — it's to make sure the model you built the practice around holds up in the calendar.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 30 follow-up appointments. Your team only needs to hand over the schedule once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 2 pm or Friday at 10 am ET — just reply with either.
+
+Vedant",ELLEMES Medical Spa,Atlanta,GA,(470) 222-6581,https://ellemesmedspa.com/?utm_source=google&utm_medium=organic&utm_campaign=google_business_profile,77,A,9/9/2026,2,ET,4.9,444,4,,Micro / owner-operated,Sunday,179,Build + monitor free until 30 follow-up appointments booked; hand over schedule once.,Course-of-treatment adherence matched to stated positioning,"A long-term skin-health promise depends on sequence adherence, which decays without prompting.",Patient Reactivation / mid-course follow-up over existing Fresha booking,"Owner Lauren Siso, co-owner Mark Siso; established 2016; 'provider-owned... long-term skin health and natural-looking results'; 5505 Peachtree Dunwoody Rd; Fresha booking; RF microneedling, Plasma Pen, IPL",Verified - owner/founder named,Positioning language quoted from their own site. Hours not claimed.
+Rosanna,info@medaestheticsmiami.com,three sets of hours,"Hey {{ firstname | there }},
+
+I was looking at how Med Aesthetics is structured — Coral Gables, Aventura and Lauderdale-By-The-Sea each with their own appointment page, which is more organised than most three-site practices manage.
+
+There's an obvious next step I'd test: the moment before someone picks a page.
+
+Right now a new patient has to work out which of the three is nearest and which one does what before they can book. I'd put one intake path in front of all three that figures that out for them — location, service, availability — and books them at the right site in your existing system.
+
+The goal isn't to centralise anything — it's to stop a patient having to do the routing themselves.
+
+I'll build it, monitor it, and keep working at no additional cost until it routes and books 40 inquiries correctly. Your team only needs to confirm the rules once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 1 pm or Friday at 11 am ET — just reply with either.
+
+Vedant",Med Aesthetics Miami,Miami,FL,(305) 356-7402,https://medaestheticsmiami.com/?utm_source=google&utm_medium=organic&utm_content=gables&utm_campaign=gmb,78,A,9/9/2026,3,ET,4.8,436,4,,Micro / owner-operated,HOURS NOT IN WORKBOOK - do not claim a closure,180,Build + monitor free until 40 inquiries routed and booked correctly; confirm rules once.,Multi-location routing ahead of per-site booking pages,Per-location booking pages push the routing decision onto the patient before they can convert.,Booking + routing layer over existing per-site scheduling,"Founder Rosanna Bermejo, MBA, RN, Aesthetician; 3 locations - Coral Gables (2020 Ponce de Leon), Aventura, Lauderdale-By-The-Sea; per-location appointment pages; clinical skincare focus",Verified - owner/founder named,NOTE: verified as OPEN 7 DAYS - no closure claimed anywhere in this email.
+Erin,info@agelessmed.com,training the trainers,"Hey {{ firstname | there }},
+
+I was looking at Ageless Medical — injecting since 2001 and now training other physicians and injectors is a level very few people in South Florida reach, and it sits behind a practice that's been running since 2006.
+
+There's an obvious next step I'd test: protecting the hours you spend injecting.
+
+When the most experienced person in the building is also the one people want on the phone, that time comes directly out of treatment. I'd have inquiries answered and qualified before they reach you, with anything clinical collected and routed to you rather than answered.
+
+The goal isn't to put a wall between you and patients — it's to make sure the questions that actually need you are the only ones that reach you.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 25 consultations without your involvement. Your team only needs to approve the answers once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 10.30 am or Friday at 2 pm ET — just reply with either.
+
+Vedant",Ageless Medical,Plantation,FL,(954) 680-8330,https://www.agelessmed.com/?utm_medium=local&utm_source=gmb&utm_campaign=info,79,A,9/9/2026,4,ET,4.9,436,,,,Sunday,187,Build + monitor free until 25 consultations booked without practitioner involvement; approve answers once.,Protecting scarce senior clinical time from front-desk work,"When the senior injector is also the intake bottleneck, phone time trades directly against treatment revenue.",Lead Qualification + clinical escalation to the practitioner,"Erin Owoc, ARNP-C, cosmetic NP since 2001, trains other doctors and injectors; Dr. Shashi Kusuma, board-certified plastic surgeon, directs; established 2006",Verified - owner/founder named,"NOTE: practice address is COOPER CITY, FL (serving Plantation/Davie/Weston), not Plantation as the workbook states."
+,info@aestheticamedspanj.com,bergen county,"Hey {{ firstname | there }},
+
+I was looking at Aesthetica — Ridgewood, Wayne and Paramus, plus a men's side with hair restoration and TRT that most Bergen County med spas still don't offer.
+
+There's an obvious next step I'd test: the men's programmes specifically.
+
+TRT and hair restoration only work on a schedule, and they're the treatments patients are least likely to chase up themselves. I'd flag anyone overdue for their next visit and prompt them against where they are in their protocol, booking at whichever of the three sites they normally use.
+
+The goal isn't to add a campaign — it's to make sure your longest-arc treatments don't depend on the patient remembering.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 30 follow-up appointments. Your team only needs to hand over the schedule once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 3 pm or Friday at 9.30 am ET — just reply with either.
+
+Vedant",Aesthetica MedSpa,Ridgewood,NJ,(201) 482-1419,https://aestheticamedspanj.com/appointments/?rel=gmblisting,80,A,9/9/2026,5,ET,4.9,412,14,,Small,Sunday,170,Build + monitor free until 30 follow-up appointments booked; hand over schedule once.,Protocol adherence for men's longitudinal programmes,TRT and hair-restoration protocols are schedule-dependent and under-chased relative to aesthetics visits.,Patient Reactivation / recurring-treatment reminders with location routing,"Owners Ibrahim and Maneeha Mahmood, MBA; locations Ridgewood, Wayne, Paramus (Bergen County); men's services incl. hair restoration and TRT; CoolSculpting, PRP hair restoration",Verified - business detail,Hours not claimed. Men's service line verified from site.
+,feedback@naturamedspaivbar.com,two clocks,"Hey {{ firstname | there }},
+
+I was looking at Natura — running an IV bar and a med spa across Denver and Aurora means you're managing two completely different return rhythms. Drip clients are meant to come back on a cycle; injectable patients on a season.
+
+There's an obvious next step I'd test: giving each of them its own follow-up.
+
+One cadence can't serve both, so whichever one your team wasn't thinking about that week is the one that slips. I'd split them — overdue drip clients prompted on their cycle, aesthetics patients on theirs, each booking into Aesthetic Record at whichever location they use.
+
+The goal isn't more messaging — it's the right interval for each service instead of one compromise interval for both.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 30 return visits across the two. Your team only needs to connect the booking data once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 10 am or Friday at 1 pm MT — just reply with either.
+
+Vedant",Natura Med Spa & IV Bar - Denver,Denver,CO,(720) 599-4126,https://naturamedspaivbar.com/,81,A,9/9/2026,1,MT,4.9,410,17,,Core (best fit),HOURS NOT IN WORKBOOK - do not claim a closure,184,Build + monitor free until 30 return visits booked across both service lines; connect booking data once.,Dual-cadence retention across two service models,Two service lines with different natural return intervals cannot share one follow-up rhythm.,Patient Reactivation with per-service cadence + multi-location routing,Two locations - Denver (357 S Colorado Blvd) and Aurora; Aesthetic Record online booking; IV therapy + injectables + lasers + body contouring + Tirzepatide,Verified - business detail,NOTE: verified as OPEN 7 DAYS (Sun 10-5) - no closure claimed.
+Ronen,hello@pariemedspa.com,top morpheus8,"Hey {{ firstname | there }},
+
+I was looking at Parie — top Morpheus8 provider in Las Vegas within about a year of opening is a fast start, and having memberships and Cherry financing live already says you're building for repeat rather than one-off.
+
+There's an obvious next step I'd test: making the membership do the returning for you.
+
+Morpheus8 is a series treatment, and the gap between sessions is where series quietly end. I'd flag anyone mid-course or with an unused membership benefit and prompt them at the right interval, booking directly into your scheduling.
+
+The goal isn't to add marketing on top of a new business — it's to make sure the retention structure you've already paid to build actually fires.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 30 follow-up sessions. Your team only needs to connect the membership data once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 10 am or Friday at 12 pm PT — just reply with either.
+
+Vedant",Parie Med Spa,Las Vegas,NV,(702) 930-6221,https://pariemedspa.com/,82,A,9/9/2026,2,PT,4.9,408,,,,HOURS NOT IN WORKBOOK - do not claim a closure,178,Build + monitor free until 30 follow-up sessions booked; connect membership data once.,Series adherence and membership utilisation at a young practice,"Series treatments and memberships both leak between sessions, which is where a new practice can least afford it.",Patient Reactivation / mid-series prompts + membership follow-up,Owner Ronen Tregerman; incorporated June 2024; Summerlin (1725 Village Center Cir); 2025 Top Morpheus8 Provider in Las Vegas; memberships page; CareCredit and Cherry financing; WellnessLiving booking,Verified - owner/founder named,NOTE: verified as OPEN 7 DAYS 9-5 - no closure claimed. Award is their own published claim.
+Rey,rey@beginanewmed.com,the factory,"Hey {{ firstname | there }},
+
+I was reading how Begin Anew started — a career in sales and marketing, then an autoimmune diagnosis, then reversing it and building a practice around regenerative and functional medicine. Running The Factory alongside it makes the wellness side more than positioning.
+
+There's an obvious next step I'd test: the Optimal Wellness Program specifically.
+
+Functional and regenerative protocols are long, and they only work if people stay in sequence — which makes the drop-off between visits more costly than in a normal aesthetics practice. I'd flag anyone overdue for their next step and prompt them against where they are in their programme.
+
+The goal isn't to chase clients — it's to make sure a model built on sequence doesn't depend on people remembering the sequence.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 30 follow-up visits. Your team only needs to hand over the programme schedule once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 11 am or Friday at 3 pm ET — just reply with either.
+
+Vedant",Begin Anew - Aesthetics & Wellness,Jupiter,FL,(561) 781-3578,http://beginanewmed.com/?utm_source=google&utm_medium=organic&utm_campaign=gbp,83,A,9/9/2026,3,ET,4.9,403,,,,Sunday,187,Build + monitor free until 30 follow-up visits booked; hand over programme schedule once.,Sequence adherence in a functional/regenerative programme,Longitudinal wellness protocols fail on drop-off between steps rather than at enrolment.,Patient Reactivation / programme-step prompts,"Founder Sharon - prior career in sales and marketing (AT&T, Lucent), autoimmune diagnosis then recovery, founded around regenerative and functional medicine; also owns The Factory gym in downtown Palm Beach; Optimal Wellness Program page; nutrient IV infusions",Verified - owner/founder named,Founder story is her own published account. Greeting uses 'Rey' from the contact address; founder is Sharon - verify who reads this inbox.
+,info@auraheadspanj.com,the academy,"Hey {{ firstname | there }},
+
+I was looking at Aura — opening Ridgewood as your second location while also running an academy is unusual. Most head spas are still explaining what a Japanese head spa is; you're already training people to deliver one.
+
+There's an obvious next step I'd test: the gap between a first visit and a second.
+
+A hundred-and-twenty-five dollar Classic and a two-hundred dollar Signature are both built to be habits rather than one-offs, and the whole model rests on whether someone books again. I'd prompt every first-time guest at the right interval with the treatment they actually had, booking straight into your calendar.
+
+The goal isn't to discount anyone back in — it's to ask at the moment the experience is still fresh, which is earlier than most spas think.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 30 second visits. Your team only needs to connect the booking data once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 2 pm or Friday at 10 am ET — just reply with either.
+
+Vedant",Aura Head Spa | Ridgewood,Ridgewood,NJ,(201) 366-6464,http://www.auraheadspanj.com/,84,A,9/9/2026,4,ET,4.9,398,,,,HOURS NOT IN WORKBOOK - do not claim a closure,190,Build + monitor free until 30 second visits booked; connect booking data once.,First-to-second visit conversion in a habit-formation service,"A habit-based service is decided at the second booking, and that window closes fast.",Patient Reactivation / second-visit prompts,"Japanese head spa; two locations - Montclair and Ridgewood (Ridgewood opened as second site); runs an academy; Classic Head Spa $125, Aura Signature Head Spa $200; blog content on Japanese head spa",Verified - business detail,Menu and pricing verified from site. Hours not claimed.
+Kendra,info@themodernaesthetic.co,the snatchural effect,"Hey {{ firstname | there }},
+
+I was looking at the SNATCHural Effect — building a named protocol that sequences filler, Sculptra, relaxers, lasers and skincare into one plan is a genuinely different thing from selling treatments one at a time.
+
+There's an obvious next step I'd test: keeping people in the plan.
+
+The moment a protocol has five steps, the revenue depends on someone completing all five, and the drop-off is almost never at step one. I'd track where each patient is in their plan, flag anyone who hasn't booked their next step in the expected window, and prompt them with what's actually next for them.
+
+The goal isn't to add follow-up admin — it's to make sure a plan you designed as a sequence gets completed as one.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 30 next-step appointments. Your team only needs to hand over the treatment plans once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 1 pm or Friday at 11 am ET — just reply with either.
+
+Vedant",The Modern Aesthetic,Charlotte,NC,(704) 291-1568,http://www.themodernaesthetic.co/,85,A,9/9/2026,5,ET,4.9,393,,,,Sunday,186,Build + monitor free until 30 next-step appointments booked; hand over treatment plans once.,Multi-step protocol completion,"A sequenced signature protocol concentrates revenue risk in the middle steps, not the sale.",Patient Reactivation / treatment-plan step tracking and prompts,"Kendra Lopez, known as Charlotte's 'Injection Queen'; signature SNATCHural Effect protocol combining fillers, Sculptra, relaxers, lasers, HydraFacials and skincare; before/after page; Ballantyne; hours M-Sat 9:30-6, closed Sunday (verified)",Verified - owner/founder named,Protocol named and verified from their own site. Closure independently confirmed.
+,info@aestheticenvy.com,"four sites, one team page","Hey {{ firstname | there }},
+
+I was looking at Aesthetic Envy — Sacramento, Folsom, Fair Oaks and Roseville, with hormone therapy and PRP running alongside the injectable and weight-loss side. Eight years to four locations with that range is a lot of moving parts.
+
+There's an obvious next step I'd test: the hormone and weight-loss patients.
+
+Those are the treatments with the longest arcs and the most scheduled follow-ups, which makes them the easiest to drift out of and the most expensive to lose. I'd flag anyone overdue with nothing booked and prompt them against their own programme, at whichever of the four sites they use.
+
+The goal isn't to add another reminder email — it's to make the follow-up specific enough that someone actually rebooks.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 30 follow-up appointments across the four. Your team only needs to connect the schedule once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 11 am or Friday at 9 am PT — just reply with either.
+
+Vedant",Aesthetic Envy,Sacramento,CA,(916) 333-4906,https://www.aestheticenvy.com/?utm_source=GMBlisting&utm_medium=organic&utm_campaign=gmb-Sacramento,86,A,9/9/2026,1,PT,4.9,365,,,,HOURS NOT IN WORKBOOK - do not claim a closure,184,Build + monitor free until 30 follow-up appointments booked across four sites; connect schedule once.,Longitudinal programme retention across multiple locations,Hormone and weight-loss programmes have the longest arcs and therefore the most drift points.,Patient Reactivation / recurring-treatment reminders with location routing,"8+ years; four locations - Sacramento (1321 Howe Ave), Folsom, Fair Oaks, Roseville; Semaglutide and Tirzepatide, HRT, PRP for skin and hair, joint pain; Our Team and Locations pages",Verified - business detail,Hours not claimed - workbook flagged unknown and research did not confirm.
+,frontdeskca001@restore.com,credits that travel,"Hey {{ firstname | there }},
+
+I was looking at how the Restore membership works — core therapy and IV credits usable at any studio in the country, two guest passes a month, thirty per cent off specialty services. For a recovery model that's a smart structure, because consistency is the entire product.
+
+There's an obvious next step I'd test: members whose credits are stacking up unused.
+
+The three-month commitment means someone can drift for a full month before anyone notices, and unused credits are the clearest early signal of a cancellation coming. I'd flag those members and send one message telling them what's sitting there and offering the next available slot.
+
+The goal isn't to add retention marketing — it's to catch the drift while the membership is still active rather than at the cancellation notice.
+
+I'll build it, monitor it, and keep working at no additional cost until it brings 30 members back in. Your team only needs to connect the membership data once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 1 pm or Friday at 10 am CT — just reply with either.
+
+Vedant",Restore Hyper Wellness,Minneapolis,MN,(949) 312-2626,https://www.restore.com/locations/ca-laguna-niguel-ca001?utm_source=gmb&utm_medium=Yext&y_source=1_MzE2Mjk4MjItNzE1LWxvY2F0aW9uLndlYnNpdGU%3D,87,A,9/9/2026,2,CT,4.9,364,,,,HOURS NOT IN WORKBOOK - do not claim a closure,193,Build + monitor free until 30 members return; connect membership data once.,Unused-credit signal as a churn early warning,Credit accumulation is an observable leading indicator of membership cancellation.,Patient Reactivation + membership follow-up,"Membership-first model: core therapy and IV drip credits usable at any location nationwide, 2 guest passes monthly, 30% off specialty services, 3-month commitment, 30-day cancellation notice; cryotherapy, IV, infrared sauna, red light, compression","Verified - DATA ISSUE, see QA Notes","VERIFY BEFORE SEND: workbook lists Minneapolis MN but the email address and website both point to a Laguna Niguel, CA studio. Confirm the correct contact and timezone before sending."
+,info@tribecamedspa.com,tribeca and flatiron,"Hey {{ firstname | there }},
+
+I was looking at Tribeca MedSpa — nearly twenty years, a board-certified plastic surgeon behind the clinical side, and a published price list, which almost nobody in Manhattan is willing to do.
+
+There's an obvious next step I'd test: the fact that some services only run at one of your two sites.
+
+That's an easy thing for a patient to get wrong, and getting it wrong means either a wasted trip or a booking that never happens. I'd have inquiries qualified for what they want first, then routed to the location that actually offers it and booked there.
+
+The goal isn't to change how you're set up — it's to make sure the split between Tribeca and Flatiron never becomes the patient's problem to solve.
+
+I'll build it, monitor it, and keep working at no additional cost until it routes and books 40 inquiries to the right location. Your team only needs to confirm which services live where, once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 4 pm or Friday at 10 am ET — just reply with either.
+
+Vedant",Tribeca Medspa,New York,NY,(646) 687-9711,https://www.tribecamedspa.com/?utm_source=google&utm_medium=organic&utm_campaign=gbp&utm_term=Tribeca-Medspa&utm_content=website,88,A,9/9/2026,3,ET,4.7,339,,,,HOURS NOT IN WORKBOOK - do not claim a closure,192,Build + monitor free until 40 inquiries routed and booked to the correct site; confirm service-location map once.,Service-level routing between two sites with differing menus,"When services differ by location, routing errors cost either a wasted visit or a lost booking.",Lead Qualification + Booking with service-aware location routing,"Established 2006; led by board-certified plastic surgeon Dr. Gerald D. Ginsberg with award-winning PAs; two locations, Tribeca (114 Hudson St) and Flatiron, with some services unique to each; public pricing page; monthly payment plans",Verified - business detail,Service-split detail verified from site. Hours not claimed.
+Romy,info@alluringimagemedspa.com,chief esthetician,"Hey {{ firstname | there }},
+
+I was looking at Alluring Image — being the owner and the chief esthetician at the same time is the position where every hour on admin is an hour off the treatment floor, and a boutique in downtown Delray doesn't have anyone else to absorb it.
+
+There's an obvious next step I'd test: the Sunday and after-hours inquiries.
+
+You're closed Sundays and shut at five most days, which is when a lot of Delray decides to book something. I'd have those answered as they arrive, qualified for what they want, and booked into Monday as pending for you to confirm.
+
+The goal isn't to put someone between you and your clients — it's to stop you being the front desk on your own time.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 25 appointments from hours you're closed. You only need to approve what it's allowed to answer, once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 10 am or Friday at 2 pm ET — just reply with either.
+
+Vedant",Alluring Image Medspa and Wellness,Delray Beach,FL,(561) 567-9056,https://alluringimagemedspa.com/,89,A,9/9/2026,4,ET,4.9,338,,,,Sunday,189,Build + monitor free until 25 appointments booked from closed hours; approve permitted answers once.,Owner-operator opportunity cost plus closed-hours capture,An owner who also treats has no spare capacity to absorb after-hours intake.,AI Receptionist / after-hours and closed-day capture,"Owner Romy M., who is also chief esthetician; boutique positioning, 90 SE 4th Ave, downtown Delray; CareCredit; hours M-F 10-5, Sat 11-4, closed Sunday (verified)",Verified - owner/founder named,Closure and hours independently verified.
+,support@skinworksmed.com,the flagship,"Hey {{ firstname | there }},
+
+I was looking at Skin Works — Torrance carrying the full menu with on-site access to the Adonis surgeons is a real advantage over the other locations, and it means the Torrance line gets a different kind of call.
+
+There's an obvious next step I'd test: what happens to those calls on the 844 number.
+
+A shared toll-free line means a surgical-adjacent inquiry and a laser hair removal booking queue behind each other identically. I'd qualify at the point of contact — routine bookings straight through, anything that needs the flagship or a surgeon's input identified and escalated to a person rather than answered.
+
+The goal isn't to bypass your front desk — it's to make sure your highest-value inquiries aren't waiting behind your most routine ones.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 30 appointments and correctly escalates the ones that need a person. Your team only needs to approve the rules once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 11 am or Friday at 9 am PT — just reply with either.
+
+Vedant",Skin Works Medical Spa | Torrance,Redondo Beach,CA,(844) 759-6757,https://skinworksmed.com/,90,A,9/9/2026,5,PT,4.8,336,,,,HOURS NOT IN WORKBOOK - do not claim a closure,195,Build + monitor free until 30 appointments booked and high-value inquiries correctly escalated; approve rules once.,Triage on a shared toll-free line serving mixed-value inquiries,A single queue treats a surgical-adjacent consult and a routine booking identically.,"Lead Qualification + escalation, layered in front of the existing central line",Founder and owner Dr. Matt Tahsini; established Oct 2014; Torrance (2573 Pacific Coast Hwy) is the flagship carrying the full menu with on-site access to Adonis Plastic Surgery surgeons; multi-location; 844 toll-free number,Verified - business detail,Flagship and surgeon-access detail verified from site. Hours not claimed. Clinical escalation explicit.
+Carolynne,hello@bellagloaesthetics.com,carlsbad village,"Hey {{ firstname | there }},
+
+I was looking at Bella Glo — injecting since 2014 and running a five-star practice out of Carlsbad Village while a forty-location chain operates in the same town. You're winning on the thing that actually matters and losing on nothing except coverage.
+
+There's an obvious next step I'd test: the hours a chain can staff and an independent can't.
+
+You're closed Sundays; they aren't everywhere. I'd have inquiries that arrive outside your hours answered immediately, qualified for what they're asking about, and booked into your calendar as pending for you to confirm.
+
+The goal isn't to make you operate like a chain — it's to stop opening hours being the only category where they beat you.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 25 consultations from hours you're closed. You only need to approve what it can say, once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 10 am or Friday at 1 pm PT — just reply with either.
+
+Vedant",Bella Glo Medical Aesthetics & Wellness,Carlsbad,CA,(760) 453-7523,https://www.bellagloaesthetics.com/,91,A,9/9/2026,1,PT,5,333,,,,Sunday,180,Build + monitor free until 25 consultations booked from closed hours; approve permitted answers once.,Independent-versus-chain coverage parity,An independent's trust advantage is neutralised by a chain's ability to staff hours it cannot.,AI Receptionist / after-hours and closed-day capture,"Co-owner Carolynne Eng-McBride, RN BSN, Master Injector, injecting since 2014; 2808 Roosevelt St, Carlsbad Village; serves San Marcos, Del Mar, Encinitas, Oceanside, Vista, Poway; 5.0/333 reviews; closed Sunday",Verified - owner/founder named,"Competitor referenced generically, not named - a 40-location chain does operate in this market (also in this lead list)."
+,info@zeroagemedspa.com,korean-inspired,"Hey {{ firstname | there }},
+
+I was looking at Zero Age — building a Katy med spa around Korean-inspired aesthetics with an MD, PhD, NP and RN on the team is a specific enough position that people seek you out rather than compare you on price.
+
+There's an obvious next step I'd test: the free consultation.
+
+Offering it removes the barrier, but it also means a lot of inquiries arrive undecided and need real answers before they'll commit to a time. I'd have those answered as they come in with what your team has approved, qualified for what they're actually interested in, and booked into the consult calendar.
+
+The goal isn't to filter anyone out — it's to make sure a free consultation gets booked while someone is still curious rather than a day later.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 25 consultations. Your team only needs to approve the answers once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 9.30 am or Friday at 1 pm CT — just reply with either.
+
+Vedant",Zero Age MedSpa Katy,Katy,TX,(281) 769-9608,https://www.zeroagemedspa.com/,92,A,9/9/2026,2,CT,5,328,,,,HOURS NOT IN WORKBOOK - do not claim a closure,189,Build + monitor free until 25 consultations booked; approve answers once.,Converting a free-consultation offer before intent decays,A free consult lowers the barrier but raises the volume of undecided inquiries needing fast answers.,AI Receptionist / approved-FAQ handling + consultation booking,"Korean-inspired aesthetics positioning; team includes MD, PhD, NP and RN; free consultations; Botox, fillers, HydraFacial, skin tightening, weight loss; site includes retail cart; Allē partner",Verified - business detail,Hours not claimed - workbook flagged unknown and research did not confirm.
+Vivi,nursevivi@aestheticsbyvivi.com,between appointments,"Hey {{ firstname | there }},
+
+I was looking at how you work — a specialised treatment plan built for each client, goals talked through every visit. That's the reason people drive to Roseville for you, and it's also the reason the practice is capped by your hands.
+
+There's an obvious next step I'd test: the phone.
+
+When the practice is you, every inquiry answered is a minute not injecting, and it never arrives when you're free. I'd have inquiries answered and qualified while you're with a client, then booked into your calendar as pending so you approve them between appointments. Nothing clinical gets answered — that comes to you.
+
+The goal isn't to put a barrier between you and your clients — it's to stop the admin arriving at the exact moment you can't take it.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 25 appointments without interrupting you. You only need to approve what it's allowed to say, once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 10 am or Friday at 12 pm PT — just reply with either.
+
+Vedant",Aesthetics by Vivi,Roseville,CA,(916) 633-1691,https://aestheticsbyvivi.com/,93,A,9/9/2026,3,PT,5,327,,,,Sunday,195,Build + monitor free until 25 appointments booked without interrupting the practitioner; approve permitted answers once.,Solo-practitioner opportunity cost,"For a solo injector, phone time trades one-for-one against billable treatment time.",AI Receptionist + clinical escalation to the practitioner,"Nurse Vivi, RN, solo practitioner; 1850 Sierra Gardens Dr, Roseville; known for Russian lip filler, facial balancing, biostimulators; builds an individual treatment plan per client; hours M-Sat 9-6, closed Sunday (verified)",Verified - owner/founder named,Solo model verified. Clinical escalation explicit per medical-safety rules.
+Idan,info@idanmedspa.com,sf and encino,"Hey {{ firstname | there }},
+
+I was looking at Idan Med Spa — running the Mission and Encino while carrying your own skincare line alongside Obagi and Face Reality is more vertical integration than most six-year-old practices attempt.
+
+There's an obvious next step I'd test: connecting the skincare side to the appointment side.
+
+Someone on a Face Reality protocol or working through your own line is on a known replenishment schedule, and that schedule tells you when their next facial should be. I'd tie the two together — one prompt at the right interval offering the refill and the next appointment, at whichever location they use.
+
+The goal isn't to push product — it's to let a purchase you already have on record set the timing for the next visit.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 30 return appointments. Your team only needs to connect the client history once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 2 pm or Friday at 9 am PT — just reply with either.
+
+Vedant",Idan Med Spa,San Francisco,CA,(628) 222-7522,https://www.idanmedspa.com/,94,A,9/9/2026,4,PT,4.9,325,,,,HOURS NOT IN WORKBOOK - do not claim a closure,186,Build + monitor free until 30 return appointments booked; connect client history once.,Skincare-protocol-triggered rebooking across two sites,Product protocols carry dated replenishment signals that predict the next service visit.,Patient Reactivation triggered by purchase and protocol history + location routing,"Owner Idan, licensed esthetician, established 2019; two locations - Mission District SF (3520 20th St) and Encino; carries own skincare line plus Obagi and Face Reality; HydraFacial MD, body cavitation",Verified - owner/founder named,NOTE: verified as OPEN 7 DAYS - no closure claimed anywhere in this email.
+,admin@athenamedspaandsalon.com,the salon side,"Hey {{ firstname | there }},
+
+I was looking at Athena — a medspa built onto a salon space Dino created thirty years ago, with wellness consultations running alongside. Your salon clients are the warmest aesthetics leads any practice could ask for: they already trust you and they're already in the building.
+
+There's an obvious next step I'd test: asking them.
+
+Colour clients come in every six to eight weeks and most have never been offered the medspa side. I'd identify salon clients with no aesthetics history, prompt them once at a sensible interval with something relevant rather than a general offer, and book it into your calendar.
+
+The goal isn't to cross-sell aggressively — it's to make the introduction happen consistently instead of when someone remembers to mention it at the chair.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 30 medspa consultations from your salon list. Your team only needs to connect the client data once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 11 am or Friday at 2 pm ET — just reply with either.
+
+Vedant",Athena Med Spa and Salon,West Palm Beach,FL,(561) 833-7611,https://www.athenamedspaandsalon.com/locations/west-palm-beach/,95,A,9/9/2026,5,ET,4.9,323,,,,Sunday,192,Build + monitor free until 30 medspa consultations booked from the salon list; connect client data once.,Salon-to-medspa cross-sell against an existing trusted audience,"An attached salon supplies a pre-trusted, high-frequency audience at zero acquisition cost.",Leads Concierge / Patient Reactivation applied to an existing client base,"Dr. Avron Lipschitz with Dino Laudati, master hair colorist who created the salon space 30+ years ago; locations West Palm Beach (701 S Olive Ave) and Stuart; wellness consultations page covering HRT, lymphatic massage, weight loss; complimentary valet",Verified - business detail,"Cross-sell framed as 'most have never been offered' - a general pattern, not a claim about their records. Closed Sunday per workbook; not referenced."
+Morganne,morganne@sdbotox.com,sabre springs,"Hey {{ firstname | there }},
+
+I was looking at SDBotox — thirteen years from one clinic to eight across San Diego plus Texas, all built on treatments people need again every three or four months. That's a model where retention isn't a nice-to-have, it's the whole business.
+
+There's an obvious next step I'd test: patients who are past their window.
+
+Neurotoxin has a clock, and Sabre Springs draws from Poway, Rancho Bernardo, 4S Ranch and Scripps Ranch — people who won't drive over for a reminder they never got. I'd flag anyone overdue with nothing booked and prompt them against their own last treatment date, booking at their usual location.
+
+The goal isn't another campaign — it's to make the recall automatic across sites rather than something each location does differently.
+
+I'll build it, monitor it, and keep working at no additional cost until it rebooks 40 patients. Your team only needs to connect the treatment dates once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 10 am or Friday at 1 pm PT — just reply with either.
+
+Vedant",SDBotox - Sabre Springs,Rancho Santa Fe,CA,(844) 732-6869,https://sdbotox.com/location/med-spa-poway/,96,A,9/9/2026,1,PT,4.9,313,,,,Sunday,186,Build + monitor free until 40 patients rebooked; connect treatment dates once.,Single-modality recall across a multi-site footprint,"A tox-led model has a tight, predictable recall window, making lapse tracking the primary growth lever.",Patient Reactivation / recurring-treatment recall with location routing,"Founded by Dr. Alex Roher MD in 2012; eight San Diego locations (La Mesa, La Jolla, Carlsbad, Little Italy, Pacific Beach, Sabre Springs, Mission Valley, Chula Vista) plus Austin and Killeen TX; Sabre Springs serves Poway, Rancho Bernardo, 4S Ranch, Carmel Mountain, Scripps Ranch",Verified - owner/founder named,"Recall interval is a general clinical norm, not a claim about their patients. Closed Sunday per workbook; not referenced."
+,info@bodyloungemedspa.com,the complimentary consult,"Hey {{ firstname | there }},
+
+I was looking at Body Lounge — every treatment plan starting with a complimentary consultation is the right call for body work, because nobody commits to Emsculpt or contouring off a price list.
+
+There's an obvious next step I'd test: what happens between session two and session five.
+
+Body treatments are sold as a course, which means the money is committed up front but the result depends on someone returning six times. The drop-off is almost never at the start — it's in the middle, and it turns into a refund conversation rather than a rebooking.
+
+I'd track where each patient is in their course, flag anyone who hasn't booked their next session in the expected window, and prompt them into Vagaro directly.
+
+The goal isn't to chase people — it's to catch the gap while it's still a scheduling problem.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 30 mid-course sessions. Your team only needs to hand over the treatment plans once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 1 pm or Friday at 10 am ET — just reply with either.
+
+Vedant",Body Lounge Med Spa,Weston,FL,(954) 849-8726,https://bodyloungemedspa.com/?utm_source=google-map&utm_campaign=gmb&utm_medium=organic,97,A,9/9/2026,2,ET,4.9,294,,,,Sunday,203,Build + monitor free until 30 mid-course sessions booked; hand over treatment plans once.,Mid-course adherence in multi-session body treatments,"Series-based body work leaks revenue mid-course, not at the point of sale.",Patient Reactivation / treatment-series adherence tracking over existing Vagaro booking,"Every treatment plan begins with a complimentary consultation; Emsculpt, RF and vacuum therapy, cold-assisted contouring, titanium laser, physician-supervised weight management; 16612 Saddle Club Rd; Vagaro booking and WhatsApp; hours M-F 9-7, Sat 9-5, closed Sunday (verified)",Verified - business detail,"Refund risk stated as a general consequence, not a claim about their refunds."
+Briana,help@museaestheticsandlaser.com,become your own muse,"Hey {{ firstname | there }},
+
+I was looking at Muse — a board-certified PA with a medical dermatology background running an aesthetics practice is a different starting point from most injector-led spas, and it shows in how the CO2 and facial balancing work is described.
+
+There's an obvious next step I'd test: your FAQ page.
+
+You've already written out the answers people ask for most, which means the hard part is done. I'd put those same approved answers to work at the moment someone asks — replying immediately, qualifying what they're considering, and booking into your calendar as pending. Anything clinical gets collected and comes to you rather than being answered.
+
+The goal isn't to replace your judgement — it's to make sure the answers you've already written reach people at midnight, not the next working day.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 25 consultations. You only need to approve what it can say, once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 3 pm or Friday at 11 am ET — just reply with either.
+
+Vedant",Muse Aesthetics & Laser,Tampa,FL,(813) 771-2061,https://www.museaestheticsandlaser.com/,98,A,9/9/2026,3,ET,5,291,,,,Sunday,192,Build + monitor free until 25 consultations booked; approve permitted answers once.,Activating an existing FAQ as a real-time response layer,The practice has already authored its approved answers; the gap is delivering them at the moment of the question.,AI Receptionist / approved-FAQ handling with clinical escalation,"Founder Briana Martinez, PA-C, board-certified with a medical and cosmetic dermatology background; 2111 W Swann Ave, Tampa; tagline 'Become Your Own Muse'; dedicated FAQ and Providers pages; CO2 resurfacing, PRF, facial balancing",Verified - owner/founder named,Uses their own published FAQ as the hook. Closed Sunday per workbook; not referenced. Clinical escalation explicit.
+Jennifer,info@bostonmedicalaesthetics.net,faneuil hall,"Hey {{ firstname | there }},
+
+I was looking at Boston Medical Aesthetics — fifteen years, woman-owned and operated, forty years of combined experience on a five-person team down by Faneuil Hall. That's a lot of expertise concentrated in very few people.
+
+There's an obvious next step I'd test: protecting their time.
+
+With a team that size, every inquiry that needs answering comes out of someone who could be treating instead. I'd have inquiries answered and qualified as they arrive, booked into Vagaro as pending for your team to confirm, with anything clinical collected and routed to a person rather than answered.
+
+The goal isn't to add a layer between you and patients — it's to make sure the five of you spend your time on the part only you can do.
+
+I'll build it, monitor it, and keep working at no additional cost until it books 25 appointments without pulling anyone off the floor. Your team only needs to approve the answers once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 10 am or Friday at 2 pm ET — just reply with either.
+
+Vedant",Boston Medical Aesthetics,Boston,MA,(617) 973-9700,https://www.bostonmedicalaesthetics.net/?utm_source=gmb&utm_medium=organic,99,A,9/9/2026,4,ET,4.9,287,,,,Sunday,191,Build + monitor free until 25 appointments booked without staff involvement; approve answers once.,Protecting scarce clinical capacity on a small expert team,A five-person team with deep expertise has no low-cost hours to spend on intake.,"AI Receptionist + Lead Qualification over existing Vagaro booking, with clinical escalation","Founder Jennifer Canesi, ANP-BC, established 2010; woman-owned and operated; Faneuil Hall area, 21 Merchants Row; 40+ years combined team experience; NPs and master injectors, natural results first; Vagaro booking; ~5 staff",Verified - owner/founder named,Closed Sunday per workbook; not referenced. Clinical escalation explicit.
+,info@acceleratedaesthetics.com,treatments by decade,"Hey {{ firstname | there }},
+
+I was looking at how Accelerated Aesthetics organises its site — treatments by decade, and a client success stories page. Sorting by life stage rather than by machine is a much better way to think about aesthetics, and almost nobody does it.
+
+There's an obvious next step I'd test: using that same thinking for follow-up.
+
+If your content already understands that someone in their forties and someone in their sixties are on different paths, your rebooking should too. I'd flag anyone past their expected return window and prompt them against the treatment they actually had and where they are in it, booking straight into your calendar.
+
+The goal isn't to add a marketing layer — it's to make the follow-up as specific as the site already is.
+
+I'll build it, monitor it, and keep working at no additional cost until it brings 30 clients back onto the schedule. Your team only needs to hand over the visit history once.
+
+I'm opening this for two practices this month. Worth 15 minutes?
+
+Thursday at 1 pm or Friday at 10 am CT — just reply with either.
+
+Vedant",Accelerated Aesthetics,Darien,CT,(630) 439-7540,http://www.acceleratedaesthetics.com/,100,A,9/9/2026,5,ET,4.8,287,,,,Sunday,192,Build + monitor free until 30 clients rebooked; hand over visit history once.,Life-stage-specific reactivation mirroring existing content strategy,"The practice already segments by life stage in its content but not, typically, in its follow-up.",Patient Reactivation with treatment- and stage-specific cadence,"Distinctive site assets: 'Treatments by Decade' series, 'Client Success Stories' page, memberships page; AquaJet Facial, NAD+ therapy, SkinPen microneedling, PRP hair, medical weight loss; team of doctors, nurses and estheticians","Verified - DATA ISSUE, see QA Notes","IMPORTANT: practice is in ELMHURST, IL (Chicago western suburbs), not Darien CT as the workbook states - the 630 area code confirms Illinois. CTA uses CT accordingly. Verify the record before sending."
