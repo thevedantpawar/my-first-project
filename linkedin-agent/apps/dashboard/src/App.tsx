@@ -208,6 +208,12 @@ export default function App() {
               <dl className="kv">
                 <dt>Post type</dt>
                 <dd>{result.postType ?? '—'}</dd>
+                <dt>Hook formula</dt>
+                <dd>
+                  {result.hookFormula
+                    ? `${result.hookFormula.id} ${result.hookFormula.name} → for ${result.hookFormula.engagementGoal}`
+                    : '—'}
+                </dd>
                 <dt>Topic</dt>
                 <dd>{result.topic || '—'}</dd>
                 <dt>Audience</dt>
@@ -240,6 +246,14 @@ export default function App() {
                 <p className="warn-text">
                   Scheduled format &ldquo;{result.formatSubstitution.from}&rdquo; was swapped for
                   &ldquo;{result.postType}&rdquo;. {result.formatSubstitution.reason}
+                </p>
+              )}
+
+              {result.revision?.attempted && (
+                <p className={result.revision.succeeded ? 'muted' : 'warn-text'}>
+                  {result.revision.succeeded
+                    ? `First draft was rejected and one revision fixed it (${result.revision.firstAttemptReasons.length} issue${result.revision.firstAttemptReasons.length === 1 ? '' : 's'}). Without that retry this day would have published nothing.`
+                    : 'First draft was rejected and the single revision did not fix it either.'}
                 </p>
               )}
 

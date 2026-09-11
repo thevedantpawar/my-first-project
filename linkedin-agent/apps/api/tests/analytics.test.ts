@@ -116,7 +116,7 @@ describe('rankings', () => {
 
 describe('follower pacing', () => {
   it('reports unknown with no samples', () => {
-    const progress = followerProgress([], 10_000, 4);
+    const progress = followerProgress([], 1_000, 4);
     expect(progress.pacing).toBe('unknown');
     expect(progress.guaranteed).toBe(false);
   });
@@ -124,10 +124,10 @@ describe('follower pacing', () => {
   it('reports behind when growth trails the straight line', () => {
     const progress = followerProgress(
       [
-        { date: '2026-01-01', followers: 500 },
-        { date: '2026-03-01', followers: 900 },
+        { date: '2026-01-01', followers: 100 },
+        { date: '2026-03-01', followers: 160 },
       ],
-      10_000,
+      1_000,
       4,
       new Date('2026-03-01T00:00:00Z'),
     );
@@ -137,10 +137,10 @@ describe('follower pacing', () => {
   it('reports ahead when growth outruns the straight line', () => {
     const progress = followerProgress(
       [
-        { date: '2026-01-01', followers: 500 },
-        { date: '2026-03-01', followers: 8000 },
+        { date: '2026-01-01', followers: 100 },
+        { date: '2026-03-01', followers: 850 },
       ],
-      10_000,
+      1_000,
       4,
       new Date('2026-03-01T00:00:00Z'),
     );
@@ -149,8 +149,8 @@ describe('follower pacing', () => {
 
   it('never claims the target is guaranteed', () => {
     const progress = followerProgress(
-      [{ date: '2026-01-01', followers: 500 }],
-      10_000,
+      [{ date: '2026-01-01', followers: 100 }],
+      1_000,
       4,
       new Date('2026-02-01T00:00:00Z'),
     );
@@ -244,7 +244,7 @@ describe('monthly review', () => {
     const review = buildMonthlyReview([], [{ date: '2026-09-01', followers: 400 }], strategy, {
       now,
     });
-    expect(review.followerTarget.target).toBe(10_000);
+    expect(review.followerTarget.target).toBe(1_000);
     expect(review.followerTarget.guaranteed).toBe(false);
   });
 });

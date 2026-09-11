@@ -10,10 +10,18 @@ import { AppError } from '../../lib/errors.js';
 import { postTypeForDate } from '../../calendar/content-calendar.js';
 import {
   CONTENT_RESPONSE_SCHEMA,
+  buildRevisionPrompt,
   buildSystemInstruction,
   buildUserPrompt,
 } from './prompt.js';
-import type { CtaType, PointOfViewBelief, PostType, Signal, Strategy } from './strategy.js';
+import type {
+  CtaType,
+  HookFormula,
+  PointOfViewBelief,
+  PostType,
+  Signal,
+  Strategy,
+} from './strategy.js';
 
 export interface Assignment {
   postType: PostType;
@@ -22,8 +30,48 @@ export interface Assignment {
   dreamSignal: Signal;
   ctaOptions: { ctaType: CtaType; url: string | null; examples: string[] }[];
   authenticityIdeas: AuthenticityIdea[];
+  /** The hook formula this post should be built on. */
+  formula: HookFormula;
   /** Set when the scheduled format could not be used, and why. */
   substitution: { from: PostType; reason: string } | null;
+}
+
+/**
+ * Formulas this run can actually deliver.
+ *
+ * A formula that needs lived experience is only offered when the authenticity
+ * pack has material, and one that needs a real figure only when research
+ * supplied a citable source — otherwise the model is being invited to invent,
+ * and the gate would block the result anyway.
+ */
+export function usableFormulas(
+  strategy: Strategy,
+  postType: PostType,
+  options: { hasAuthenticity: boolean; hasCitedResearch: boolean },
+): HookFormula[] {
+  const fits = strategy.hookFormulas.filter(
+    (formula) => formula.postTypes.length === 0 || formula.postTypes.includes(postType),
+  );
+  const deliverable = (list: HookFormula[]): HookFormula[] =>
+    list.filter(
+      (formula) =>
+        (!formula.requiresAuthenticity || options.hasAuthenticity) &&
+        (!formula.requiresCitedNumbers || options.hasCitedResearch),
+    );
+
+  // Widen rather than return nothing. Every formula mapped to the founder-story
+  // format needs lived experience, so with an empty pack the preferred set is
+  // legitimately empty — and handing the caller [] made it fall through to an
+  // unrelated formula. Prefer fit, then deliverability, then anything safe.
+  const preferred = deliverable(fits);
+  if (preferred.length > 0) return preferred;
+
+  const anyDeliverable = deliverable(strategy.hookFormulas);
+  if (anyDeliverable.length > 0) return anyDeliverable;
+
+  return strategy.hookFormulas.filter(
+    (formula) => !formula.requiresAuthenticity && !formula.requiresCitedNumbers,
+  );
 }
 
 function rotate<T>(items: T[], seed: number): T {
@@ -80,7 +128,12 @@ const SUBSTITUTION_ORDER: PostType[] = [
  */
 export function planAssignment(
   strategy: Strategy,
-  options: { date?: Date; seed?: number; postType?: PostType } = {},
+  options: {
+    date?: Date;
+    seed?: number;
+    postType?: PostType;
+    hasCitedResearch?: boolean;
+  } = {},
 ): Assignment {
   const date = options.date ?? new Date();
   const seed = options.seed ?? 0;
@@ -125,8 +178,15 @@ export function planAssignment(
     );
   }
 
+  const candidates = usableFormulas(strategy, postType, {
+    hasAuthenticity: authenticityIdeas.length > 0,
+    hasCitedResearch: options.hasCitedResearch ?? false,
+  });
+  const formula = candidates.length > 0 ? rotate(candidates, seed) : strategy.hookFormulas[0]!;
+
   return {
     postType,
+    formula,
     belief: rotate(strategy.beliefs, seed),
     painSignal: rotate(strategy.painSignals, seed),
     dreamSignal: rotate(strategy.dreamSignals, seed),
@@ -167,6 +227,7 @@ export async function generateContentPackage(
   const user = buildUserPrompt({
     strategy: options.strategy,
     postType: options.assignment.postType,
+    formula: options.assignment.formula,
     belief: options.assignment.belief,
     painSignal: options.assignment.painSignal,
     dreamSignal: options.assignment.dreamSignal,
@@ -196,4 +257,44 @@ export async function generateContentPackage(
   }
 
   return { content: parsed.content, prompt: { system, user } };
+}
+
+/**
+ * One corrective attempt after the quality gate rejected a draft.
+ *
+ * Costs a single extra Gemini call, only on the days that would otherwise
+ * publish nothing. The gate still decides; this just stops a fixable slip —
+ * a hook paraphrased out of sync, a forbidden word in an image prompt — from
+ * costing the whole day's post.
+ */
+export async function reviseContentPackage(options: {
+  previous: ContentPackage;
+  failReasons: string[];
+  prompt: { system: string; user: string };
+  fetchImpl?: typeof fetch;
+}): Promise<GenerationOutcome> {
+  const user = buildRevisionPrompt(
+    JSON.stringify(options.previous, null, 2),
+    options.failReasons,
+    options.prompt.user,
+  );
+
+  const raw = await generateJson({
+    systemInstruction: options.prompt.system,
+    prompt: user,
+    responseSchema: CONTENT_RESPONSE_SCHEMA,
+    // Lower temperature: this is a correction, not a fresh idea.
+    temperature: 0.4,
+    ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),
+  });
+
+  const parsed = parseContentPackage(raw);
+  if (!parsed.ok) {
+    throw new AppError(
+      'gemini_invalid_output',
+      'The revised content package does not match the contract.',
+      { details: parsed.reasons.join(' ') },
+    );
+  }
+  return { content: parsed.content, prompt: { system: options.prompt.system, user } };
 }

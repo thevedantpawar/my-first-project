@@ -1,5 +1,12 @@
 import { CTA_TYPES, POST_TYPES } from './strategy.js';
-import type { CtaType, PointOfViewBelief, PostType, Signal, Strategy } from './strategy.js';
+import type {
+  CtaType,
+  HookFormula,
+  PointOfViewBelief,
+  PostType,
+  Signal,
+  Strategy,
+} from './strategy.js';
 import type { AuthenticityIdea } from '../../store/authenticity-pack.js';
 import type { ResearchDigest } from '../../providers/tavily.js';
 import { BANNED_PHRASES } from '../../validation/banned-phrases.js';
@@ -98,6 +105,7 @@ const FORMAT_BRIEFS: Record<PostType, string> = {
 export interface PromptInputs {
   strategy: Strategy;
   postType: PostType;
+  formula: HookFormula;
   belief: PointOfViewBelief;
   painSignal: Signal;
   dreamSignal: Signal;
@@ -138,6 +146,7 @@ export function buildUserPrompt(inputs: PromptInputs): string {
   const {
     strategy,
     postType,
+    formula,
     belief,
     painSignal,
     dreamSignal,
@@ -157,6 +166,18 @@ export function buildUserPrompt(inputs: PromptInputs): string {
   );
 
   sections.push(['# Format brief', FORMAT_BRIEFS[postType]].join('\n'));
+
+  sections.push(
+    [
+      '# Hook formula',
+      `Build the opening on ${formula.id} — ${formula.name}.`,
+      `Shape: ${formula.shape}`,
+      `This formula is chosen to earn ${formula.engagementGoal}.`,
+      '',
+      'Use the shape, not a template. The hook must still be under 12 words, a',
+      'statement, and specific to the buyer situation below.',
+    ].join('\n'),
+  );
 
   sections.push(
     [
@@ -320,4 +341,36 @@ export function buildUserPrompt(inputs: PromptInputs): string {
   );
 
   return sections.join('\n\n');
+}
+
+/**
+ * Asks the model to fix a draft the quality gate rejected.
+ *
+ * The gate is not relaxed for the revision — it runs again, unchanged, and
+ * still has the final say. This only gives the model the one thing it lacked
+ * the first time: the specific reasons it failed.
+ */
+export function buildRevisionPrompt(
+  previous: string,
+  failReasons: string[],
+  original: string,
+): string {
+  return [
+    original,
+    '',
+    '# Your previous attempt was rejected',
+    '',
+    'This is the draft you returned:',
+    '---',
+    previous,
+    '---',
+    '',
+    'The quality gate rejected it for these reasons:',
+    ...failReasons.map((reason, index) => `${index + 1}. ${reason}`),
+    '',
+    'Return a corrected JSON object in the same schema. Fix every reason listed.',
+    'Keep whatever was working — do not start from a different topic or angle',
+    'unless a reason above requires it. Do not argue with the reasons; the gate',
+    'is not negotiable and will run again unchanged.',
+  ].join('\n');
 }

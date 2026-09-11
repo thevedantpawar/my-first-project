@@ -3,7 +3,11 @@ import { destinationUrls, getConfig } from '../config.js';
 import { AppError, toSanitizedError } from '../lib/errors.js';
 import type { SanitizedError } from '../lib/errors.js';
 import { logger } from '../lib/logger.js';
-import { generateContentPackage, planAssignment } from '../agents/linkedin-content-agent/index.js';
+import {
+  generateContentPackage,
+  planAssignment,
+  reviseContentPackage,
+} from '../agents/linkedin-content-agent/index.js';
 import { loadStrategy } from '../agents/linkedin-content-agent/strategy.js';
 import type { CtaType, PostType, Strategy } from '../agents/linkedin-content-agent/strategy.js';
 import { generateImage } from '../providers/gemini.js';
@@ -59,6 +63,10 @@ export interface WorkflowResult {
   authenticitySource: string;
   /** Set when the scheduled format could not be produced honestly. */
   formatSubstitution: { from: PostType; reason: string } | null;
+  /** The hook formula the post was built on. */
+  hookFormula: { id: string; name: string; engagementGoal: string } | null;
+  /** Set when the first draft was rejected and one correction was attempted. */
+  revision: { attempted: boolean; succeeded: boolean; firstAttemptReasons: string[] } | null;
   qualityScore: number;
   qualityPassed: boolean;
   qualityReasons: string[];
@@ -102,6 +110,8 @@ function baseResult(trigger: WorkflowTrigger, now: Date, dryRun: boolean): Workf
     researchSource: '',
     authenticitySource: '',
     formatSubstitution: null,
+    hookFormula: null,
+    revision: null,
     qualityScore: 0,
     qualityPassed: false,
     qualityReasons: [],
@@ -219,10 +229,12 @@ export async function runLinkedInContentWorkflow(
   };
 
   let content: ContentPackage;
+  let generationPrompt: { system: string; user: string } | null = null;
   try {
     const assignment = planAssignment(strategy, {
       date: now,
       seed: loadRuns().length,
+      hasCitedResearch: research.available && research.results.length > 0,
       ...(options.postType ? { postType: options.postType } : {}),
     });
     if (assignment.substitution) {
@@ -241,6 +253,12 @@ export async function runLinkedInContentWorkflow(
       ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),
     });
     content = generated.content;
+    generationPrompt = generated.prompt;
+    result.hookFormula = {
+      id: assignment.formula.id,
+      name: assignment.formula.name,
+      engagementGoal: assignment.formula.engagementGoal,
+    };
   } catch (error) {
     result.status = 'failed';
     result.error = toSanitizedError(error);
@@ -251,7 +269,7 @@ export async function runLinkedInContentWorkflow(
 
   applyContent(result, content);
 
-  const quality = runQualityGate(content, {
+  const gateContext = {
     strategy,
     minWords: config.CONTENT_MIN_WORDS,
     maxWords: config.CONTENT_MAX_WORDS,
@@ -259,7 +277,49 @@ export async function runLinkedInContentWorkflow(
     swipeEntries: loadSwipeFile(),
     authenticityIdeas: loadAuthenticityPack().ideas,
     recentTopics: recentTopics(28, now),
-  });
+  };
+
+  let quality = runQualityGate(content, gateContext);
+
+  // One corrective attempt, never a loop. The gate is unchanged and still
+  // decides; the model only gains the reasons it failed. This is the
+  // difference between a fixable slip and a weekday that publishes nothing.
+  if (!quality.passed && generationPrompt !== null) {
+    const firstAttemptReasons = quality.failReasons;
+    try {
+      const revised = await reviseContentPackage({
+        previous: content,
+        failReasons: firstAttemptReasons,
+        prompt: generationPrompt,
+        ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),
+      });
+      const revisedQuality = runQualityGate(revised.content, gateContext);
+      result.revision = {
+        attempted: true,
+        succeeded: revisedQuality.passed,
+        firstAttemptReasons,
+      };
+      if (revisedQuality.passed) {
+        content = revised.content;
+        applyContent(result, content);
+        quality = revisedQuality;
+        logger.info('A revision fixed the rejected draft', {
+          fixed: firstAttemptReasons.length,
+        });
+      } else {
+        // Report the second attempt's reasons: they are the current state.
+        quality = revisedQuality;
+        logger.warn('The revision did not satisfy the gate either', {
+          remaining: revisedQuality.failReasons.length,
+        });
+      }
+    } catch (error) {
+      result.revision = { attempted: true, succeeded: false, firstAttemptReasons };
+      logger.warn('The revision attempt failed; keeping the first verdict', {
+        msg: toSanitizedError(error).message,
+      });
+    }
+  }
 
   result.qualityPassed = quality.passed;
   result.qualityReasons = quality.failReasons;

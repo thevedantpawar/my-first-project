@@ -421,6 +421,76 @@ prevention, authenticity attribution, swipe-file originality, analytics maths,
 monthly recommendations, and a guard proving no Twitter/X or messaging endpoint
 exists anywhere in the tree.
 
+## The 1,000-follower target, honestly
+
+The configured target is **1,000 followers by 31 December 2026**. It is a target.
+Nothing in this system guarantees it, and the code refuses to describe it as a
+promise — `growthTarget.guaranteed` is typed as the literal `false`, so a future
+edit claiming otherwise fails validation.
+
+Here is the arithmetic, so the number is yours to judge rather than mine to
+assert.
+
+About 15 weeks remain, which is roughly **75 weekday posts**. On a small B2B
+account, posts alone reach mostly people who already follow you; cold discovery
+from a post is typically a handful of profile visits, not a wave. Seventy-five
+good posts, by themselves, historically move an account like this by a couple of
+hundred followers — not a thousand.
+
+The lever that closes that gap is not something this system does. It is **you,
+commenting**: 20-30 minutes a day, on posts by people your buyers already read.
+A specific, useful comment on a larger account's post is the single cheapest
+cold-reach mechanism on the platform, and it costs nothing. That is where the
+difference between ~200 and ~1,000 actually lives.
+
+This system deliberately does not automate that, for two reasons: LinkedIn's
+terms, and the fact that automated comments are recognisable and cost more trust
+than they earn. The `linkedin-comment-drafter` skill is installed to make the
+manual version fast.
+
+So: the machine handles consistency, format discipline and honesty. The reach
+depends on the daily habit. Record your follower count weekly in the dashboard's
+Metrics tab and the review reports ahead / on track / behind against the real
+line, which is the only claim worth making.
+
+## Hook formulas
+
+`config/strategy/hook-formulas.json` holds 19 formulas adapted from the
+linkedin-skills bundle, each tagged with the engagement goal it earns
+(comments, reposts, likes, saves) and the post types it suits. The planner picks
+one per run and rotates across days.
+
+Two guards keep a formula from inviting invention:
+
+- `requiresAuthenticity` formulas (confession, tribute, status-strip) are only
+  offered when the authenticity pack actually has material.
+- `requiresCitedNumbers` formulas (the odd-precision ledger) are only offered
+  when the research step returned a citable source.
+
+When the preferred set is empty the selection widens rather than returning
+nothing — every founder-story formula needs lived experience, so with an empty
+pack the preferred set is legitimately empty, and handing the caller an empty
+list once made it fall through to an unrelated formula.
+
+F6, the comment-gate lead magnet, is absent by design: it ends by promising to
+DM a link.
+
+## One corrective revision
+
+A rejected draft now gets exactly one more attempt, with the gate's reasons fed
+back to the model. The gate itself is unchanged and still decides.
+
+This is worth a paragraph because it was a deliberate holdout. The measured
+first-pass rate was 9 of 12, so roughly one weekday in three published nothing —
+usually over a fixable slip, like a hook paraphrased out of sync with the post's
+first line. The cost is one extra Gemini call on the days that would otherwise
+have produced nothing, which is free on the current tier.
+
+It is capped at one attempt, never a loop. If the revision also fails, the run
+returns `quality_blocked` with the second attempt's reasons. A revision cannot
+smuggle anything past the gate — there is a test proving a DM promise
+reintroduced in a revision is still blocked.
+
 ## Ported from the linkedin-skills bundle
 
 `sergebulaev/linkedin-skills` (MIT) is installed as Claude Code skills under

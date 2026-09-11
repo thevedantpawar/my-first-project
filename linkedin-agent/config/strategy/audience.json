@@ -28,9 +28,10 @@
     "trend-chasing with no practical mechanism"
   ],
   "growthTarget": {
-    "followers": 10000,
+    "followers": 1000,
     "months": 4,
+    "deadline": "2026-12-31",
     "guaranteed": false,
-    "note": "A target to work toward, never a promise. Qualified audience, profile views, saves, reposts, clicks, conversations, booked calls and revenue are tracked alongside follower count."
+    "note": "A target to work toward by 31 December 2026, never a promise. Posting supplies the content; the reach lever on a small account is the operator's own daily commenting on ICP posts, which this system deliberately does not automate. Pacing is reported as ahead / on track / behind against real follower samples."
   }
 }

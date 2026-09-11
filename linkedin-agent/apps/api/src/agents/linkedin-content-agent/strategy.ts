@@ -58,10 +58,33 @@ const audienceSchema = z.object({
   growthTarget: z.object({
     followers: z.number().int().positive(),
     months: z.number().int().positive(),
+    deadline: z.string().optional(),
+    // Literal false: the schema itself refuses to describe the target as a promise.
     guaranteed: z.literal(false),
     note: z.string().min(1),
   }),
 });
+
+export const ENGAGEMENT_GOALS = ['comments', 'reposts', 'likes', 'saves'] as const;
+export type EngagementGoal = (typeof ENGAGEMENT_GOALS)[number];
+
+const hookFormulaSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  engagementGoal: z.enum(ENGAGEMENT_GOALS),
+  shape: z.string().min(1),
+  /** Needs a real entry in the authenticity pack; never invented. */
+  requiresAuthenticity: z.boolean(),
+  /** Needs a figure the research step actually cited. */
+  requiresCitedNumbers: z.boolean(),
+  postTypes: z.array(z.enum(POST_TYPES)),
+});
+
+const hookFormulaLibrarySchema = z.object({
+  formulas: z.array(hookFormulaSchema).min(1),
+});
+
+export type HookFormula = z.infer<typeof hookFormulaSchema>;
 
 const portfolioSchema = z.object({
   timezone: z.string().min(1),
@@ -111,6 +134,7 @@ export type CtaConfig = z.infer<typeof ctaSchema>;
 export type ProfileAuditConfig = z.infer<typeof profileAuditSchema>;
 
 export interface Strategy {
+  hookFormulas: HookFormula[];
   beliefs: PointOfViewBelief[];
   painSignals: Signal[];
   dreamSignals: Signal[];
@@ -149,6 +173,7 @@ function readJson<T>(fileName: string, schema: z.ZodType<T>): T {
  */
 export function loadStrategy(): Strategy {
   return {
+    hookFormulas: readJson('hook-formulas.json', hookFormulaLibrarySchema).formulas,
     beliefs: readJson('point-of-view.json', pointOfViewSchema).beliefs,
     painSignals: readJson('pain-signals.json', signalLibrarySchema).signals,
     dreamSignals: readJson('dream-signals.json', signalLibrarySchema).signals,

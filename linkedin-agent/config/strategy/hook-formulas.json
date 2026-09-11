@@ -1,0 +1,245 @@
+{
+  "$source": "Adapted from sergebulaev/linkedin-skills (MIT) references/hook-formulas.md.",
+  "$note": "F6 Comment-Gate Lead Magnet is deliberately absent. It ends by promising to DM a link, which this system cannot do, so the quality gate would block it anyway. requiresAuthenticity formulas are only offered when the authenticity pack has material; requiresCitedNumbers formulas only when research supplied a citable figure.",
+  "engagementGoals": {
+    "comments": "questions, contrarian takes, controlled comparisons, false binaries",
+    "reposts": "quotable distinctions, tributes, diverging curves",
+    "likes": "concrete moments, status-strip, real stories",
+    "saves": "simplifications, exact how-to, evidence stacks"
+  },
+  "formulas": [
+    {
+      "id": "F1",
+      "name": "Platform Risk Anaphora",
+      "engagementGoal": "comments",
+      "shape": "Repeat one stem to stack the risks of depending on something the reader does not control, then name what they do control.",
+      "requiresAuthenticity": false,
+      "requiresCitedNumbers": false,
+      "postTypes": [
+        "Point-of-View",
+        "Named Problem"
+      ]
+    },
+    {
+      "id": "F2",
+      "name": "Category Obituary",
+      "engagementGoal": "reposts",
+      "shape": "Declare a named practice finished, say precisely what killed it, name what replaces it. A quotable distinction, not a rant.",
+      "requiresAuthenticity": false,
+      "requiresCitedNumbers": false,
+      "postTypes": [
+        "Point-of-View",
+        "Named Problem"
+      ]
+    },
+    {
+      "id": "F3",
+      "name": "Year-over-Year Pivot",
+      "engagementGoal": "comments",
+      "shape": "What was true last year, what changed, what that forces the reader to do differently now.",
+      "requiresAuthenticity": false,
+      "requiresCitedNumbers": false,
+      "postTypes": [
+        "Named Problem",
+        "Surfaced Problem/Audit",
+        "Point-of-View"
+      ]
+    },
+    {
+      "id": "F4",
+      "name": "Time-Anchor Confession",
+      "engagementGoal": "comments",
+      "shape": "A dated moment you got something wrong, what it cost, what you do instead now.",
+      "requiresAuthenticity": true,
+      "requiresCitedNumbers": false,
+      "postTypes": [
+        "Founder/Practitioner Story"
+      ]
+    },
+    {
+      "id": "F5",
+      "name": "Self-Proving Meta",
+      "engagementGoal": "saves",
+      "shape": "The post demonstrates the thing it argues for, so the format is the evidence.",
+      "requiresAuthenticity": false,
+      "requiresCitedNumbers": false,
+      "postTypes": [
+        "Deep Work System",
+        "Surfaced Problem/Audit",
+        "Lead Magnet"
+      ]
+    },
+    {
+      "id": "F7",
+      "name": "Odd-Precision Ledger",
+      "engagementGoal": "saves",
+      "shape": "An itemised breakdown with unrounded real figures. Only usable with numbers you can cite.",
+      "requiresAuthenticity": false,
+      "requiresCitedNumbers": true,
+      "postTypes": [
+        "Deep Work System",
+        "Surfaced Problem/Audit",
+        "Lead Magnet"
+      ]
+    },
+    {
+      "id": "F8",
+      "name": "Paid-vs-Free Reversal",
+      "engagementGoal": "reposts",
+      "shape": "The expensive option most people buy, against the cheap thing that actually fixes it.",
+      "requiresAuthenticity": false,
+      "requiresCitedNumbers": false,
+      "postTypes": [
+        "Named Problem",
+        "Surfaced Problem/Audit",
+        "Point-of-View"
+      ]
+    },
+    {
+      "id": "F9",
+      "name": "Curiosity-Gap Teaser",
+      "engagementGoal": "comments",
+      "shape": "Name a surprising outcome, withhold the mechanism for one beat, then deliver it in full. Never leave the gap open.",
+      "requiresAuthenticity": false,
+      "requiresCitedNumbers": false,
+      "postTypes": [
+        "Named Problem",
+        "Surfaced Problem/Audit",
+        "Point-of-View"
+      ]
+    },
+    {
+      "id": "F10",
+      "name": "Contrarian With Receipts",
+      "engagementGoal": "comments",
+      "shape": "State the widely held view, say why it fails in this specific context, show the mechanism that beats it.",
+      "requiresAuthenticity": false,
+      "requiresCitedNumbers": false,
+      "postTypes": [
+        "Point-of-View",
+        "Named Problem"
+      ]
+    },
+    {
+      "id": "F11",
+      "name": "Emotional Cold-Open",
+      "engagementGoal": "likes",
+      "shape": "Open inside a concrete charged moment, no preamble, then widen to the lesson.",
+      "requiresAuthenticity": true,
+      "requiresCitedNumbers": false,
+      "postTypes": [
+        "Founder/Practitioner Story"
+      ]
+    },
+    {
+      "id": "F12",
+      "name": "Permission Slip",
+      "engagementGoal": "comments",
+      "shape": "Name the thing the reader secretly wants to stop doing, and give them the reason it is fine to stop.",
+      "requiresAuthenticity": false,
+      "requiresCitedNumbers": false,
+      "postTypes": [
+        "Point-of-View",
+        "Named Problem"
+      ]
+    },
+    {
+      "id": "F13",
+      "name": "Bait-and-Switch Reversal",
+      "engagementGoal": "likes",
+      "shape": "Set up the expected conclusion, then turn it on the real one.",
+      "requiresAuthenticity": false,
+      "requiresCitedNumbers": false,
+      "postTypes": [
+        "Named Problem",
+        "Surfaced Problem/Audit",
+        "Point-of-View"
+      ]
+    },
+    {
+      "id": "F14",
+      "name": "Named Gratitude",
+      "engagementGoal": "reposts",
+      "shape": "Credit a specific person or team for a specific thing, with the detail that makes it real.",
+      "requiresAuthenticity": true,
+      "requiresCitedNumbers": false,
+      "postTypes": [
+        "Founder/Practitioner Story"
+      ]
+    },
+    {
+      "id": "F15",
+      "name": "Explain-to-Kids Simplification",
+      "engagementGoal": "saves",
+      "shape": "Strip a technical mechanism to language a smart twelve-year-old follows, keeping every load-bearing part.",
+      "requiresAuthenticity": false,
+      "requiresCitedNumbers": false,
+      "postTypes": [
+        "Deep Work System",
+        "Surfaced Problem/Audit",
+        "Lead Magnet"
+      ]
+    },
+    {
+      "id": "F16",
+      "name": "Status-Strip Humility",
+      "engagementGoal": "likes",
+      "shape": "Drop the credential, show the unglamorous work underneath it.",
+      "requiresAuthenticity": true,
+      "requiresCitedNumbers": false,
+      "postTypes": [
+        "Founder/Practitioner Story"
+      ]
+    },
+    {
+      "id": "F17",
+      "name": "Controlled A/B Anecdote",
+      "engagementGoal": "comments",
+      "shape": "Two near-identical situations, one variable different, the outcomes that diverged.",
+      "requiresAuthenticity": false,
+      "requiresCitedNumbers": false,
+      "postTypes": [
+        "Deep Work System",
+        "Surfaced Problem/Audit",
+        "Lead Magnet"
+      ]
+    },
+    {
+      "id": "F18",
+      "name": "False-Binary Dissolve",
+      "engagementGoal": "comments",
+      "shape": "Name the either/or everyone argues about, show why both sides share a wrong assumption, give the third option.",
+      "requiresAuthenticity": false,
+      "requiresCitedNumbers": false,
+      "postTypes": [
+        "Point-of-View",
+        "Named Problem"
+      ]
+    },
+    {
+      "id": "F19",
+      "name": "Evidence Bridge",
+      "engagementGoal": "saves",
+      "shape": "Open on one concrete case, bridge to the general pattern, close on what it predicts.",
+      "requiresAuthenticity": false,
+      "requiresCitedNumbers": false,
+      "postTypes": [
+        "Deep Work System",
+        "Surfaced Problem/Audit",
+        "Lead Magnet"
+      ]
+    },
+    {
+      "id": "F20",
+      "name": "Diverging-Curves Close",
+      "engagementGoal": "reposts",
+      "shape": "Two things that look alike today and compound apart, with the mechanism that separates them.",
+      "requiresAuthenticity": false,
+      "requiresCitedNumbers": false,
+      "postTypes": [
+        "Point-of-View",
+        "Named Problem"
+      ]
+    }
+  ]
+}

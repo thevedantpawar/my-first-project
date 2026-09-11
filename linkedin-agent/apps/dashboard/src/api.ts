@@ -101,6 +101,8 @@ export interface WorkflowResult {
   researchSource: string;
   authenticitySource: string;
   formatSubstitution: { from: string; reason: string } | null;
+  hookFormula: { id: string; name: string; engagementGoal: string } | null;
+  revision: { attempted: boolean; succeeded: boolean; firstAttemptReasons: string[] } | null;
   qualityScore: number;
   qualityPassed: boolean;
   qualityReasons: string[];
