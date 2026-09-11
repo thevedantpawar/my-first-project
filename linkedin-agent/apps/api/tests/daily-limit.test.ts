@@ -25,6 +25,8 @@ function record(overrides: Partial<RunRecord> = {}): RunRecord {
     linkedinHttpStatus: 201,
     linkedinPostId: 'urn:li:share:1',
     imageStatus: 'not_requested',
+    hookFormulaId: null,
+    revisionRescued: false,
     loggingStatus: 'skipped',
     errorMessage: '',
     ...overrides,

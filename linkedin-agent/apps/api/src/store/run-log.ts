@@ -23,6 +23,10 @@ export const runRecordSchema = z.object({
   linkedinHttpStatus: z.number().nullable().default(null),
   linkedinPostId: z.string().nullable().default(null),
   imageStatus: z.string().default('not_requested'),
+  /** Hook formula the post was built on, for measuring which earn attention. */
+  hookFormulaId: z.string().nullable().default(null),
+  /** True when a single revision rescued a draft the gate first rejected. */
+  revisionRescued: z.boolean().default(false),
   loggingStatus: z.string().default('skipped'),
   errorMessage: z.string().default(''),
 });

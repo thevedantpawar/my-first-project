@@ -477,6 +477,8 @@ async function persist(
     linkedinHttpStatus: result.linkedin.httpStatus,
     linkedinPostId: result.linkedin.postId,
     imageStatus: result.imageStatus,
+    hookFormulaId: result.hookFormula?.id ?? null,
+    revisionRescued: result.revision?.succeeded === true,
     loggingStatus: result.logging.logged
       ? 'logged'
       : result.logging.error

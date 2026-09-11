@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from './api.js';
+import LiveTab from './LiveTab.js';
 import MetricsTab from './MetricsTab.js';
 import type { CalendarResponse, ProfileAuditReport, StatusResponse, WorkflowResult } from './api.js';
 
-type Tab = 'operations' | 'strategy' | 'profile' | 'metrics';
+type Tab = 'live' | 'operations' | 'strategy' | 'profile' | 'metrics';
 
 function Badge({ ok, label }: { ok: boolean; label: string }) {
   return (
@@ -35,7 +36,7 @@ export default function App() {
   const [calendar, setCalendar] = useState<CalendarResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>('operations');
+  const [tab, setTab] = useState<Tab>('live');
 
   const refresh = useCallback(async () => {
     setBusy('status');
@@ -116,7 +117,7 @@ export default function App() {
       )}
 
       <nav className="tabs">
-        {(['operations', 'strategy', 'profile', 'metrics'] as Tab[]).map((candidate) => (
+        {(['live', 'operations', 'strategy', 'profile', 'metrics'] as Tab[]).map((candidate) => (
           <button
             key={candidate}
             className={tab === candidate ? 'tab tab-active' : 'tab'}
@@ -447,6 +448,8 @@ export default function App() {
           )}
         </section>
       )}
+
+      {tab === 'live' && <LiveTab />}
 
       {tab === 'metrics' && <MetricsTab />}
 

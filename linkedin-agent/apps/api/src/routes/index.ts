@@ -4,6 +4,9 @@ import { z } from 'zod';
 import { POST_TYPES } from '../agents/linkedin-content-agent/strategy.js';
 import { loadStrategy } from '../agents/linkedin-content-agent/strategy.js';
 import { buildMonthlyReview } from '../analytics/monthly-review.js';
+import { buildOverview } from '../analytics/overview.js';
+import { getConfig } from '../config.js';
+import { nextRunAt, settingsFromConfig } from '../scheduler/weekday-scheduler.js';
 import { computePostRates, followerProgress } from '../analytics/metrics.js';
 import { evaluateMix, generateCalendar } from '../calendar/content-calendar.js';
 import { toSanitizedError } from '../lib/errors.js';
@@ -177,6 +180,36 @@ export function createRouter(scheduler: WeekdayScheduler | null): Router {
         ...(parsed.data.postType ? { postType: parsed.data.postType } : {}),
       });
       res.status(statusCodeFor(result)).json({ agentId: AGENT_ID, result });
+    } catch (error) {
+      handleFailure(res, error);
+    }
+  });
+
+  /** Everything the live dashboard needs, in one call. */
+  router.get('/api/linkedin/overview', (_req: Request, res: Response) => {
+    try {
+      const strategy = loadStrategy();
+      const store = loadAnalytics();
+      const settings = settingsFromConfig();
+      const config = getConfig();
+      const next = nextRunAt(settings);
+      res.json(
+        buildOverview({
+          runs: loadRuns(),
+          posts: store.posts,
+          followerSamples: store.followerSamples,
+          strategy,
+          schedule: {
+            enabled: settings.enabled,
+            dryRun: config.SOCIAL_CONTENT_DRY_RUN,
+            timeZone: settings.timeZone,
+            scheduledTime: `${String(settings.hour).padStart(2, '0')}:${String(settings.minute).padStart(2, '0')}`,
+            nextRunAt: next,
+            secondsUntilNextRun:
+              next === null ? null : Math.max(Math.round((Date.parse(next) - Date.now()) / 1000), 0),
+          },
+        }),
+      );
     } catch (error) {
       handleFailure(res, error);
     }

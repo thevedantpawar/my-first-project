@@ -107,6 +107,15 @@ const ctaSchema = z.object({
   preferredByPostType: z.record(z.enum(POST_TYPES), z.array(z.enum(CTA_TYPES)).min(1)),
 });
 
+const economicsSchema = z.object({
+  averageDealValueUsd: z.number().min(0),
+  grossMarginPercent: z.number().min(0).max(100),
+  conversationToCallRate: z.number().min(0).max(1),
+  callToDealRate: z.number().min(0).max(1),
+});
+
+export type Economics = z.infer<typeof economicsSchema>;
+
 export const profileAuditSchema = z.object({
   items: z.array(
     z.object({
@@ -134,6 +143,7 @@ export type CtaConfig = z.infer<typeof ctaSchema>;
 export type ProfileAuditConfig = z.infer<typeof profileAuditSchema>;
 
 export interface Strategy {
+  economics: Economics;
   hookFormulas: HookFormula[];
   beliefs: PointOfViewBelief[];
   painSignals: Signal[];
@@ -173,6 +183,7 @@ function readJson<T>(fileName: string, schema: z.ZodType<T>): T {
  */
 export function loadStrategy(): Strategy {
   return {
+    economics: readJson('economics.json', economicsSchema),
     hookFormulas: readJson('hook-formulas.json', hookFormulaLibrarySchema).formulas,
     beliefs: readJson('point-of-view.json', pointOfViewSchema).beliefs,
     painSignals: readJson('pain-signals.json', signalLibrarySchema).signals,

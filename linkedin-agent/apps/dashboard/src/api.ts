@@ -182,7 +182,57 @@ export interface AnalyticsResponse {
   runs: RunRecord[];
 }
 
+export interface Overview {
+  generatedAt: string;
+  schedule: {
+    enabled: boolean;
+    dryRun: boolean;
+    timeZone: string;
+    scheduledTime: string;
+    nextRunAt: string | null;
+    secondsUntilNextRun: number | null;
+  };
+  calendar: { date: string; weekday: number; status: string; postType: string | null; topic: string }[];
+  publishing: {
+    weekdaysElapsed: number;
+    published: number;
+    blocked: number;
+    failed: number;
+    missed: number;
+    publishRate: number | null;
+    firstPassRate: number | null;
+    revisionRescues: number;
+    currentStreak: number;
+  };
+  followers: {
+    target: number;
+    current: number | null;
+    pacing: string;
+    guaranteed: boolean;
+    note: string;
+    gapToTarget: number | null;
+    weeksRemaining: number;
+    neededPerWeek: number | null;
+  };
+  funnel: { label: string; value: number | null; rateFromPrevious: number | null; note: string }[];
+  pipeline: {
+    configured: boolean;
+    usingRecordedRates: boolean;
+    qualifiedConversationsPerMonth: number | null;
+    projectedCallsPerMonth: number | null;
+    projectedDealsPerMonth: number | null;
+    projectedRevenuePerMonth: number | null;
+    projectedGrossProfitPerMonth: number | null;
+    recordedRevenueToDate: number | null;
+    assumptions: string[];
+    caveat: string;
+  };
+  formulaUsage: { id: string; name: string; uses: number }[];
+  recentRuns: RunRecord[];
+}
+
 export const api = {
+  overview: () => request<Overview>('/api/linkedin/overview'),
   status: () => request<StatusResponse>('/api/workflows/linkedin-content/status'),
   draft: () =>
     request<WorkflowResult>('/api/workflows/linkedin-content/draft', {

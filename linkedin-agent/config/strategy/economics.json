@@ -1,0 +1,13 @@
+{
+  "$note": "Your numbers, for projecting pipeline from LinkedIn activity. Every value here is an input you control — nothing is inferred and nothing is guessed. Leave a figure at 0 and the dashboard reports 'not set' rather than inventing one.",
+  "averageDealValueUsd": 0,
+  "grossMarginPercent": 70,
+  "conversationToCallRate": 0.4,
+  "callToDealRate": 0.2,
+  "$guidance": {
+    "averageDealValueUsd": "Typical first engagement with a new Microns client. Set this and the projection becomes real.",
+    "grossMarginPercent": "Rough delivery margin, so the projection is profit and not revenue.",
+    "conversationToCallRate": "Share of qualified inbound conversations that become a booked call. 0.4 is a starting assumption; it is overwritten by your recorded numbers as soon as you have some.",
+    "callToDealRate": "Share of booked calls that close. 0.2 is a starting assumption; likewise overwritten by real data."
+  }
+}
