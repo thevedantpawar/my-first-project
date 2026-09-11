@@ -2,8 +2,12 @@ import type { Signal, Strategy } from '../agents/linkedin-content-agent/strategy
 import type { AuthenticityIdea } from '../store/authenticity-pack.js';
 import type { SwipeFileEntry } from '../store/swipe-file.js';
 import {
+  AI_MARKERS,
+  AI_MARKER_DENSITY_LIMIT,
   BANNED_PHRASES,
   CLICKBAIT_PATTERNS,
+  EM_DASH_PER_100_WORDS,
+  NEGATIVE_PARALLELISM_PATTERNS,
   UNSUPPORTED_AUTOMATION_PATTERNS,
 } from './banned-phrases.js';
 import type { ContentPackage, QualityResult } from './linkedin-content-schema.js';
@@ -324,6 +328,51 @@ const CHECKS: Check[] = [
       const haystack = content.linkedinPost.toLowerCase();
       const found = BANNED_PHRASES.filter((phrase) => haystack.includes(phrase.toLowerCase()));
       return found.length > 0 ? [`Banned AI phrasing: ${[...new Set(found)].join(', ')}.`] : [];
+    },
+  },
+  {
+    id: 'ai-marker-density',
+    weight: 2,
+    run: (content) => {
+      // The cluster principle: one marker is English, several together is a
+      // signature. Report them all so the fix is obvious.
+      const body = normalize(content.linkedinPost);
+      const found = AI_MARKERS.filter((marker) => new RegExp(`\\b${marker}`).test(body));
+      return found.length >= AI_MARKER_DENSITY_LIMIT
+        ? [
+            `Reads machine-written: ${found.length} AI markers in one post (${found.join(', ')}). Rewrite the paragraphs carrying them.`,
+          ]
+        : [];
+    },
+  },
+  {
+    id: 'no-negative-parallelism',
+    weight: 2,
+    run: (content) => {
+      // "It's not just X, it's Y" — the most reliable tell, scrubbed at any density.
+      const matched = NEGATIVE_PARALLELISM_PATTERNS.some((pattern) =>
+        pattern.test(content.linkedinPost),
+      );
+      return matched
+        ? ['Negative parallelism ("it\'s not just X, it\'s Y"). Say the positive claim directly.']
+        : [];
+    },
+  },
+  {
+    id: 'em-dash-density',
+    weight: 1,
+    run: (content) => {
+      // The character is fine; the density is the tell.
+      const emDashes = (content.linkedinPost.match(/—/g) ?? []).length;
+      const words = countWords(content.linkedinPost);
+      const allowed = Math.max(1, Math.floor((words / 100) * EM_DASH_PER_100_WORDS));
+      if (emDashes > allowed) {
+        return [`${emDashes} em dashes in ${words} words; at most ${allowed}. Use commas, colons or parentheses.`];
+      }
+      // En dashes between clauses and double hyphens are always wrong here.
+      if (/\s–\s/.test(content.linkedinPost)) return ['En dash used between clauses.'];
+      if (/\s--\s/.test(content.linkedinPost)) return ['Double hyphen used as a dash.'];
+      return [];
     },
   },
   {

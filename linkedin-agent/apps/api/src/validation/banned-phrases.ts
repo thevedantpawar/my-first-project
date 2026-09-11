@@ -1,4 +1,11 @@
-/** Phrasing that marks a draft as AI residue rather than a practitioner's voice. */
+/**
+ * Phrasing that marks a draft as AI residue rather than a practitioner's voice.
+ *
+ * Hard bans only: a phrase here is blocked on a single occurrence, so the list
+ * stays to constructions that have no innocent use. Softer single-word markers
+ * are scored by density in AI_MARKERS instead — see the cluster principle
+ * below.
+ */
 export const BANNED_PHRASES: readonly string[] = [
   'in today’s fast-paced world',
   "in today's fast-paced world",
@@ -12,7 +19,69 @@ export const BANNED_PHRASES: readonly string[] = [
   'supercharge',
   'in conclusion',
   'thoughts?',
+  // Ported from sergebulaev/linkedin-skills (MIT) — voice-rules.md.
+  'at the end of the day',
+  'deep dive',
+  'tapestry',
+  'in the realm of',
+  'a paradigm shift',
+  'needle-moving',
+  'best-in-class',
+  'move the needle on',
 ];
+
+/**
+ * Single-word AI markers, scored by density rather than banned outright.
+ *
+ * The cluster principle, from the same source: readers spot AI text from
+ * clusters, not single words. One "robust" is English; "robust", "seamless" and
+ * "leverage" in one post is a signature. Banning these individually would
+ * reject honest writing, so the gate only objects once several appear together.
+ */
+export const AI_MARKERS: readonly string[] = [
+  'leverage',
+  'utilize',
+  'facilitate',
+  'streamline',
+  'robust',
+  'seamless',
+  'navigate',
+  'harness',
+  'foster',
+  'cultivate',
+  'fundamentally',
+  'essentially',
+  'ultimately',
+  'crucially',
+  'notably',
+  'landscape',
+  'ecosystem',
+  'paradigm',
+  'realm',
+  'journey',
+  'comprehensive',
+  'pivotal',
+  'myriad',
+  'testament',
+  'underscore',
+  'empower',
+];
+
+/** Above this many distinct markers, the post reads as machine-written. */
+export const AI_MARKER_DENSITY_LIMIT = 3;
+
+/**
+ * "It's not just X, it's Y" and friends. Negative parallelism is the single
+ * most reliable tell in 2026 and is always scrubbed, at any density.
+ */
+export const NEGATIVE_PARALLELISM_PATTERNS: readonly RegExp[] = [
+  /\bit(?:'|’)?s not (?:just|only|about) [^.!?\n]{2,60}(?:,| —|--) it(?:'|’)?s\b/i,
+  /\bthis is(?:n(?:'|’)?t| not) (?:just|only|about) [^.!?\n]{2,60}(?:,| —|--) it(?:'|’)?s\b/i,
+  /\bnot (?:just|merely|simply) [^.!?\n]{2,60}(?:,| but| —)(?: also)? [^.!?\n]{2,60}\b/i,
+];
+
+/** Em dashes per 100 words. The character is fine; the density is the tell. */
+export const EM_DASH_PER_100_WORDS = 1.5;
 
 /**
  * Promises the system cannot keep. This build has no comment monitoring, no

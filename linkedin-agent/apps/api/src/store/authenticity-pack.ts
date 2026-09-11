@@ -1,5 +1,8 @@
 import { randomUUID } from 'node:crypto';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { z } from 'zod';
+import { getConfig } from '../config.js';
 import { POST_TYPES } from '../agents/linkedin-content-agent/strategy.js';
 import { readJsonFile, writeJsonFile } from './json-store.js';
 
@@ -66,6 +69,42 @@ const EMPTY: AuthenticityPack = { month: '', updatedAt: '', ideas: [] };
 export function loadAuthenticityPack(): AuthenticityPack {
   const parsed = authenticityPackSchema.safeParse(readJsonFile<unknown>(FILE, EMPTY));
   return parsed.success ? parsed.data : EMPTY;
+}
+
+export interface SeedOutcome {
+  seeded: boolean;
+  ideas: number;
+  reason: string;
+}
+
+/**
+ * Copies the committed seed onto the data volume, once, if no pack exists yet.
+ *
+ * A fresh deployment starts with an empty volume, so the founder-story slot
+ * substituted away every weekday even though a pack had been prepared. This
+ * restores that intent explicitly at startup rather than inside the loader:
+ * the pack on the volume is then real, editable state an operator can see and
+ * overwrite, not a hidden fallback that quietly makes unreviewed material
+ * publishable.
+ */
+export function seedAuthenticityPackIfEmpty(): SeedOutcome {
+  if (loadAuthenticityPack().ideas.length > 0) {
+    return { seeded: false, ideas: 0, reason: 'A pack already exists on this volume.' };
+  }
+  const seedPath = resolve(getConfig().configDir, 'authenticity-pack.seed.json');
+  if (!existsSync(seedPath)) {
+    return { seeded: false, ideas: 0, reason: 'No committed seed to copy.' };
+  }
+  const parsed = authenticityPackSchema.safeParse(JSON.parse(readFileSync(seedPath, 'utf8')));
+  if (!parsed.success || parsed.data.ideas.length === 0) {
+    return { seeded: false, ideas: 0, reason: 'The committed seed is empty or invalid.' };
+  }
+  writeJsonFile(FILE, parsed.data);
+  return {
+    seeded: true,
+    ideas: parsed.data.ideas.length,
+    reason: 'Seeded from config/authenticity-pack.seed.json. Review and rewrite in your own words.',
+  };
 }
 
 /**

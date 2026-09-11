@@ -3,6 +3,7 @@ import { logger } from './lib/logger.js';
 import { toSanitizedError } from './lib/errors.js';
 import { createApp } from './app.js';
 import { verifyLinkedInToken } from './providers/linkedin.js';
+import { seedAuthenticityPackIfEmpty } from './store/authenticity-pack.js';
 import { researchCurrentTopics } from './providers/tavily.js';
 import { WeekdayScheduler } from './scheduler/weekday-scheduler.js';
 
@@ -20,6 +21,19 @@ function main(): void {
   }
 
   const readiness = providerReadiness(config);
+
+  // A fresh volume has no authenticity pack, which silently costs the weekly
+  // founder story. Provision it once, visibly.
+  try {
+    const seed = seedAuthenticityPackIfEmpty();
+    if (seed.seeded) {
+      logger.info('Seeded the authenticity pack', { ideas: seed.ideas, note: seed.reason });
+    }
+  } catch (error) {
+    logger.warn('Could not seed the authenticity pack', {
+      msg: toSanitizedError(error).message,
+    });
+  }
   const scheduler = new WeekdayScheduler();
   const app = createApp(scheduler);
 

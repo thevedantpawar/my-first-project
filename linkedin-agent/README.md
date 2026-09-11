@@ -421,6 +421,41 @@ prevention, authenticity attribution, swipe-file originality, analytics maths,
 monthly recommendations, and a guard proving no Twitter/X or messaging endpoint
 exists anywhere in the tree.
 
+## Ported from the linkedin-skills bundle
+
+`sergebulaev/linkedin-skills` (MIT) is installed as Claude Code skills under
+`.claude/skills/linkedin-*`. Those are **interactive** — draft, human approval,
+publish — and the unattended agent cannot invoke them. What the agent gained is
+the research inside them, ported into the prompt and the quality gate:
+
+| Ported | Where |
+| --- | --- |
+| Vocabulary blacklist as hard bans | `BANNED_PHRASES` |
+| Single-word AI markers, scored by density | `AI_MARKERS`, blocked at 3+ per post |
+| Negative parallelism ("it's not just X, it's Y") | Blocked at any density |
+| Em dash cap (~1.5 per 100 words), no en dash or `--` between clauses | `em-dash-density` check |
+
+The cluster principle is why markers are counted rather than banned: one
+"robust" is English, three markers together is a signature. Banning them
+individually would reject honest writing.
+
+**Deliberately not adopted:**
+
+- **Hook formula F6, "Comment-Gate Lead Magnet."** It ends with "I'll DM the
+  link personally". This system has no DMs, so that is a promise it cannot
+  keep. The quality gate blocks it, and there is a test proving it stays
+  blocked.
+- **Publora publishing.** The agent already posts straight to the LinkedIn API
+  with no monthly cap; Publora's free tier is 15 posts/month against our ~22.
+  Adding it would mean a second credential, a third party in the path, and a
+  cap below our own cadence.
+- **`linkedin-comment-drafter`, `linkedin-reply-handler`, `linkedin-thread-monitor`.**
+  Useful as manual, human-approved tools — and installed as such — but they stay
+  out of the automated pipeline, which never comments or replies.
+- **`linkedin-engager-analytics`.** Scrapes likers and commenters via Apify.
+  Fine to run by hand with that in mind; not something to automate over other
+  people's data.
+
 ## Safety rules the code enforces
 
 - Never guarantee a follower count.

@@ -101,12 +101,11 @@ async function callGemini(
 const TRANSIENT_HTTP_STATUSES = new Set([500, 502, 503, 504]);
 
 export function isTransientGeminiError(error: unknown): boolean {
-  return (
-    error instanceof AppError &&
-    error.code === 'gemini_failed' &&
-    error.httpStatus !== undefined &&
-    TRANSIENT_HTTP_STATUSES.has(error.httpStatus)
-  );
+  if (!(error instanceof AppError) || error.code !== 'gemini_failed') return false;
+  // A timeout carries no HTTP status but is exactly the kind of blip worth one
+  // more attempt — a real scheduled post was lost to one on 2026-09-09.
+  if (error.httpStatus === undefined) return /timed out/i.test(error.message);
+  return TRANSIENT_HTTP_STATUSES.has(error.httpStatus);
 }
 
 const RETRY_DELAYS_MS = [1_500, 4_000];
