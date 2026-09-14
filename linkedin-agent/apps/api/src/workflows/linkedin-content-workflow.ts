@@ -262,7 +262,7 @@ export async function runLinkedInContentWorkflow(
   } catch (error) {
     result.status = 'failed';
     result.error = toSanitizedError(error);
-    logger.error('Content generation failed', { code: result.error.code, msg: result.error.message });
+    logger.error('Content generation failed', { code: result.error.code, detail: result.error.message });
     await persist(result, null, options.fetchImpl);
     return result;
   }
@@ -316,7 +316,7 @@ export async function runLinkedInContentWorkflow(
     } catch (error) {
       result.revision = { attempted: true, succeeded: false, firstAttemptReasons };
       logger.warn('The revision attempt failed; keeping the first verdict', {
-        msg: toSanitizedError(error).message,
+        detail: toSanitizedError(error).message,
       });
     }
   }
@@ -330,7 +330,10 @@ export async function runLinkedInContentWorkflow(
   if (!quality.passed) {
     result.status = 'quality_blocked';
     logger.warn('Quality gate blocked a draft', {
-      reasons: quality.failReasons.length,
+      // The reasons themselves, not just a count: the run log lives on a volume
+      // behind the dashboard, so without these a blocked night cannot be
+      // diagnosed from the logs at all.
+      reasons: quality.failReasons,
       postType: content.postType,
     });
     await persist(result, content, options.fetchImpl);
@@ -350,7 +353,7 @@ export async function runLinkedInContentWorkflow(
       } catch (error) {
         result.imageStatus = 'generation_failed';
         logger.warn('Image generation failed; continuing text-only', {
-          msg: toSanitizedError(error).message,
+          detail: toSanitizedError(error).message,
         });
       }
     }
@@ -380,7 +383,7 @@ export async function runLinkedInContentWorkflow(
     } catch (error) {
       result.imageStatus = 'upload_failed';
       logger.warn('LinkedIn image upload failed; publishing text-only', {
-        msg: toSanitizedError(error).message,
+        detail: toSanitizedError(error).message,
       });
     }
   }
@@ -491,7 +494,7 @@ async function persist(
     appendRun(record);
   } catch (error) {
     logger.warn('Could not append to the local run log', {
-      msg: toSanitizedError(error).message,
+      detail: toSanitizedError(error).message,
     });
   }
 

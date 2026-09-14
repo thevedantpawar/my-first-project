@@ -194,3 +194,56 @@ describe('model fallback', () => {
     delete process.env.GEMINI_MODEL;
   });
 });
+
+describe('model-scoped quota', () => {
+  function quotaResponse(model: string): Response {
+    return new Response(
+      JSON.stringify({
+        error: {
+          message: `You exceeded your current quota.\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: ${model}\nPlease retry in 52s.`,
+          status: 'RESOURCE_EXHAUSTED',
+        },
+      }),
+      { status: 429 },
+    );
+  }
+
+  it('moves to the next model when the primary names its own empty bucket', async () => {
+    // The corrective revision died here on 2026-09-14: the primary's minute was
+    // spent by the retries that had just produced the draft, and the run gave
+    // up with two untouched models in the ladder.
+    process.env.GEMINI_MODEL = 'spent-model';
+    process.env.GEMINI_FALLBACK_MODELS = 'spare-model';
+    resetConfigCache();
+
+    const fetchImpl = vi.fn(async (url: unknown) =>
+      String(url).includes('spent-model') ? quotaResponse('spent-model') : okResponse(),
+    ) as unknown as typeof fetch;
+
+    const result = await runWithTimers(generateJson(options(fetchImpl)));
+    expect(result).toEqual({ ok: true });
+    // One shot at the spent model — a quota error is never worth retrying on
+    // the same model — then straight to the spare.
+    expect((fetchImpl as unknown as ReturnType<typeof vi.fn>).mock.calls).toHaveLength(2);
+
+    delete process.env.GEMINI_MODEL;
+  });
+
+  it('fails fast on a quota error that names no model', async () => {
+    // A key-wide exhaustion is not fixed by changing models; trying anyway
+    // just spends the remaining allowance.
+    process.env.GEMINI_FALLBACK_MODELS = 'spare-model';
+    resetConfigCache();
+
+    const fetchImpl = vi.fn(async () =>
+      new Response(JSON.stringify({ error: { message: 'quota', status: 'RESOURCE_EXHAUSTED' } }), {
+        status: 429,
+      }),
+    ) as unknown as typeof fetch;
+
+    await expect(runWithTimers(generateJson(options(fetchImpl)))).rejects.toMatchObject({
+      code: 'gemini_quota',
+    });
+    expect((fetchImpl as unknown as ReturnType<typeof vi.fn>).mock.calls).toHaveLength(1);
+  });
+});

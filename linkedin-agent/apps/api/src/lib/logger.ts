@@ -3,11 +3,14 @@ import { redact } from './errors.js';
 type Level = 'info' | 'warn' | 'error';
 
 function emit(level: Level, message: string, fields: Record<string, unknown> = {}): void {
+  // Fields go first: a caller field named `msg` used to replace the log message
+  // outright, so every error line read as the error's own text and the call
+  // site was invisible. Reserved keys now win.
   const line = {
+    ...redactFields(fields),
     ts: new Date().toISOString(),
     level,
     msg: redact(message),
-    ...redactFields(fields),
   };
   const serialized = JSON.stringify(line);
   if (level === 'error') console.error(serialized);

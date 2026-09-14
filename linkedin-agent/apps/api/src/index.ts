@@ -15,7 +15,7 @@ function main(): void {
     config = getConfig();
   } catch (error) {
     // A bad .env should stop the process with a readable message, not a stack.
-    logger.error('Configuration error', { msg: toSanitizedError(error).message });
+    logger.error('Configuration error', { detail: toSanitizedError(error).message });
     process.exitCode = 1;
     return;
   }
@@ -31,7 +31,7 @@ function main(): void {
     }
   } catch (error) {
     logger.warn('Could not seed the authenticity pack', {
-      msg: toSanitizedError(error).message,
+      detail: toSanitizedError(error).message,
     });
   }
   const scheduler = new WeekdayScheduler();
@@ -64,7 +64,7 @@ function main(): void {
         } else {
           logger.error('LinkedIn token check failed', {
             httpStatus: check.httpStatus,
-            msg: check.error ?? 'unknown',
+            detail: check.error ?? 'unknown',
           });
         }
       });

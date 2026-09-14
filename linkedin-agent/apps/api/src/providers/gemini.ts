@@ -108,6 +108,22 @@ export function isTransientGeminiError(error: unknown): boolean {
   return TRANSIENT_HTTP_STATUSES.has(error.httpStatus);
 }
 
+/**
+ * A free-tier 429 names the bucket it emptied ("model: gemini-3.6-flash").
+ * Each model has its own per-minute allowance, so a sibling is worth a try —
+ * unlike a key-wide quota error, where changing models only burns more of it.
+ * On 2026-09-14 the corrective revision died on exactly this: the primary's
+ * minute was spent by the retries that had just got us a draft, and the run
+ * gave up with two other models sitting idle.
+ */
+export function isModelScopedQuotaError(error: unknown): boolean {
+  return (
+    error instanceof AppError &&
+    error.code === 'gemini_quota' &&
+    /\bmodel:\s*\S/i.test(error.message)
+  );
+}
+
 // A 503 "high demand" spike lasts minutes, not seconds. The old 1.5s + 4s
 // ladder gave up 5.5 seconds in and cost a real scheduled post on 2026-09-14.
 const RETRY_DELAYS_MS = [5_000, 20_000, 60_000];
@@ -180,7 +196,9 @@ async function withModelFallback<T>(
       return await withTransientRetry(() => attempt(model));
     } catch (error) {
       if (isPrimary) {
-        if (!isTransientGeminiError(error) || ladder.length === 1) throw error;
+        const worthAnotherModel =
+          isTransientGeminiError(error) || isModelScopedQuotaError(error);
+        if (!worthAnotherModel || ladder.length === 1) throw error;
         primaryError = error;
       }
       const next = ladder[index + 1];

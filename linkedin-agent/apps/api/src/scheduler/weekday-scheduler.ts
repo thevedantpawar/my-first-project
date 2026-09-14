@@ -220,7 +220,7 @@ export class WeekdayScheduler {
       // A missing or unreadable run log must not wedge the scheduler; the
       // in-memory date key still prevents a same-process double run.
       logger.warn('Could not read the run log for today', {
-        msg: toSanitizedError(error).message,
+        detail: toSanitizedError(error).message,
       });
     }
 
@@ -262,7 +262,7 @@ export class WeekdayScheduler {
       this.state.lastRunStatus = 'failed';
       logger.error('Scheduled LinkedIn run threw', {
         code: sanitized.code,
-        msg: sanitized.message,
+        detail: sanitized.message,
       });
     } finally {
       this.state.running = false;
