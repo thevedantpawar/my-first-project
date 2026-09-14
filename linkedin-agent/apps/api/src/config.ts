@@ -81,6 +81,15 @@ const envSchema = z.object({
         .filter((model) => model !== ''),
     ),
 
+  /**
+   * A date key (YYYY-MM-DD, Asia/Kolkata). When it matches today, the service
+   * publishes once at boot — the recovery path for a night the scheduler has
+   * already settled, when the dashboard cannot be reached. The daily cap is
+   * what makes it safe to leave set: a restart finds today already published
+   * and does nothing.
+   */
+  FORCE_PUBLISH_DATE: optionalString,
+
   TAVILY_API_KEY: optionalString,
   CONTENT_RESEARCH_QUERY: z
     .string()

@@ -5,7 +5,9 @@ import { createApp } from './app.js';
 import { verifyLinkedInToken } from './providers/linkedin.js';
 import { seedAuthenticityPackIfEmpty } from './store/authenticity-pack.js';
 import { researchCurrentTopics } from './providers/tavily.js';
-import { WeekdayScheduler } from './scheduler/weekday-scheduler.js';
+import { SCHEDULER_TIMEZONE, WeekdayScheduler } from './scheduler/weekday-scheduler.js';
+import { zonedDateKey } from './lib/timezone.js';
+import { runLinkedInContentWorkflow } from './workflows/linkedin-content-workflow.js';
 
 loadEnvFile();
 
@@ -68,6 +70,38 @@ function main(): void {
           });
         }
       });
+    }
+
+    // Recovery path for a night the scheduler has already settled — it will not
+    // reopen a decided day, and the dashboard is not always reachable. Only
+    // today's date counts, so a variable left behind cannot fire tomorrow, and
+    // the workflow's one-post-per-weekday cap stops a restart posting twice.
+    if (config.FORCE_PUBLISH_DATE !== '') {
+      const today = zonedDateKey(new Date(), SCHEDULER_TIMEZONE);
+      if (config.FORCE_PUBLISH_DATE === today) {
+        logger.warn('FORCE_PUBLISH_DATE matches today; publishing once now', { date: today });
+        void runLinkedInContentWorkflow({
+          trigger: 'manual_run',
+          dryRun: false,
+          confirmPublish: true,
+        }).then(
+          (result) => {
+            logger.info('Forced publish finished', {
+              status: result.status,
+              qualityPassed: result.qualityPassed,
+              reasons: result.qualityReasons,
+            });
+          },
+          (error: unknown) => {
+            logger.error('Forced publish threw', { detail: toSanitizedError(error).message });
+          },
+        );
+      } else {
+        logger.info('FORCE_PUBLISH_DATE is not today; ignoring it', {
+          configured: config.FORCE_PUBLISH_DATE,
+          today,
+        });
+      }
     }
 
     // A silently dead research key is invisible: the run just falls back to an
