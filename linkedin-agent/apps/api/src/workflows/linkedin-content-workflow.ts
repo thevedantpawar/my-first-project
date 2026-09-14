@@ -321,6 +321,25 @@ export async function runLinkedInContentWorkflow(
     }
   }
 
+  // The image is an optional accessory, so an unusable image prompt should cost
+  // the image, not the post. The check exists to keep fabricated proof off the
+  // feed, and dropping the image satisfies that completely — blocking a clean
+  // post as well achieves nothing. On 2026-09-14 a prompt asking for a
+  // screenshot look was the single reason a passing post did not go out.
+  if (!quality.passed && quality.failedCheckIds.every((id) => id === 'image-prompt')) {
+    const withoutImage: ContentPackage = { ...content, needsImage: false, imagePrompt: '' };
+    const requalified = runQualityGate(withoutImage, gateContext);
+    if (requalified.passed) {
+      logger.warn('Dropped an unusable image prompt; publishing text-only', {
+        reasons: quality.failReasons,
+      });
+      content = withoutImage;
+      applyContent(result, content);
+      quality = requalified;
+      result.imageStatus = 'prompt_rejected';
+    }
+  }
+
   result.qualityPassed = quality.passed;
   result.qualityReasons = quality.failReasons;
   result.qualityScore = quality.qualityScore;

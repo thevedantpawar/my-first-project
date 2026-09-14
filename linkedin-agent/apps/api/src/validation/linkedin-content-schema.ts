@@ -42,11 +42,15 @@ export type ImageStatus =
   | 'prepared_not_attached'
   | 'generation_failed'
   | 'upload_failed'
+  /** The prompt failed the gate, so the post went out text-only. */
+  | 'prompt_rejected'
   | 'attached';
 
 export interface QualityResult {
   passed: boolean;
   failReasons: string[];
+  /** Ids of the checks that failed, so callers can tell what kind of failure it is. */
+  failedCheckIds: string[];
   wordCount: number;
   qualityScore: number;
   unsupportedAutomationDetected: boolean;

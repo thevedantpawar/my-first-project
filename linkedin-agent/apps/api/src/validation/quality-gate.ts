@@ -624,6 +624,7 @@ export function runQualityGate(
   context: QualityGateContext,
 ): QualityResult {
   const failReasons: string[] = [];
+  const failedCheckIds: string[] = [];
   let failedWeight = 0;
   let unsupportedAutomationDetected = false;
 
@@ -632,6 +633,7 @@ export function runQualityGate(
     if (reasons.length > 0) {
       failedWeight += check.weight;
       failReasons.push(...reasons);
+      failedCheckIds.push(check.id);
       if (check.id === 'no-unsupported-automation') unsupportedAutomationDetected = true;
     }
   }
@@ -640,6 +642,7 @@ export function runQualityGate(
   return {
     passed: failReasons.length === 0,
     failReasons,
+    failedCheckIds,
     wordCount: countWords(content.linkedinPost),
     qualityScore,
     unsupportedAutomationDetected,

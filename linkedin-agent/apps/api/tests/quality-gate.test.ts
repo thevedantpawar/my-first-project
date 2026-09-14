@@ -555,3 +555,25 @@ describe('quality score', () => {
     expect(result.qualityScore).toBeGreaterThanOrEqual(0);
   });
 });
+
+describe('failed check attribution', () => {
+  it('names the image-prompt check when only the image prompt is unusable', () => {
+    // The workflow needs to distinguish "the post is bad" from "the optional
+    // image is bad", so it can drop the image and still publish.
+    const result = runQualityGate(
+      makeContent({ needsImage: true, imagePrompt: 'a glossy stock photo of a laptop' }),
+      context(),
+    );
+    expect(result.passed).toBe(false);
+    expect(result.failedCheckIds).toEqual(['image-prompt']);
+  });
+
+  it('passes the same post once the image is dropped', () => {
+    const result = runQualityGate(
+      makeContent({ needsImage: false, imagePrompt: '' }),
+      context(),
+    );
+    expect(result.passed).toBe(true);
+    expect(result.failedCheckIds).toEqual([]);
+  });
+});
