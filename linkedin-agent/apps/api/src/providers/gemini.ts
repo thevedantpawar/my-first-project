@@ -145,11 +145,60 @@ async function withTransientRetry<T>(
   throw lastError;
 }
 
+/**
+ * The models to try, in order, when the configured one will not answer.
+ * "High demand" is a per-model condition, so a sibling model on the same free
+ * key is usually serving while the primary is saturated. On 2026-09-14 the
+ * primary stayed 503 for over twenty minutes and there was nowhere to go.
+ */
+export function modelLadder(primary: string, fallbacks: string[]): string[] {
+  const seen = new Set([primary]);
+  const ladder = [primary];
+  for (const candidate of fallbacks) {
+    const model = candidate.trim();
+    if (model === '' || seen.has(model)) continue;
+    seen.add(model);
+    ladder.push(model);
+  }
+  return ladder;
+}
+
+/**
+ * Runs `attempt` down the model ladder. The primary gets the full retry ladder
+ * and its errors are reported as-is; a fallback is a long shot, so anything it
+ * throws (including "unknown model" from a stale config) only moves us on, and
+ * the caller still sees the primary's error if nothing works.
+ */
+async function withModelFallback<T>(
+  ladder: string[],
+  attempt: (model: string) => Promise<T>,
+): Promise<T> {
+  let primaryError: unknown;
+  for (const [index, model] of ladder.entries()) {
+    const isPrimary = index === 0;
+    try {
+      return await withTransientRetry(() => attempt(model));
+    } catch (error) {
+      if (isPrimary) {
+        if (!isTransientGeminiError(error) || ladder.length === 1) throw error;
+        primaryError = error;
+      }
+      const next = ladder[index + 1];
+      if (next === undefined) throw primaryError ?? error;
+      logger.warn('Gemini model unavailable; trying the next model', { model, next });
+    }
+  }
+  throw primaryError;
+}
+
 /** Generates one JSON object matching `responseSchema`. */
 export async function generateJson(options: GenerateJsonOptions): Promise<unknown> {
   const config = getConfig();
-  const model = options.model ?? config.GEMINI_MODEL;
-  const payload = await withTransientRetry(() =>
+  const ladder =
+    options.model === undefined
+      ? modelLadder(config.GEMINI_MODEL, config.GEMINI_FALLBACK_MODELS)
+      : [options.model];
+  const payload = await withModelFallback(ladder, (model) =>
     callGemini(
     model,
     {

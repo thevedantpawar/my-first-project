@@ -65,6 +65,21 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((v) => ((v ?? '').trim() || 'gemini-2.5-flash-image')),
+  /**
+   * Comma-separated models to fall back to when GEMINI_MODEL keeps answering
+   * 503. Same API key, same free tier — this buys availability, not capability.
+   */
+  GEMINI_FALLBACK_MODELS: z
+    .string()
+    .optional()
+    .transform((v) =>
+      // An explicit empty value means "primary only"; an absent one takes the
+      // default ladder.
+      (v === undefined ? 'gemini-3.5-flash,gemini-3.1-flash-lite' : v)
+        .split(',')
+        .map((model) => model.trim())
+        .filter((model) => model !== ''),
+    ),
 
   TAVILY_API_KEY: optionalString,
   CONTENT_RESEARCH_QUERY: z

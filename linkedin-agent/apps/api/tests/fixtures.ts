@@ -99,6 +99,7 @@ export function useTemporaryDataDir(): { dir: string; cleanup: () => void } {
 export function clearProviderEnv(): void {
   for (const key of [
     'GEMINI_API_KEY',
+    'GEMINI_FALLBACK_MODELS',
     'TAVILY_API_KEY',
     'LINKEDIN_ACCESS_TOKEN',
     'LINKEDIN_PERSON_URN',
