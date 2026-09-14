@@ -1,7 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetConfigCache } from '../src/config.js';
-import { WeekdayScheduler, SCHEDULER_TIMEZONE } from '../src/scheduler/weekday-scheduler.js';
-import type { SchedulerSettings } from '../src/scheduler/weekday-scheduler.js';
+import {
+  MAX_ATTEMPTS_PER_DAY,
+  SCHEDULER_TIMEZONE,
+  WeekdayScheduler,
+  shouldRunNow,
+} from '../src/scheduler/weekday-scheduler.js';
+import type { DayState, SchedulerSettings, SchedulerState } from '../src/scheduler/weekday-scheduler.js';
 import { loadRuns, schedulerRanToday } from '../src/store/run-log.js';
 import { resetNegotiatedVersion } from '../src/providers/linkedin.js';
 import { clearProviderEnv, makeContent, useTemporaryDataDir } from './fixtures.js';
@@ -11,6 +16,10 @@ const POST_URN = 'urn:li:share:7300000000000000123';
 const MONDAY_9PM = new Date('2026-09-07T15:30:00.000Z');
 
 let temp: { dir: string; cleanup: () => void };
+
+function freshState(): SchedulerState {
+  return { lastRunDateKey: null, lastRunAt: null, lastRunStatus: null, running: false };
+}
 
 function settings(): SchedulerSettings {
   return { enabled: true, hour: 21, minute: 0, timeZone: SCHEDULER_TIMEZONE, graceMinutes: 60 };
@@ -183,21 +192,56 @@ describe('unattended weekday publishing', () => {
     expect(calls.filter((call) => call.includes('/rest/posts'))).toHaveLength(1);
   });
 
-  it('does not retry the same day after a failure, so one outage costs one post', async () => {
-    const calls: string[] = [];
-    const impl = vi.fn(async (url: string | URL) => {
-      calls.push(String(url));
-      if (String(url).includes('api.tavily.com')) return new Response('{}', { status: 403 });
-      // Gemini is down with a non-transient error.
-      return new Response('{}', { status: 400 });
-    }) as unknown as typeof fetch;
+  it('retries later in the window when an attempt failed on infrastructure', () => {
+    // This reverses an earlier assertion. Treating any attempt as "the day is
+    // done" cost a real post on 2026-09-14: Gemini returned 503 and the day was
+    // written off with fifty minutes of grace window left. A failure decided
+    // nothing about the content, so it is worth another go.
+    const failedEarlier: DayState = {
+      attempts: 1,
+      decided: false,
+      lastAttemptAt: Date.parse('2026-09-07T15:30:00.000Z'),
+    };
+    const decision = shouldRunNow(
+      new Date('2026-09-07T15:45:00.000Z'),
+      settings(),
+      freshState(),
+      failedEarlier,
+    );
+    expect(decision.run).toBe(true);
+  });
 
-    await new WeekdayScheduler(settings()).tick(MONDAY_9PM, impl);
-    const afterFirst = calls.length;
-    await new WeekdayScheduler(settings()).tick(new Date('2026-09-07T15:40:00.000Z'), impl);
+  it('does not retry a day the gate actually decided', () => {
+    // quality_blocked is a verdict about the draft, not an outage.
+    const decided: DayState = {
+      attempts: 1,
+      decided: true,
+      lastAttemptAt: Date.parse('2026-09-07T15:30:00.000Z'),
+    };
+    expect(
+      shouldRunNow(new Date('2026-09-07T15:45:00.000Z'), settings(), freshState(), decided),
+    ).toEqual({ run: false, reason: 'already_ran_today' });
+  });
 
-    expect(loadRuns()[0]?.status).toBe('failed');
-    // The failed attempt is recorded, so the window does not become a retry loop.
-    expect(calls.length).toBe(afterFirst);
+  it('spaces the retries instead of hammering every tick', () => {
+    const justFailed: DayState = {
+      attempts: 1,
+      decided: false,
+      lastAttemptAt: Date.parse('2026-09-07T15:30:00.000Z'),
+    };
+    expect(
+      shouldRunNow(new Date('2026-09-07T15:32:00.000Z'), settings(), freshState(), justFailed),
+    ).toEqual({ run: false, reason: 'cooling_off' });
+  });
+
+  it('gives up after the daily attempt cap', () => {
+    const exhausted: DayState = {
+      attempts: MAX_ATTEMPTS_PER_DAY,
+      decided: false,
+      lastAttemptAt: Date.parse('2026-09-07T15:30:00.000Z'),
+    };
+    expect(
+      shouldRunNow(new Date('2026-09-07T16:00:00.000Z'), settings(), freshState(), exhausted),
+    ).toEqual({ run: false, reason: 'attempts_exhausted' });
   });
 });

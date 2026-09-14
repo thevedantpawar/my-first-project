@@ -125,12 +125,15 @@ describe('duplicate execution prevention', () => {
     });
   });
 
-  it('refuses when the persisted log already shows a run today', () => {
+  it('refuses when the persisted log shows the day was already decided', () => {
     // Survives a restart: in-memory state is empty but the log is not.
-    expect(shouldRunNow(istNinePm('2026-09-07'), settings, freshState(), true)).toEqual({
-      run: false,
-      reason: 'already_ran_today',
-    });
+    expect(
+      shouldRunNow(istNinePm('2026-09-07'), settings, freshState(), {
+        attempts: 1,
+        decided: true,
+        lastAttemptAt: null,
+      }),
+    ).toEqual({ run: false, reason: 'already_ran_today' });
   });
 
   it('allows the next weekday once the date has changed', () => {

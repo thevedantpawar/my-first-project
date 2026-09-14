@@ -89,13 +89,47 @@ export function publishedToday(
  * cause a second attempt, and so a restart that spans the scheduled minute does
  * not silently lose the day.
  */
-export function schedulerRanToday(timeZone: string, now: Date = new Date()): RunRecord | null {
+export function schedulerRunsToday(timeZone: string, now: Date = new Date()): RunRecord[] {
   const today = zonedDateKey(now, timeZone);
-  const match = loadRuns()
+  return loadRuns()
     .filter((run) => run.trigger === 'scheduler')
     .filter((run) => {
       const time = Date.parse(run.timestamp);
       return Number.isFinite(time) && zonedDateKey(new Date(time), timeZone) === today;
     });
-  return match[match.length - 1] ?? null;
+}
+
+export function schedulerRanToday(timeZone: string, now: Date = new Date()): RunRecord | null {
+  const runs = schedulerRunsToday(timeZone, now);
+  return runs[runs.length - 1] ?? null;
+}
+
+/**
+ * Statuses that settle the day. Anything else is infrastructure getting in the
+ * way, not an answer about the content.
+ *
+ * A quality_blocked run is a real verdict — the gate looked at a draft and said
+ * no — so the day is done. A failed run means Gemini was overloaded or LinkedIn
+ * was unreachable; nothing was decided, and with grace-window time left it is
+ * worth another go.
+ */
+const DECIDED_STATUSES = new Set(['published', 'partially_published', 'quality_blocked', 'dry_run']);
+
+export interface SchedulerDayState {
+  attempts: number;
+  decided: RunRecord | null;
+  lastAttemptAt: number | null;
+}
+
+export function schedulerDayState(timeZone: string, now: Date = new Date()): SchedulerDayState {
+  const runs = schedulerRunsToday(timeZone, now);
+  const decided = runs.find((run) => DECIDED_STATUSES.has(run.status)) ?? null;
+  const timestamps = runs
+    .map((run) => Date.parse(run.timestamp))
+    .filter((time) => Number.isFinite(time));
+  return {
+    attempts: runs.length,
+    decided,
+    lastAttemptAt: timestamps.length > 0 ? Math.max(...timestamps) : null,
+  };
 }

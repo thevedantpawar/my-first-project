@@ -2,7 +2,7 @@ import { getConfig } from '../config.js';
 import { logger } from '../lib/logger.js';
 import { toSanitizedError } from '../lib/errors.js';
 import { zonedDateKey, zonedMinuteKey, zonedParts } from '../lib/timezone.js';
-import { schedulerRanToday } from '../store/run-log.js';
+import { schedulerDayState } from '../store/run-log.js';
 import { runLinkedInContentWorkflow } from '../workflows/linkedin-content-workflow.js';
 
 export const SCHEDULER_TIMEZONE = 'Asia/Kolkata';
@@ -17,6 +17,12 @@ const TICK_INTERVAL_MS = 20_000;
  * posting at a time the audience is not expecting.
  */
 export const DEFAULT_GRACE_MINUTES = 60;
+
+/** Attempts allowed per day when earlier ones failed on infrastructure. */
+export const MAX_ATTEMPTS_PER_DAY = 3;
+
+/** Minimum spacing between those attempts. A spike needs time to clear. */
+export const MIN_MINUTES_BETWEEN_ATTEMPTS = 10;
 
 export interface SchedulerSettings {
   enabled: boolean;
@@ -41,7 +47,16 @@ export type SchedulerSkipReason =
   | 'before_window'
   | 'window_passed'
   | 'already_ran_today'
+  | 'attempts_exhausted'
+  | 'cooling_off'
   | 'in_progress';
+
+export interface DayState {
+  attempts: number;
+  /** A run that actually settled the day: published, blocked, or a dry run. */
+  decided: boolean;
+  lastAttemptAt: number | null;
+}
 
 export type SchedulerDecision =
   | { run: true; dateKey: string; minuteKey: string; minutesLate: number }
@@ -58,7 +73,7 @@ export function shouldRunNow(
   now: Date,
   settings: SchedulerSettings,
   state: SchedulerState,
-  alreadyRanToday = false,
+  day: DayState = { attempts: 0, decided: false, lastAttemptAt: null },
 ): SchedulerDecision {
   if (!settings.enabled) return { run: false, reason: 'disabled' };
   if (state.running) return { run: false, reason: 'in_progress' };
@@ -71,8 +86,25 @@ export function shouldRunNow(
   if (minutesLate < 0) return { run: false, reason: 'before_window' };
   if (minutesLate >= settings.graceMinutes) return { run: false, reason: 'window_passed' };
 
+  // A settled day is finished, whatever the verdict was.
+  if (day.decided) return { run: false, reason: 'already_ran_today' };
+
+  // Unsettled, so earlier attempts hit infrastructure rather than reaching a
+  // verdict. Try again inside the window, bounded and spaced.
+  if (day.attempts >= MAX_ATTEMPTS_PER_DAY) {
+    return { run: false, reason: 'attempts_exhausted' };
+  }
+  if (day.lastAttemptAt !== null) {
+    const minutesSince = (now.getTime() - day.lastAttemptAt) / 60_000;
+    if (minutesSince < MIN_MINUTES_BETWEEN_ATTEMPTS) {
+      return { run: false, reason: 'cooling_off' };
+    }
+  }
+
+  // The in-memory key only guards against a double-fire inside one tick cycle;
+  // the durable state above is what decides the day.
   const dateKey = zonedDateKey(now, settings.timeZone);
-  if (alreadyRanToday || state.lastRunDateKey === dateKey) {
+  if (day.attempts === 0 && state.lastRunDateKey === dateKey) {
     return { run: false, reason: 'already_ran_today' };
   }
 
@@ -176,9 +208,14 @@ export class WeekdayScheduler {
    * test seam, matching every provider in this codebase.
    */
   async tick(now: Date = new Date(), fetchImpl?: typeof fetch): Promise<SchedulerDecision> {
-    let alreadyRanToday = false;
+    let day: DayState = { attempts: 0, decided: false, lastAttemptAt: null };
     try {
-      alreadyRanToday = schedulerRanToday(this.settings.timeZone, now) !== null;
+      const stored = schedulerDayState(this.settings.timeZone, now);
+      day = {
+        attempts: stored.attempts,
+        decided: stored.decided !== null,
+        lastAttemptAt: stored.lastAttemptAt,
+      };
     } catch (error) {
       // A missing or unreadable run log must not wedge the scheduler; the
       // in-memory date key still prevents a same-process double run.
@@ -187,10 +224,18 @@ export class WeekdayScheduler {
       });
     }
 
-    const decision = shouldRunNow(now, this.settings, this.state, alreadyRanToday);
+    const decision = shouldRunNow(now, this.settings, this.state, day);
     if (!decision.run) return decision;
 
-    // Claim the day before awaiting, so a slow run cannot be started twice.
+    if (day.attempts > 0) {
+      logger.info('Retrying today after an earlier attempt failed on infrastructure', {
+        previousAttempts: day.attempts,
+      });
+    }
+
+    // Claim the day before awaiting, so a slow run cannot be started twice
+    // inside this process. Whether the day is truly settled is decided from the
+    // persisted log on the next tick.
     this.state.lastRunDateKey = decision.dateKey;
     this.state.running = true;
     logger.info('Scheduled LinkedIn run starting', {

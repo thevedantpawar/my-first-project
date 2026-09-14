@@ -108,7 +108,9 @@ export function isTransientGeminiError(error: unknown): boolean {
   return TRANSIENT_HTTP_STATUSES.has(error.httpStatus);
 }
 
-const RETRY_DELAYS_MS = [1_500, 4_000];
+// A 503 "high demand" spike lasts minutes, not seconds. The old 1.5s + 4s
+// ladder gave up 5.5 seconds in and cost a real scheduled post on 2026-09-14.
+const RETRY_DELAYS_MS = [5_000, 20_000, 60_000];
 
 async function sleep(ms: number): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms));

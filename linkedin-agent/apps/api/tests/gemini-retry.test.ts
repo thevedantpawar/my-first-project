@@ -85,7 +85,8 @@ describe('generateJson retry behaviour', () => {
       code: 'gemini_failed',
       httpStatus: 503,
     });
-    expect((fetchImpl as unknown as ReturnType<typeof vi.fn>).mock.calls).toHaveLength(3);
+    // Initial attempt plus the three backoff steps.
+    expect((fetchImpl as unknown as ReturnType<typeof vi.fn>).mock.calls).toHaveLength(4);
   });
 
   it('never retries a quota error', async () => {
