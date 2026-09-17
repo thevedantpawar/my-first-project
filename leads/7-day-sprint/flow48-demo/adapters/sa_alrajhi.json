@@ -1,0 +1,22 @@
+{
+  "adapter_id": "sa_alrajhi",
+  "bank_name": "Al Rajhi Bank",
+  "country": "SA",
+  "currency": "SAR",
+  "encoding": "utf-8",
+  "skip_rows": 0,
+  "date_format": "%d-%m-%Y",
+  "amount_convention": "split_columns",
+  "columns": {
+    "date": "التاريخ",
+    "description": "البيان",
+    "debit": "مدين",
+    "credit": "دائن",
+    "balance": "الرصيد"
+  },
+  "number_format": {
+    "thousands_separator": ",",
+    "decimal_separator": "."
+  },
+  "_note": "Saudi adapter. Arabic column headers, no code changes required - this file IS the integration."
+}

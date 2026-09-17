@@ -1,0 +1,20 @@
+{
+  "adapter_id": "za_fnb",
+  "bank_name": "First National Bank",
+  "country": "ZA",
+  "currency": "ZAR",
+  "encoding": "utf-8",
+  "skip_rows": 4,
+  "date_format": "%Y-%m-%d",
+  "amount_convention": "signed_single_column",
+  "columns": {
+    "date": "Date",
+    "description": "Description",
+    "amount": "Amount",
+    "balance": "Balance"
+  },
+  "number_format": {
+    "thousands_separator": "",
+    "decimal_separator": "."
+  }
+}

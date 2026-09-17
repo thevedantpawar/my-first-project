@@ -1,0 +1,21 @@
+{
+  "adapter_id": "ae_mashreq",
+  "bank_name": "Mashreq Bank",
+  "country": "AE",
+  "currency": "AED",
+  "encoding": "utf-8",
+  "skip_rows": 0,
+  "date_format": "%d/%m/%Y",
+  "amount_convention": "split_columns",
+  "columns": {
+    "date": "Txn Date",
+    "description": "Narration",
+    "debit": "Withdrawal (AED)",
+    "credit": "Deposit (AED)",
+    "balance": "Balance (AED)"
+  },
+  "number_format": {
+    "thousands_separator": ",",
+    "decimal_separator": "."
+  }
+}

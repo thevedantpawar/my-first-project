@@ -1,0 +1,45 @@
+{
+  "_comment": "Credit-policy rules as data. A credit analyst can extend these without an engineer, and without a deploy.",
+  "non_revenue_inflow": [
+    "inter-account",
+    "transfer from director",
+    "loan advance",
+    "loan drawdown",
+    "capital injection",
+    "shareholder",
+    "refund",
+    "reversal"
+  ],
+  "revenue_inflow": [
+    "card settlement",
+    "pos settlement",
+    "payfast",
+    "mada",
+    "stripe",
+    "checkout",
+    "network intl",
+    "merchant settlement",
+    "acquirer"
+  ],
+  "debt_service": [
+    "loan repayment",
+    "facility repayment",
+    "instalment",
+    "installment"
+  ],
+  "failed_payment": [
+    "returned",
+    "unpaid",
+    "bounced",
+    "insufficient funds",
+    "r/d",
+    "dishonour"
+  ],
+  "high_risk_counterparty": [
+    "casino",
+    "betting",
+    "gambling",
+    "crypto",
+    "forex margin"
+  ]
+}
