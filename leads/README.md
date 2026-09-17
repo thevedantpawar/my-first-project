@@ -87,10 +87,10 @@ That is the ICP this list is built against. A handful of AI-native companies are
 
 | Field | Detail |
 |---|---|
-| **Website** | huspy.com ° |
+| **Website** | **huspy.com** (confirmed) · public contact: contact@huspy.io · careers: huspy.com/ae/careers |
 | **Location** | Dubai, UAE (also Madrid, Valencia, Alicante, Malaga, Abu Dhabi) |
 | **Decision maker** | Jad Antoun — Co-founder & CEO · Khalid Ashmawy — Co-founder |
-| **LinkedIn** | search by name; Crunchbase profile: crunchbase.com/person/jad-antoun |
+| **LinkedIn** | search by name · Crunchbase: crunchbase.com/person/jad-antoun |
 | **Stage** | Growth |
 | **Funding** | $59M Series B led by Balderton Capital (Jul 2025), after $37M Series A led by Peak XV. **>$100M total.** |
 | **Scale** | >$7B annual real-estate transactions · 8,000+ UAE home buyers · Spain grew >20x YoY |
@@ -164,7 +164,7 @@ That is the ICP this list is built against. A handful of AI-native companies are
 
 | Field | Detail |
 |---|---|
-| **Website** | flow48.com ° |
+| **Website** | **flow48.com** (confirmed) · LinkedIn: linkedin.com/company/flow48financing |
 | **Location** | Dubai, UAE (expanding into Saudi Arabia) |
 | **Decision maker** | Idriss Al Rifai — Founder & CEO (previously founded Fetchr; ex-CEO Borzo; ex-Chief Strategy & Data Officer, Glovo) |
 | **Stage** | Growth |
@@ -184,9 +184,10 @@ That is the ICP this list is built against. A handful of AI-native companies are
 
 | Field | Detail |
 |---|---|
-| **Website** | 01health.com ° |
+| **Website** | Verify — company operates via 32Co and Aerox Health brands |
 | **Location** | London, UK (entering US market) |
-| **Decision maker** | Dr Sonia Szamocki — Founder & CEO |
+| **Decision maker** | Dr Sonia Szamocki — Founder & CEO (ex-NHS A&E doctor, ex-BCG) |
+| **LinkedIn** | linkedin.com/in/dr-sonia-szamocki-a01790a9 (confirmed) |
 | **Stage** | Growth |
 | **Funding** | $15M / £11.2M Series A (Jun 2026) led by **Gresham House Ventures**, with Balderton Capital, Eka Ventures, Wavemaker360 |
 | **Signal** | Simultaneously appointed a **Head of US Commercial Operations** |
@@ -203,7 +204,7 @@ That is the ICP this list is built against. A handful of AI-native companies are
 
 | Field | Detail |
 |---|---|
-| **Website** | keyper.ae ° |
+| **Website** | **realkeyper.com** (confirmed) · public contact: hello@realkeyper.com · +971 800 539737 |
 | **Location** | Dubai, UAE |
 | **Decision maker** | Omar Abu Innab — Co-founder & CEO · Walid Al Saqqaf — Co-founder |
 | **Stage** | Growth |
@@ -261,7 +262,7 @@ That is the ICP this list is built against. A handful of AI-native companies are
 
 | Field | Detail |
 |---|---|
-| **Website** | smalldoorvet.com ° |
+| **Website** | **smalldoorvet.com** (confirmed) · careers: smalldoorvet.com/careers/ · LinkedIn: linkedin.com/company/smalldoor |
 | **Location** | New York, NY, USA |
 | **Decision maker** | Josh Guttman — Co-founder & CEO |
 | **Stage** | Growth |
@@ -361,9 +362,9 @@ That is the ICP this list is built against. A handful of AI-native companies are
 
 | Field | Detail |
 |---|---|
-| **Website** | epicmarkets.com ° |
+| **Website** | **No public site yet — pre-launch, "quiet preparation". LinkedIn is the only channel.** |
 | **Location** | UAE |
-| **Decision maker** | Kevin Kimmel — CEO (ex-Citadel, global head of eFX 10+ years) · Brian Seegers — CCO (ex-Citadel, director of FX business development) |
+| **Decision maker** | Kevin Kimmel — CEO (ex-Citadel global head of eFX 10+ yrs; also JPMorgan, YellowJacket, Tradeweb) · Seegers — CCO (sources differ on "Brian" vs "Bryan" — confirm before writing to him) |
 | **Stage** | Startup (founded 2026) |
 | **Funding** | **$10M Pre-Seed** from **Karatage** as sole investor ($450M AUM, 40+ startups) |
 
@@ -416,9 +417,9 @@ That is the ICP this list is built against. A handful of AI-native companies are
 
 | Field | Detail |
 |---|---|
-| **Website** | dex.com ° — verify, generic name |
+| **Website** | **meetdex.ai** (confirmed) |
 | **Location** | London, UK |
-| **Decision maker** | Paddy Lambros — Founder & CEO (previously advised ~100 European startups on hiring at Atomico) |
+| **Decision maker** | Paddy Lambros — Founder & CEO (previously advised ~100 European startups on hiring at Atomico) · Harry Uglow — Co-founder & CTO |
 | **Stage** | Startup |
 | **Funding** | $5.3M Seed / £3.9M (Apr 2026) led by **Notion Capital**, with a16z Speedrun, Concept Ventures, and angels from OpenAI. **$8.4M total** after a $3.1M pre-seed. |
 

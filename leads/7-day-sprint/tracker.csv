@@ -1,0 +1,21 @@
+priority,tier,company,region,decision_maker,channel,contact,sent_date,touch_1,touch_2,touch_3,linkedin_sent,linkedin_accepted,replied,call_booked,call_date,closed,amount,notes
+1,1,Epic Markets,UAE,Kevin Kimmel (CEO),LinkedIn only,no public site yet,,,,,,,,,,,,pre-launch; confirm CCO name Brian vs Bryan
+2,1,Keyper,UAE,Omar Abu Innab (CEO),Email + LinkedIn,hello@realkeyper.com,,,,,,,,,,,,institutional landlord onboarding angle
+3,1,Small Door Veterinary,US,Josh Guttman (CEO),LinkedIn,smalldoorvet.com,,,,,,,,,,,,six openings next year
+4,1,01Health,UK,Dr Sonia Szamocki (CEO),LinkedIn,linkedin.com/in/dr-sonia-szamocki-a01790a9,,,,,,,,,,,,licensing platform externally + US entry
+5,1,Flow48,UAE,Idriss Al Rifai (CEO),Email + LinkedIn,linkedin.com/company/flow48financing,,,,,,,,,,,,HIGHEST INTENT - published scope in press release
+6,1,Huspy,UAE,Jad Antoun (CEO),Email + LinkedIn,contact@huspy.io,,,,,,,,,,,,deals-per-broker angle
+7,2,Stake,UAE,Manar Mahmassani (Co-CEO),LinkedIn,getstake.com,,,,,,,,,,,,211 nationalities KYC angle
+8,2,Dex,UK,Paddy Lambros (CEO),LinkedIn,meetdex.ai,,,,,,,,,,,,REFERRAL PLAY not a sale - ex-Atomico network
+9,2,Senra Systems,US,Jordan Black (CEO),LinkedIn,verify domain,,,,,,,,,,,,third facility angle
+10,2,Blank Street,US,Issam Freiha (CEO),LinkedIn,verify domain,,,,,,,,,,,,waste percentage angle
+11,3,Cityblock Health,US,Dr Toyin Ajayi (CEO),LinkedIn,linkedin.com/in/toyin-ajayi,,,,,,,,,,,,BIGGEST BUDGET - slow cycle - 60-90 day pipeline
+12,3,RQD* Clearing,US,Michael Sanocki (CEO),Email,rqdclearing.com,,,,,,,,,,,,target COO not CEO
+13,3,Origin,UK,Chris Bruce (CEO),LinkedIn,originbenefits.com,,,,,,,,,,,,use do-not-compete-with-engineers reframe
+14,3,FYLD,UK,Shelley Copsey (CEO),LinkedIn,fyld.ai,,,,,,,,,,,,use do-not-compete-with-engineers reframe
+15,3,Relay Technologies,UK,Nicole Mazza (Co-founder),LinkedIn,verify domain,,,,,,,,,,,,courier onboarding per new city
+16,3,Sava,UK,Renato Circi (Co-CEO),LinkedIn,sava.health,,,,,,,,,,,,regulatory documentation angle
+17,3,Mal,UAE,Abdallah Abu-Sheikh (Founder),LinkedIn,verify domain,,,,,,,,,,,,Sharia-compliance workflow niche angle
+18,3,Auger,US,Dave Clark (Co-founder),LinkedIn,verify domain,,,,,,,,,,,,only approach with real supply chain credential
+19,3,Fasset,UAE,Mohammad Raafi Hossain (CEO),LinkedIn,linkedin.com/in/raafihossain,,,,,,,,,,,,NEW - $51M Series B - sources differ Dubai vs LA HQ
+20,4,Charta Health,US,VERIFY NAME FIRST,-,chartahealth.com,,,,,,,,,,,,do not send until decision maker confirmed
